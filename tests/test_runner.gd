@@ -20,7 +20,12 @@ func _ready() -> void:
 			continue
 		if not filter.is_empty() and not file_name.contains(filter):
 			continue
-		var script: GDScript = load(TEST_DIR.path_join(file_name))
+		var script := load(TEST_DIR.path_join(file_name)) as GDScript
+		if script == null or not script.can_instantiate():
+			total += 1
+			failed += 1
+			printerr("  FAIL ", file_name, ": test file failed to load")
+			continue
 		for method in script.get_script_method_list():
 			var method_name: String = method["name"]
 			if not method_name.begins_with("test_"):
