@@ -25,7 +25,7 @@ until the simulation replaces it.
 | 5 | Battle Preparation | Done | `model/matchup_analysis.gd`, `ui/screens/battle_prep.gd`, `tests/unit/test_battle_prep.gd` |
 | 6 | Combat State Model | Done | `simulation/combatant_spec.gd`, `combatant_state.gd`, `arena_layout.gd`, `battle_state.gd`, `tests/unit/test_battle_state.gd` |
 | 7 | Simulation Tick System | Done | `simulation/battle_simulator.gd`, `simulation_phase.gd`, `sim_frame.gd`, `battle_log.gd`, `phases/`, `tests/unit/test_simulation_tick.gd` |
-| 8 | Action System | — | |
+| 8 | Action System | Done | `simulation/phases/action_phase.gd`, `movement_phase.gd`, `scripted_decision_phase.gd`, `tests/unit/test_action_system.gd` |
 | 9 | Attack Resolution | — | |
 | 10 | Damage / Defense | — | |
 | 11 | Dodge / Block | — | |
@@ -244,11 +244,11 @@ frame rate. Every tick passes through the same pipeline, in this order:
 | Step | Pipeline name | Built in |
 | --- | --- | --- |
 | Combat Decision | `decision` | Stage 16 |
-| Action Resolution | `action` | Stage 8 |
+| Action Resolution | `action` | Stage 8 — `ActionPhase` |
 | Hit / Dodge / Block | `contact` | Stages 9, 11 |
 | Damage | `damage` | Stage 10 |
 | Stagger / Knockback | `force` | Stage 13 |
-| Position Update | `movement` | Stage 8 |
+| Position Update | `movement` | Stage 8 — `MovementPhase` |
 | Stamina Update | `stamina` | Stage 12 |
 | Cooldown / Recovery | `recovery` | Stage 7 — `CooldownPhase` |
 | Knockout | `knockout` | Stage 7 — `KnockoutPhase` (Stage 17 adds the other end conditions) |
@@ -273,3 +273,48 @@ The simulator never picks a winner: with no combat phases a battle runs to the t
 limit undecided. Time is derived from the tick count, so it never drifts. The same state
 and seed produce an identical log; a full-length battle simulates headless well inside a
 second.
+
+## Stage 8 — Action System
+
+**Intents** (from the decision step) look like
+`{"action": "attack" | "heavy" | "block" | "dodge" | "cast" | "", "move": Vector2,
+"dodge_dir": Vector2}`. Until Stage 16, `ScriptedDecisionPhase` supplies them from a
+callable (tests, tools, demos).
+
+**`ActionPhase`** (Action Resolution) commits intents into timed actions and advances
+them through WINDUP → ACTIVE → RECOVERY. Lengths come from the spec's derived numbers:
+
+| Action | Wind-up | Active | Recovery | Shaped by |
+| --- | --- | --- | --- | --- |
+| Light attack | weapon wind-up ÷ action speed | weapon active | weapon recovery ÷ action speed | weapon, Attack Speed, weapon mastery |
+| Heavy attack | heavy wind-up ÷ action speed | active × 1.2 | heavy recovery ÷ action speed | same |
+| Dodge | none | protected window (dodge skill) | dodge recovery (Evasion) | Evasion, dodge skill, armor |
+| Cast | cast time | release | the Art's recovery | the Art; sets its cooldown |
+| Block | raise (0.08 s) | held while wanted | — | — |
+
+- Committed actions play out — no cancelling a heavy wind-up into a dodge. Only idle,
+  moving or guarding combatants start something new; dropping a guard is immediate.
+- Light attacks chain during recovery up to the derived combo length (Skilled weapon
+  mastery adds a step); the chain resets afterwards.
+- When an attack's ACTIVE window opens, a contact `{attacker, kind, combo, target}` goes
+  into the frame for Hit / Dodge / Block (Stage 9) plus a `strike` event; a cast releases
+  its Art as a contact and a `cast_release` event.
+- Stagger, knockdown and recover (set by later stages) just run out their timer here.
+- Events: `action_start`, `strike`, `cast_release`, `dodge`, `block_up`, `block_down`,
+  `action_end`.
+
+**`MovementPhase`** (Position Update):
+
+- speed = derived move speed × what the combatant is doing (free 1.0, guarding 0.4,
+  winding up 0.25, striking/recovering/casting 0) × terrain (ground everywhere for now —
+  water, air and elevation plug in by movement type, never species);
+- acceleration toward the wanted velocity grows with Agility (responsiveness);
+- turning toward the target at the derived turn speed, ×0.3 while committed;
+- a dodge covers its dodge distance during its protected window, then stops;
+- while staggered, pushes slide out (knockback arrives in Stage 13);
+- the ring edge and obstacles stop movement (sliding along them), and bodies never
+  overlap.
+
+Tuning lives in `GameConfig` (Simulation group). In a scripted exchange Bruno's sword
+strikes every ~0.33 s in three-hit chains while Rook's heavy hammer takes ~1.1 s to land
+and ~2.4 s per cycle.

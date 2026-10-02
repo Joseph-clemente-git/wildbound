@@ -25,6 +25,8 @@ var elevation := 0.0
 ## Unit vector the combatant faces on the floor.
 var facing := Vector2(0, -1)
 var velocity := Vector2.ZERO
+## Direction of the dodge under way.
+var dodge_direction := Vector2.ZERO
 
 var health := 0.0
 var max_health := 0.0

@@ -74,7 +74,7 @@ static func from_champion(champion: Champion) -> CombatantSpec:
 	spec.tendencies = DEFAULT_TENDENCIES.duplicate()
 	if spec.ability != null:
 		spec.tendencies["magic_chance"] = 0.3
-	spec._finish()
+	spec.refresh()
 	spec.tendencies["preferred_range"] = maxf(spec.derived.attack_range * 0.9, 1.2)
 	return spec
 
@@ -100,7 +100,7 @@ static func from_opponent(opponent: OpponentData) -> CombatantSpec:
 	spec.happiness = opponent.happiness
 	for key: String in OpponentData.TENDENCIES:
 		spec.tendencies[key] = opponent.tendency(key)
-	spec._finish()
+	spec.refresh()
 	return spec
 
 
@@ -116,7 +116,9 @@ func tendency(key: String) -> float:
 	return float(tendencies.get(key, DEFAULT_TENDENCIES.get(key, 0.0)))
 
 
-func _finish() -> void:
+## Recomputes everything derived from the inputs (after a test or a
+## designer tool changes stats, skills or gear on a spec).
+func refresh() -> void:
 	movement_type = animal.movement_type if animal != null else GameEnums.MovementType.GROUND
 	weapon_mastery = rank_of("weapon:" + weapon.weapon_type) if weapon != null else GameEnums.Rank.NONE
 	magic_mastery = rank_of("magic:" + ability.school) if ability != null else GameEnums.Rank.NONE

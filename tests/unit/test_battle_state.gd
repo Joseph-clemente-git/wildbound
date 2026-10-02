@@ -90,7 +90,7 @@ func test_movement_comes_from_the_animal() -> void:
 	champion.animal_id = "humanoid_dog"
 	var spec := CombatantSpec.from_champion(champion)
 	spec.animal = hawk
-	spec._finish()
+	spec.refresh()
 	check_eq(spec.movement_type, GameEnums.MovementType.FLYING, "no species check decides movement")
 
 
