@@ -26,6 +26,8 @@ func _ready() -> void:
 		return
 	trial = Content.trial(Router.params.get("trial", "first_steps"))
 	opponent_data = Content.opponent(trial.opponent_id)
+	if not Router.params.get("entered", false):
+		TrialSystem.enter(Game.champion(), trial)  # direct entry (debug/scenarios)
 	var arena_data := Content.arena(trial.arena_id)
 	ArenaBuilder.build(self, arena_data)
 	Sfx.stop_ambient()
@@ -204,7 +206,7 @@ func _on_ended(winner: Combatant) -> void:
 	hud.show_banner("Victory!" if won else "Knocked out", UiTheme.GOOD if won else UiTheme.BAD, 1.4)
 	Sfx.play("victory" if won else "defeat")
 	winner.visual.play("victory", -1.0, true)
-	var outcome := recorder.finish(won)
+	var outcome := TrialSystem.apply_result(recorder.finish(won))
 	await get_tree().create_timer(OUTRO_SECONDS * Engine.time_scale).timeout
 	Engine.time_scale = 1.0
-	Router.go("result" if ResourceLoader.exists(Router.ROUTES["result"]) else "lodge", {"outcome": outcome})
+	Router.go("result", {"outcome": outcome})

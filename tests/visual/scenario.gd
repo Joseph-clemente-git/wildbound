@@ -89,3 +89,17 @@ func _scenario_arena() -> void:
 		var arena := get_tree().current_scene
 		var pilot := AiController.new(arena.hero, Content.opponent("juniper"), 5)
 		arena.battle.player_controller = pilot)
+
+
+func _scenario_result() -> void:
+	_prepare_mid()
+	TrainerManager.recruit(Game.profile, "agility_wren", true)
+	var champion := Game.champion()
+	champion.experience.add("evasion", 70.0)
+	var outcome := {"trial_id": "stonewall_bout", "opponent_id": "rook", "won": true, "forfeited": false,
+			"duration": 74.0, "difficulty_ratio": 1.2, "difficulty_multiplier": 1.25,
+			"tallies": {"hits": 9, "heavy_hits": 2, "staggers": 3, "dodges": 7, "perfect_dodges": 2,
+					"blocks": 4, "perfect_blocks": 1, "exhaustions": 1},
+			"experience": {"evasion": 24.0, "weapon:sword": 18.0, "offensive": 11.0, "endurance": 6.0, "resilience": 3.0},
+			"growths": [{"text": "Evasion +2.0"}, {"text": "Dodge reached Apprentice"}]}
+	Router.go("result", {"outcome": TrialSystem.apply_result(outcome)})

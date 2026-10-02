@@ -60,7 +60,7 @@ func _ready() -> void:
 	_update_camera(1.0)
 	var panel: String = Router.params.get("panel", "")
 	if not panel.is_empty():
-		open_panel(panel)
+		open_panel(panel, Router.params.get("panel_options", {}))
 
 
 func _process(delta: float) -> void:
@@ -186,14 +186,14 @@ func _close_context() -> void:
 	_context = null
 
 
-func open_panel(panel_id: String) -> void:
+func open_panel(panel_id: String, panel_options: Dictionary = {}) -> void:
 	_close_context()
 	if panel_id == "trainers" and not Game.is_flag_set("met_first_trainer"):
 		select_station("trainers")
 		return
 	if panel_id == "champion":
 		Game.set_flag("inspected_champion")
-	panels.open(panel_id)
+	panels.open(panel_id, panel_options)
 
 
 func play_dialogue(event_id: String, on_done: Callable = Callable()) -> void:
