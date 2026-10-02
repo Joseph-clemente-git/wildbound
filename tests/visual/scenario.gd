@@ -103,3 +103,13 @@ func _scenario_result() -> void:
 			"experience": {"evasion": 24.0, "weapon:sword": 18.0, "offensive": 11.0, "endurance": 6.0, "resilience": 3.0},
 			"growths": [{"text": "Evasion +2.0"}, {"text": "Dodge reached Apprentice"}]}
 	Router.go("result", {"outcome": TrialSystem.apply_result(outcome)})
+
+
+func _scenario_prep() -> void:
+	_prepare_mid()
+	Router.go("battle_prep", {"trial": "valley_regional"})
+
+
+func _scenario_map() -> void:
+	_prepare_mid()
+	Router.go("world_map")

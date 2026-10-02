@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/screens/battle_prep.gd" id="1_prep"]
+
+[node name="BattlePrep" type="Node3D"]
+script = ExtResource("1_prep")
