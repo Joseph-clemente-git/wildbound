@@ -1,0 +1,54 @@
+[gd_resource type="Resource" script_class="MagicSchoolData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/magic_school_data.gd" id="1_s"]
+[ext_resource type="Script" path="res://scripts/data/magic_ability_data.gd" id="2_s"]
+
+[sub_resource type="Resource" id="Resource_1"]
+script = ExtResource("2_s")
+id = "gale_push"
+display_name = "Gale Push"
+description = "A cone of wind that shoves opponents back and breaks their footing."
+school = "wind"
+required_rank = 1
+effect = 1
+counterplay = "Short range: stay out of reach, or block to halve the push."
+stamina_cost = 18.0
+cast_time = 0.35
+recovery = 0.3
+cooldown = 2.5
+cast_range = 5.0
+damage = 8.0
+knockback = 6.0
+stagger = 22.0
+cone_degrees = 70.0
+
+[sub_resource type="Resource" id="Resource_2"]
+script = ExtResource("2_s")
+id = "wind_step"
+display_name = "Wind Step"
+description = "Ride a gust for a long, protected dash."
+school = "wind"
+required_rank = 3
+effect = 3
+counterplay = "The landing spot is predictable: wait for the dash to end, then strike."
+stamina_cost = 16.0
+cast_time = 0.12
+recovery = 0.25
+cooldown = 4.0
+cast_range = 6.0
+damage = 0.0
+knockback = 0.0
+stagger = 0.0
+speed = 6.0
+
+[resource]
+script = ExtResource("1_s")
+id = "wind"
+display_name = "Wind"
+description = "Aether of movement and positioning."
+lore = "Wind mages say the air remembers every path ever walked through the valley."
+color = Color(0.7216, 0.9412, 0.7843, 1.0)
+region_id = "home_valley"
+available = true
+sort_order = 1
+abilities = Array[ExtResource("2_s")]([SubResource("Resource_1"), SubResource("Resource_2")])

@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "bow_yew"
+display_name = "Yew Bow"
+description = "Strong at range, weak up close."
+price = 260
+available = false
+region_id = "high_cliffs"
+sort_order = 6
+weapon_type = "bow"
+damage = 16.0
+attack_speed = 0.9
+attack_range = 14.0
+arc_degrees = 20.0
+stamina_cost = 9.0
+windup = 0.45
+active = 0.05
+recovery = 0.35
+combo_max = 1
+heavy_multiplier = 2.0
+heavy_stamina_cost = 18.0
+heavy_windup = 0.9
+heavy_recovery = 0.5
+weight = 1.5
+strength_scaling = 0.2
+stagger = 8.0
+knockback = 0.6
+guard_pressure = 0.5

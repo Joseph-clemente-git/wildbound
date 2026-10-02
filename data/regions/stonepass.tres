@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RegionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/region_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "stonepass"
+display_name = "Stonepass"
+description = "A mountain pass of quarries and guardians."
+chapter = 2
+unlock_flag = "chapter_two_open"
+map_position = Vector2(0.55, 0.7)
+difficulty = "Moderate"
+color = Color(0.5412, 0.502, 0.4392, 1.0)
+features = PackedStringArray("Axes, spears and Earth Aether", "Battle Masters")
+sort_order = 2

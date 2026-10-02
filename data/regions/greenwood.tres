@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RegionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/region_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "greenwood"
+display_name = "Greenwood"
+description = "An old forest where the paths shift and the trees listen."
+chapter = 2
+unlock_flag = "chapter_two_open"
+map_position = Vector2(0.42, 0.38)
+difficulty = "Moderate"
+color = Color(0.2471, 0.4784, 0.2275, 1.0)
+features = PackedStringArray("Forest trial grounds", "Daggers and Nature Aether", "A second champion")
+sort_order = 1

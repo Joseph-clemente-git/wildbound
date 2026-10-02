@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ArmorData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/armor_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "armor_medium"
+display_name = "Leather Jerkin"
+description = "Hardened leather over cloth. A balanced choice for most trials."
+price = 150
+sort_order = 1
+region_id = "home_valley"
+weight_class = 1
+defense_bonus = 8.0
+move_speed_factor = 1.0
+dodge_distance_factor = 1.0
+stamina_cost_factor = 1.0
+stagger_resist = 0.12
+knockback_resist = 0.1

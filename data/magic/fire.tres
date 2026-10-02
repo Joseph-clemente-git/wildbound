@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="MagicSchoolData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/magic_school_data.gd" id="1_s"]
+[ext_resource type="Script" path="res://scripts/data/magic_ability_data.gd" id="2_s"]
+
+[sub_resource type="Resource" id="Resource_1"]
+script = ExtResource("2_s")
+id = "ember_bolt"
+display_name = "Ember Bolt"
+description = "Hurl a slow bolt of fire that burns on impact."
+school = "fire"
+required_rank = 1
+effect = 0
+counterplay = "The bolt is slow: step or dodge sideways. Any hit during the wind-up cancels the cast."
+stamina_cost = 22.0
+cast_time = 0.55
+recovery = 0.4
+cooldown = 3.0
+cast_range = 14.0
+damage = 26.0
+knockback = 0.8
+stagger = 12.0
+speed = 11.0
+radius = 0.45
+burn_dps = 4.0
+burn_seconds = 3.0
+
+[sub_resource type="Resource" id="Resource_2"]
+script = ExtResource("2_s")
+id = "flame_burst"
+display_name = "Flame Burst"
+description = "A ring of flame bursts around the caster, pushing foes away."
+school = "fire"
+required_rank = 4
+effect = 2
+counterplay = "Short reach and a visible build-up: back off or punish the long recovery."
+stamina_cost = 30.0
+cast_time = 0.7
+recovery = 0.6
+cooldown = 6.0
+cast_range = 3.2
+damage = 30.0
+knockback = 3.5
+stagger = 30.0
+radius = 3.2
+burn_dps = 3.0
+burn_seconds = 2.0
+
+[resource]
+script = ExtResource("1_s")
+id = "fire"
+display_name = "Fire"
+description = "Destructive Aether that rewards aggression."
+lore = "Fire Aether was the first art the lodges wrote down: warm in the hearth, fierce in the trial ground."
+color = Color(1.0, 0.5412, 0.2392, 1.0)
+region_id = "home_valley"
+available = true
+sort_order = 0
+abilities = Array[ExtResource("2_s")]([SubResource("Resource_1"), SubResource("Resource_2")])

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "sword_training"
+display_name = "Lodge Sword"
+description = "A well-balanced blade from the lodge rack. Medium reach, medium speed, forgiving stamina cost."
+price = 0
+available = true
+region_id = ""
+sort_order = 0
+weapon_type = "sword"
+damage = 20.0
+attack_speed = 1.0
+attack_range = 1.9
+arc_degrees = 100.0
+stamina_cost = 9.0
+windup = 0.22
+active = 0.12
+recovery = 0.3
+combo_max = 3
+heavy_multiplier = 1.9
+heavy_stamina_cost = 20.0
+heavy_windup = 0.5
+heavy_recovery = 0.55
+weight = 2.0
+strength_scaling = 0.35
+stagger = 18.0
+knockback = 1.2
+guard_pressure = 1.0
+techniques = PackedStringArray("riposte", "flame_slash")

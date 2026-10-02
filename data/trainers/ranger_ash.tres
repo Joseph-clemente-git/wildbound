@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="TrainerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trainer_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "ranger_ash"
+display_name = "Ash Windrunner"
+title = "Ranger"
+category = 1
+rarity = 1
+description = "A ranger known in High Cliffs."
+greeting = "We will meet when your journey reaches my home."
+primary_discipline = PackedStringArray("weapon:bow")
+secondary_discipline = PackedStringArray("skill:positioning")
+traits = PackedStringArray()
+personal_efficiency = 1.0
+teachable_techniques = PackedStringArray()
+region_id = "high_cliffs"
+recruit_cost = 300
+story_recruit = false
+palette = {}
+sort_order = 18

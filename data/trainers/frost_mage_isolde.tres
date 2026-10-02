@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="TrainerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trainer_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "frost_mage_isolde"
+display_name = "Isolde Rimeheart"
+title = "Frost Mage"
+category = 2
+rarity = 2
+description = "A frost mage known in Lakeward."
+greeting = "We will meet when your journey reaches my home."
+primary_discipline = PackedStringArray("magic:frost")
+secondary_discipline = PackedStringArray("skill:timing")
+traits = PackedStringArray("aether_focus")
+personal_efficiency = 1.0
+teachable_techniques = PackedStringArray()
+region_id = "lakeward"
+recruit_cost = 550
+story_recruit = false
+palette = {}
+sort_order = 19

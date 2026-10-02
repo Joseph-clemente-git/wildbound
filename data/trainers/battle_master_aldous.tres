@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="TrainerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trainer_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "battle_master_aldous"
+display_name = "Aldous Greymane"
+title = "Battle Master"
+category = 3
+rarity = 4
+description = "A battle master known in Ancient Wilds."
+greeting = "We will meet when your journey reaches my home."
+primary_discipline = PackedStringArray("skill:movement", "skill:attack", "skill:defense", "skill:dodge", "skill:block", "skill:stamina", "skill:recovery")
+secondary_discipline = PackedStringArray("skill:defense_control", "skill:timing")
+traits = PackedStringArray("defensive_doctrine", "experience_reader")
+personal_efficiency = 1.0
+teachable_techniques = PackedStringArray("riposte", "guard_break", "wind_dash", "flame_slash")
+region_id = "ancient_wilds"
+recruit_cost = 1500
+story_recruit = false
+palette = {}
+sort_order = 23

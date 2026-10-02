@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RegionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/region_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "high_cliffs"
+display_name = "High Cliffs"
+description = "Wind-scoured heights where flyers nest."
+chapter = 4
+unlock_flag = "chapter_four_open"
+map_position = Vector2(0.84, 0.26)
+difficulty = "Hard"
+color = Color(0.6275, 0.6588, 0.7216, 1.0)
+features = PackedStringArray("Flying champions", "Bows and Lightning")
+sort_order = 4

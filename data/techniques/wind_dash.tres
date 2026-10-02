@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="TechniqueData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/technique_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "wind_dash"
+display_name = "Wind Dash"
+description = "With Wind attuned, dodges become long wind-carried dashes."
+tier = 2
+prerequisites = {
+"weapon:dagger": 4,
+"stat:agility": 4,
+"magic:wind": 4
+}
+trigger = 2
+required_school = "wind"
+stamina_cost = 6.0
+power = 1.8
+coin_cost = 260
+sort_order = 2

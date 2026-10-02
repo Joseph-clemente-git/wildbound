@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="MagicSchoolData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/magic_school_data.gd" id="1_s"]
+[ext_resource type="Script" path="res://scripts/data/magic_ability_data.gd" id="2_s"]
+
+[sub_resource type="Resource" id="Resource_1"]
+script = ExtResource("2_s")
+id = "thornbind"
+display_name = "Thornbind"
+description = "Roots briefly hold an opponent in place."
+school = "nature"
+required_rank = 1
+effect = 1
+counterplay = "Slow to grow: keep moving."
+stamina_cost = 22.0
+cast_time = 0.6
+damage = 6.0
+
+[resource]
+script = ExtResource("1_s")
+id = "nature"
+display_name = "Nature"
+description = "Aether of growth and recovery."
+lore = "Greenwood druids coax roots to bind the unwary."
+color = Color(0.4941, 0.8275, 0.4196, 1.0)
+region_id = "greenwood"
+available = false
+sort_order = 5
+abilities = Array[ExtResource("2_s")]([SubResource("Resource_1")])

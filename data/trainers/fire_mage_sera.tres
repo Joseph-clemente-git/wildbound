@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="TrainerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trainer_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "fire_mage_sera"
+display_name = "Sera Emberlyn"
+title = "Fire Mage"
+category = 2
+rarity = 2
+description = "A scholar of destructive Aether who insists fire is mostly about patience."
+greeting = "Aether is a discipline, not a gift. Every champion can learn to hold a flame."
+primary_discipline = PackedStringArray("magic:fire", "stat:attack")
+secondary_discipline = PackedStringArray("skill:timing", "skill:attack_control")
+traits = PackedStringArray("aether_focus")
+personal_efficiency = 1.0
+teachable_techniques = PackedStringArray("flame_slash")
+region_id = "home_valley"
+recruit_cost = 480
+story_recruit = false
+palette = {
+"fur": Color(0.7216, 0.3137, 0.1804, 1.0),
+"fur_light": Color(0.9608, 0.7882, 0.6275, 1.0),
+"fur_dark": Color(0.2902, 0.1176, 0.0627, 1.0),
+"scarf": Color(0.8784, 0.6275, 0.251, 1.0),
+"cloth": Color(0.4157, 0.1647, 0.1647, 1.0)
+}
+sort_order = 3

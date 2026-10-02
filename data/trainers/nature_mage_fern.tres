@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="TrainerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trainer_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "nature_mage_fern"
+display_name = "Fern Mossheart"
+title = "Nature Mage"
+category = 2
+rarity = 1
+description = "A nature mage known in Greenwood."
+greeting = "We will meet when your journey reaches my home."
+primary_discipline = PackedStringArray("magic:nature")
+secondary_discipline = PackedStringArray("skill:recovery")
+traits = PackedStringArray("patient_mentor")
+personal_efficiency = 1.0
+teachable_techniques = PackedStringArray()
+region_id = "greenwood"
+recruit_cost = 300
+story_recruit = false
+palette = {}
+sort_order = 22

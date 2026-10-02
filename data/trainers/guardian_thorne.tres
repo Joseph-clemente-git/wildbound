@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="TrainerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trainer_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "guardian_thorne"
+display_name = "Thorne Oakheart"
+title = "Guardian"
+category = 1
+rarity = 2
+description = "A guardian known in Lakeward."
+greeting = "We will meet when your journey reaches my home."
+primary_discipline = PackedStringArray("weapon:shield", "skill:block")
+secondary_discipline = PackedStringArray("skill:block_control")
+traits = PackedStringArray("defensive_doctrine")
+personal_efficiency = 1.0
+teachable_techniques = PackedStringArray()
+region_id = "lakeward"
+recruit_cost = 550
+story_recruit = false
+palette = {}
+sort_order = 17

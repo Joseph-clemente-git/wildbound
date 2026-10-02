@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "axe_bearded"
+display_name = "Bearded Axe"
+description = "Relentless offensive pressure with moderate, heavy-handed swings."
+price = 260
+available = false
+region_id = "stonepass"
+sort_order = 4
+weapon_type = "axe"
+damage = 25.0
+attack_speed = 0.85
+attack_range = 1.8
+arc_degrees = 110.0
+stamina_cost = 12.0
+windup = 0.32
+active = 0.12
+recovery = 0.42
+combo_max = 3
+heavy_multiplier = 1.9
+heavy_stamina_cost = 24.0
+heavy_windup = 0.6
+heavy_recovery = 0.65
+weight = 4.0
+strength_scaling = 0.55
+stagger = 28.0
+knockback = 1.8
+guard_pressure = 1.6

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AccessoryData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/accessory_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "anklet_swiftpaw"
+display_name = "Swiftpaw Anklet"
+description = "Light bells that keep the feet honest. Quicker steps, thinner guard."
+price = 180
+sort_order = 1
+region_id = "home_valley"
+stat_modifiers = {
+"agility": 4.0,
+"defense": -2.0
+}

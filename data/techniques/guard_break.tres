@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="TechniqueData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/technique_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "guard_break"
+display_name = "Guard Break"
+description = "A heavy attack that smashes through a raised guard, staggering the defender."
+tier = 2
+prerequisites = {
+"weapon:hammer": 4,
+"stat:strength": 4,
+"skill:defense": 4
+}
+trigger = 1
+required_school = ""
+stamina_cost = 12.0
+power = 1.3
+coin_cost = 260
+sort_order = 1

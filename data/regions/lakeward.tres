@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RegionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/region_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "lakeward"
+display_name = "Lakeward"
+description = "Still lakes where swimmers rule the water."
+chapter = 4
+unlock_flag = "chapter_four_open"
+map_position = Vector2(0.72, 0.5)
+difficulty = "Hard"
+color = Color(0.2902, 0.4784, 0.6275, 1.0)
+features = PackedStringArray("Swimming champions", "Frost Aether", "Shields")
+sort_order = 3

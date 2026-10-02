@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="TrainerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trainer_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "axemaster_gunnar"
+display_name = "Gunnar Redbark"
+title = "Axemaster"
+category = 1
+rarity = 1
+description = "A axemaster known in Stonepass."
+greeting = "We will meet when your journey reaches my home."
+primary_discipline = PackedStringArray("weapon:axe")
+secondary_discipline = PackedStringArray("stat:strength")
+traits = PackedStringArray()
+personal_efficiency = 1.0
+teachable_techniques = PackedStringArray()
+region_id = "stonepass"
+recruit_cost = 300
+story_recruit = false
+palette = {}
+sort_order = 14

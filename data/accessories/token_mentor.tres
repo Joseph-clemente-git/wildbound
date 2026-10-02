@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AccessoryData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/accessory_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "token_mentor"
+display_name = "Mentor's Token"
+description = "A worn wooden token from the old mentor. Steadies the breath."
+price = 0
+sort_order = 0
+region_id = ""
+stat_modifiers = {
+"endurance": 3.0
+}
