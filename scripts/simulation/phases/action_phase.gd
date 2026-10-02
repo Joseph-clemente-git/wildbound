@@ -74,10 +74,13 @@ static func is_committed(fighter: CombatantState) -> bool:
 func _start(state: BattleState, fighter: CombatantState, intent: Dictionary, frame: SimFrame) -> void:
 	var wanted: String = intent.get("action", "")
 	# Light attacks chain: a new swing may start during the previous one's recovery.
-	if wanted == "attack" and fighter.action == A.ATTACK and fighter.phase == P.RECOVERY \
+	if wanted == "attack" and fighter.action == A.ATTACK and fighter.phase == P.RECOVERY and not fighter.is_exhausted() \
 			and fighter.combo_step < fighter.spec.derived.combo_max:
 		_begin(fighter, A.ATTACK, frame, fighter.combo_step + 1)
 		return
+	# Out of breath: nothing but moving until the exhaustion passes.
+	if fighter.is_exhausted() and wanted in ["attack", "heavy", "dodge", "cast", "block"]:
+		wanted = ""
 	if fighter.action == A.BLOCK and wanted != "block":
 		fighter.action = A.IDLE
 		fighter.phase = P.NONE

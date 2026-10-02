@@ -29,7 +29,7 @@ until the simulation replaces it.
 | 9 | Attack Resolution | Done | `simulation/phases/contact_phase.gd`, `tests/unit/test_attack_resolution.gd` |
 | 10 | Damage / Defense | Done | `simulation/phases/damage_phase.gd`, `tests/unit/test_damage.gd` |
 | 11 | Dodge / Block | Done | `simulation/defense_rules.gd`, `phases/contact_phase.gd`, `tests/unit/test_dodge_block.gd` |
-| 12 | Stamina | — | |
+| 12 | Stamina | Done | `simulation/phases/stamina_phase.gd`, `tests/unit/test_stamina.gd` |
 | 13 | Stagger / Knockback | — | |
 | 14 | Weapon Behavior | — | |
 | 15 | Magic Behavior | — | |
@@ -249,7 +249,7 @@ frame rate. Every tick passes through the same pipeline, in this order:
 | Damage | `damage` | Stage 10 — `DamagePhase` |
 | Stagger / Knockback | `force` | Stage 13 |
 | Position Update | `movement` | Stage 8 — `MovementPhase` |
-| Stamina Update | `stamina` | Stage 12 |
+| Stamina Update | `stamina` | Stage 12 — `StaminaPhase` |
 | Cooldown / Recovery | `recovery` | Stage 7 — `CooldownPhase` |
 | Knockout | `knockout` | Stage 7 — `KnockoutPhase` (Stage 17 adds the other end conditions) |
 
@@ -387,3 +387,21 @@ recovers, so a well-timed, evasive dodge gets out of reach entirely. Heavier wea
 a guard much harder (hammer guard pressure is over twice the sword's). A dodged shot flies
 on past its target (it can't hit the same target twice); a blocked shot stops.
 Events: `hit {outcome, perfect}`, `evade`, `parry`, `block {guard_drain}`.
+
+## Stage 12 — Stamina
+
+`StaminaPhase` charges this tick's effort and gives breath back:
+
+- **Costs** (from derived numbers): light and heavy attacks by weapon × armor ×
+  attack-control skill; dodges × armor × dodge-control skill; Arts their own cost; a held
+  guard drains per second (block-control skill eases it); every blocked blow costs its
+  guard drain (Stage 11). A hammer and plate cost well over 1.5× a sword and light garb.
+- **Recovery**: after spending, a short delay (`stamina_regen_delay`), then the
+  Endurance-driven regeneration (stamina-discipline skill adds to it); a third of that
+  while guarding. Endurance raises both the pool and the rate.
+- **Exhaustion**: at zero, the combatant is exhausted for its derived exhaustion time
+  (recovery-control skill shortens it): no attacks, dodges, casts or guard, and
+  `exhausted_speed_factor` feet. A guard that runs dry **breaks** (`guard_break`).
+- **Overexertion**: an action may begin with too little stamina left — it plays out and
+  ends in exhaustion. Managing stamina is a real decision, which the decision layer
+  (Stage 16) and experience (Stage 20) build on.

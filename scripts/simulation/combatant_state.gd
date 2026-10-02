@@ -49,6 +49,8 @@ var target_index := -1
 ## Built-up stagger; staggers when it passes the spec's poise.
 var stagger_meter := 0.0
 var exhausted_time := 0.0
+## Seconds before stamina starts coming back after spending.
+var regen_delay := 0.0
 ## Seconds left on cooldowns by key ("magic", technique ids...).
 var cooldowns: Dictionary = {}
 ## Lasting effects, e.g. {"kind": "burn", "dps": 4.0, "time": 3.0, "source": 1}.
@@ -99,5 +101,6 @@ func to_dict() -> Dictionary:
 		"action": ACTION_NAMES[action], "phase": phase, "phase_time": snappedf(phase_time, 0.001),
 		"combo_step": combo_step, "target": target_index,
 		"stagger": snappedf(stagger_meter, 0.01), "exhausted": snappedf(exhausted_time, 0.001),
+		"regen_delay": snappedf(regen_delay, 0.001),
 		"cooldowns": cooldowns.duplicate(), "effects": effects.duplicate(true),
 	}

@@ -80,6 +80,8 @@ func _accelerate(state: BattleState, fighter: CombatantState, intent: Dictionary
 		return
 	var wanted: Vector2 = intent.get("move", Vector2.ZERO)
 	var desired := wanted.limit_length(1.0) * derived.move_speed * speed_factor(fighter) * terrain_speed(state, fighter)
+	if fighter.is_exhausted():
+		desired *= Content.config.exhausted_speed_factor
 	fighter.velocity = fighter.velocity.move_toward(desired, accel * delta)
 
 
