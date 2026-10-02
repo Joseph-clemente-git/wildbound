@@ -56,12 +56,16 @@ func _scenario_lodge_context() -> void:
 
 
 func _scenario_lodge_mid() -> void:
+	_prepare_mid()
+	Router.go("lodge")
+
+
+func _prepare_mid() -> void:
 	_progress(["inspected_champion", "viewed_skill_matrix", "met_first_trainer", "trained_once",
 			"equipped_weapon", "first_trial_done", "world_map_unlocked", "codex_unlocked"])
 	TrainerManager.recruit(Game.profile, "swordmaster_corin", true)
 	Game.profile.add_item("sword_training")
 	Game.champion().weapon_id = "sword_training"
-	Router.go("lodge")
 
 
 func _scenario_panel() -> void:
@@ -71,3 +75,17 @@ func _scenario_panel() -> void:
 		if arg.begins_with("--panel="):
 			panel = arg.trim_prefix("--panel=")
 	_at(1.0, func() -> void: _lodge().open_panel(panel))
+
+
+func _scenario_arena() -> void:
+	_prepare_mid()
+	var trial := "first_steps"
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--trial="):
+			trial = arg.trim_prefix("--trial=")
+	Router.go("arena", {"trial": trial})
+	# Let an AI pilot the player so the battle plays itself for review.
+	_at(3.2, func() -> void:
+		var arena := get_tree().current_scene
+		var pilot := AiController.new(arena.hero, Content.opponent("juniper"), 5)
+		arena.battle.player_controller = pilot)

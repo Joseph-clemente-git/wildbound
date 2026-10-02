@@ -27,7 +27,7 @@ const ACTIONS := {
 	"move_forward": {"keys": [KEY_W, KEY_UP], "joy": []},
 	"move_back": {"keys": [KEY_S, KEY_DOWN], "joy": []},
 	"attack": {"keys": [KEY_J], "joy": [JOY_BUTTON_X]},
-	"heavy_attack": {"keys": [KEY_K], "joy": [JOY_BUTTON_Y]},
+	"heavy": {"keys": [KEY_K], "joy": [JOY_BUTTON_Y]},
 	"dodge": {"keys": [KEY_SPACE], "joy": [JOY_BUTTON_A]},
 	"block": {"keys": [KEY_L], "joy": [JOY_BUTTON_RIGHT_SHOULDER]},
 	"magic": {"keys": [KEY_U], "joy": [JOY_BUTTON_B]},

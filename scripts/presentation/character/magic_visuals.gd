@@ -87,3 +87,64 @@ static func flame(at: Vector3, size: float = 0.3, school: String = "fire") -> CP
 	ramp.set_color(1, Color(base.darkened(0.3), 0.0))
 	particles.color_ramp = ramp
 	return particles
+
+
+## Presentation for released Aether Arts. Returns the projectile node (or null).
+static func spawn_effect(battle: Node3D, ability: MagicAbilityData, caster: Node3D, data: Dictionary) -> Node3D:
+	var color := school_color(ability.school)
+	match ability.effect:
+		MagicAbilityData.Effect.PROJECTILE:
+			var bolt := AetherBolt.new()
+			bolt.color = color
+			bolt.school = ability.school
+			bolt.size = ability.radius
+			battle.add_child(bolt)
+			bolt.position = (data.get("position", caster.position) as Vector3) + Vector3(0, 1.1, 0)
+			return bolt
+		MagicAbilityData.Effect.CONE_PUSH:
+			var gust := CPUParticles3D.new()
+			gust.one_shot = true
+			gust.amount = 60
+			gust.lifetime = 0.5
+			gust.explosiveness = 0.85
+			gust.direction = Vector3(0, 0, -1)
+			gust.spread = ability.cone_degrees * 0.5
+			gust.initial_velocity_min = ability.cast_range * 1.4
+			gust.initial_velocity_max = ability.cast_range * 2.2
+			gust.gravity = Vector3.ZERO
+			gust.mesh = _mote_mesh(color, 0.07)
+			gust.color_ramp = _fade_ramp()
+			caster.add_child(gust)
+			gust.position = Vector3(0, 1.0, -0.4)
+			gust.emitting = true
+			gust.finished.connect(gust.queue_free)
+			Sfx.play("wind")
+		MagicAbilityData.Effect.NOVA:
+			burst(battle, caster.global_position + Vector3(0, 0.6, 0), ability.school, 70, 2.2, 0.6)
+			Sfx.play("fire" if ability.school == "fire" else "wind")
+		MagicAbilityData.Effect.DASH:
+			burst(battle, caster.global_position + Vector3(0, 0.8, 0), ability.school, 30, 0.6, 0.4)
+			Sfx.play("wind")
+	return null
+
+
+static func _mote_mesh(color: Color, radius: float) -> SphereMesh:
+	var mesh := SphereMesh.new()
+	mesh.radius = radius
+	mesh.height = radius * 2.0
+	mesh.radial_segments = 6
+	mesh.rings = 3
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.albedo_color = color
+	material.vertex_color_use_as_albedo = true
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mesh.material = material
+	return mesh
+
+
+static func _fade_ramp() -> Gradient:
+	var ramp := Gradient.new()
+	ramp.set_color(0, Color(1, 1, 1, 0.9))
+	ramp.set_color(1, Color(1, 1, 1, 0))
+	return ramp

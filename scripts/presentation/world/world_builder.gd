@@ -120,6 +120,7 @@ static func environment(parent: Node3D, mood: String = "day") -> DirectionalLigh
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
 	env.ambient_light_energy = 0.45 if mood != "dusk" else 0.7
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	env.tonemap_exposure = 0.85 if mood != "dusk" else 1.0
 	env.fog_enabled = true
 	env.fog_light_color = sky_material.sky_horizon_color
 	env.fog_density = 0.0035

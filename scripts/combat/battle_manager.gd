@@ -10,6 +10,7 @@ signal floating_text(world_position: Vector3, text: String, color: Color)
 ## Relayed combat events: who, kind, data (consumed by experience + UI).
 signal combat_event(who: Combatant, kind: String, data: Dictionary)
 signal ended(winner: Combatant)
+signal stepped(delta: float)
 
 const MAX_SECONDS := 240.0
 
@@ -78,6 +79,7 @@ func step(delta: float) -> void:
 	opponent.tick(delta)
 	_tick_projectiles(delta)
 	_separate()
+	stepped.emit(delta)
 	if time >= MAX_SECONDS and not finished:
 		# Judges decide on remaining health.
 		_finish(player if player.health_ratio() >= opponent.health_ratio() else opponent)
