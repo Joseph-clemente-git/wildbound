@@ -24,4 +24,5 @@ func run(state: BattleState, frame: SimFrame) -> void:
 	if standing.size() <= 1 and not state.finished:
 		state.finished = true
 		state.winner_team = standing[0] if standing.size() == 1 else -1
-		frame.emit("battle_end", -1, -1, {"winner_team": state.winner_team, "reason": "knockout"})
+		frame.emit("battle_end", -1, -1, {"winner_team": state.winner_team,
+				"reason": "knockout" if standing.size() == 1 else "draw"})

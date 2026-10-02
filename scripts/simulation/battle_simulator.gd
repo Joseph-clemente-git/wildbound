@@ -1,8 +1,9 @@
 class_name BattleSimulator
 extends RefCounted
 ## Runs a battle as a simulation: fixed ticks, each passing through the same
-## pipeline of phases, until a knockout ends it or time runs out. The result
-## is whatever the phases make happen — the simulator never picks a winner.
+## pipeline of phases, until a knockout ends it or time runs out (then a
+## decision on performance settles it, VictoryRules). The result is whatever
+## the phases make happen — the simulator never picks a winner by chance.
 ##
 ##   Combat Decision → Action Resolution → Hit / Dodge / Block → Damage
 ##   → Stagger / Knockback → Position Update → Stamina Update
@@ -83,8 +84,11 @@ func step() -> SimFrame:
 	state.time = frame.time
 	if not state.finished and state.tick >= max_ticks:
 		state.finished = true
-		state.winner_team = -1
-		frame.emit("battle_end", -1, -1, {"winner_team": -1, "reason": "time"})
+		battle_log.record(frame)
+		frame.events.clear()
+		state.winner_team = VictoryRules.decide(state, battle_log)
+		frame.emit("battle_end", -1, -1, {"winner_team": state.winner_team,
+				"reason": "decision" if state.winner_team >= 0 else "draw"})
 	battle_log.record(frame)
 	if state.finished:
 		battle_log.finish(state)
@@ -98,3 +102,8 @@ func run() -> BattleLog:
 	while not state.finished:
 		step()
 	return battle_log
+
+
+## The summary of a finished (or interrupted) battle.
+func outcome() -> BattleOutcome:
+	return BattleOutcome.from(state, battle_log)

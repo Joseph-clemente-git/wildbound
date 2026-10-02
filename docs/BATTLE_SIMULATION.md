@@ -34,7 +34,7 @@ until the simulation replaces it.
 | 14 | Weapon Behavior | Done | `simulation/weapon_rules.gd`, `WeaponData` Behavior group, `tests/unit/test_weapon_behavior.gd` |
 | 15 | Magic Behavior | Done | `simulation/effect_rules.gd`, `phases/action_phase.gd`, `tests/unit/test_magic_behavior.gd` |
 | 16 | Combat AI Decision System | Done | `simulation/phases/decision_phase.gd`, `simulation/combat_style.gd`, `tests/unit/test_combat_ai.gd` |
-| 17 | Victory / Defeat Conditions | — | |
+| 17 | Victory / Defeat Conditions | Done | `simulation/victory_rules.gd`, `simulation/battle_outcome.gd`, `tools/balance_sim.gd`, `tests/unit/test_victory.gd` |
 | 18 | Battle Replay | — | |
 | 19 | Battle Result | — | |
 | 20 | Experience Event Tracking | — | |
@@ -251,7 +251,7 @@ frame rate. Every tick passes through the same pipeline, in this order:
 | Position Update | `movement` | Stage 8 — `MovementPhase` |
 | Stamina Update | `stamina` | Stage 12 — `StaminaPhase` |
 | Cooldown / Recovery | `recovery` | Stage 7 — `CooldownPhase` |
-| Knockout | `knockout` | Stage 7 — `KnockoutPhase` (Stage 17 adds the other end conditions) |
+| Knockout | `knockout` | Stage 7 — `KnockoutPhase`; Stage 17 — `VictoryRules` |
 
 Each step is a `SimulationPhase` with `run(state, frame)`; a step not built yet is the
 base class and does nothing. `use_phase()` swaps one in by name, so later stages (and
@@ -535,3 +535,30 @@ Champions' tendencies come from their build (`CombatStyle.tendencies_for`); oppo
 their profile. Probe results over 12 seeds each: a fresh Bruno beats Pip 12/12, Juniper
 ~7/12, Rook ~2/12, Marla 0/12; a trained Bruno (Skilled sword, block, dodge, timing;
 +12 stats) wins 11–12/12 against all four. Every fight ends by knockout.
+
+## Stage 17 — Victory / Defeat Conditions
+
+- **Knockout** — when only one team has anyone standing it wins; if the last fighters on
+  both sides fall on the same tick it is a **draw**.
+- **Time limit** (180 s) — settled by a **decision on performance** (`VictoryRules`): the
+  side with ≥ 3% more health left (by share of maximum) wins; otherwise damage dealt breaks
+  a near tie (≥ 10% difference); otherwise a draw. Never by chance. `battle_end` carries
+  `reason: knockout | decision | draw`.
+- **`BattleOutcome.from(state, log)`** (also `BattleSimulator.outcome()`) sums the battle up:
+  winner, reason, duration, and per combatant `damage_dealt`, `damage_taken`, `hits_landed`,
+  `heavy_hits`, `blows_blocked_by_foe`, `blows_evaded_by_foe`, `whiffs`, `dodges`,
+  `perfect_dodges`, `blocks`, `parries`, `staggers_caused`, `knockdowns_caused`,
+  `flinches_caused`, `interruptions_caused`, `guard_breaks_caused`, `openings_punished`,
+  `flank_hits`, `casts`, `techniques`, `exhaustions`, `staggered`, `knocked_down`,
+  `max_combo`, `health_left`, `health_ratio`, `lowest_health_ratio`, `knocked_out`. The
+  result screen (Stage 19) and experience (Stage 20) read it.
+
+`tools/balance_sim.tscn` now runs through the simulation (24 seeds per matchup):
+
+| Champion | Pip | Rook | Juniper | Marla |
+| --- | --- | --- | --- | --- |
+| fresh (no sword training) | 50% | 0% | 4% | 0% |
+| trained (Apprentice sword, +5 stats) | 100% | 88% | 71% | 4% |
+| veteran (Skilled sword, more training) | 100% | 100% | 96% | 63% |
+
+Every fight ends by knockout; the regional champion asks for real development.

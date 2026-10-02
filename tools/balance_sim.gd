@@ -1,26 +1,15 @@
 extends Node
-## Balance simulation: AI-piloted champion vs every Chapter 1 opponent.
+## Balance check: the champion at three stages of development against every
+## opponent, through the battle simulation (the same engine the game uses).
 ## Run: godot --headless --path . res://tools/balance_sim.tscn
-## The pilot uses a "competent player" profile; win rates show whether the
-## chapter is beatable fresh vs after some training.
+## Win rates show whether each fight is beatable fresh, after some training
+## and as a veteran. Outcomes come from the simulation, never a formula.
 
 const RUNS := 24
-const DT := 1.0 / 30.0
-
-var pilot_profile: OpponentData
 
 
 func _ready() -> void:
 	Game.autosave = false
-	pilot_profile = OpponentData.new()
-	pilot_profile.id = "pilot"
-	pilot_profile.aggression = 0.55
-	pilot_profile.block_skill = 0.3
-	pilot_profile.dodge_skill = 0.4
-	pilot_profile.heavy_chance = 0.2
-	pilot_profile.magic_chance = 0.2
-	pilot_profile.reaction_time = 0.3
-	pilot_profile.preferred_range = 1.8
 	for setup: String in ["fresh", "trained", "veteran"]:
 		print("== %s ==" % setup)
 		for opponent: OpponentData in Content.list("opponents"):
@@ -56,30 +45,21 @@ func _champion(setup: String) -> Champion:
 
 func _simulate(setup: String, opponent: OpponentData) -> void:
 	var wins := 0
+	var decisions := 0
 	var total_time := 0.0
 	var hp_left := 0.0
 	for run in RUNS:
 		var champion := _champion(setup)
-		var battle := BattleManager.new()
-		battle.auto_step = false
-		add_child(battle)
-		var hero := Combatant.new()
-		hero.setup_from_champion(champion)
-		var foe := Combatant.new()
-		foe.setup_from_opponent(opponent)
-		battle.add_child(hero)
-		battle.add_child(foe)
-		battle.setup(Content.arena("meadow_ring"), hero, foe)
-		battle.ai = AiController.new(foe, opponent, 1000 + run)
-		battle.player_controller = AiController.new(hero, pilot_profile, 2000 + run)
-		battle.start()
-		while not battle.finished:
-			battle.step(DT)
-		if battle.winner == hero:
+		var players: Array[CombatantSpec] = [CombatantSpec.from_champion(champion)]
+		var opponents: Array[CombatantSpec] = [CombatantSpec.from_opponent(opponent)]
+		var sim := BattleSimulator.create(BattleState.create(Content.arena("meadow_ring"), players, opponents, 1000 + run))
+		sim.run()
+		var outcome := sim.outcome()
+		if outcome.player_won():
 			wins += 1
-			hp_left += hero.health_ratio()
-		total_time += battle.time
-		battle.free()
-	print("  vs %-10s win %3d%%  avg %5.1fs  hp left on win %3d%%  power ratio %.2f" % [opponent.id,
-			roundi(100.0 * wins / RUNS), total_time / RUNS, roundi(100.0 * hp_left / maxf(wins, 1)),
-			PowerRating.for_opponent(opponent) / Game.champion().power_rating()])
+			hp_left += outcome.side(0)["health_ratio"]
+		if outcome.reason != "knockout":
+			decisions += 1
+		total_time += outcome.duration
+	print("  vs %-10s win %3d%%  avg %5.1fs  hp left on win %3d%%  decided on time %d" % [opponent.id,
+			roundi(100.0 * wins / RUNS), total_time / RUNS, roundi(100.0 * hp_left / maxf(wins, 1)), decisions])

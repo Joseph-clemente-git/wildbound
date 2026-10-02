@@ -87,12 +87,12 @@ func test_without_combat_nothing_is_decided() -> void:
 	var start := sim.state.snapshot()
 	var battle_log := sim.run()
 	check(sim.state.finished)
-	check_eq(sim.state.winner_team, -1, "the simulator never picks a winner by itself")
+	check_eq(sim.state.winner_team, -1, "the simulator never picks a winner by itself: untouched fighters draw")
 	check_eq(sim.state.tick, sim.max_ticks)
 	check_eq(battle_log.duration(), Content.config.simulation_max_seconds, "exact clock after thousands of ticks")
 	var end := battle_log.events_of("battle_end")
 	check_eq(end.size(), 1)
-	check_eq(end[0]["reason"], "time")
+	check_eq(end[0]["reason"], "draw", "a time limit with nothing between them")
 	for i in sim.state.combatants.size():
 		check_eq(sim.state.combatants[i].health, start["combatants"][i]["health"], "no phase, no damage")
 

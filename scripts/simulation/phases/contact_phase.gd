@@ -202,7 +202,8 @@ func _hit(state: BattleState, attacker: CombatantState, target: CombatantState, 
 		frame.emit("technique", attacker.index, target.index, {"technique": hit["technique"]})
 	frame.hits.append(hit)
 	frame.emit("hit", attacker.index, target.index, {"kind": hit["kind"], "via": via, "ability": hit["ability"],
-			"outcome": hit["outcome"], "perfect": hit["perfect"]})
+			"outcome": hit["outcome"], "perfect": hit["perfect"], "flank": hit.get("flank", false),
+			"technique": hit.get("technique", "")})
 	match hit["outcome"]:
 		"evaded":
 			frame.emit("evade", target.index, attacker.index, {"perfect": hit["perfect"], "kind": hit["kind"]})
