@@ -23,7 +23,7 @@ const P := CombatantState.Phase
 
 ## Actions other steps put a combatant into (stagger, knockdown...) and that
 ## simply run out their RECOVERY timer here.
-const HELD_STATES := [A.STAGGER, A.KNOCKDOWN, A.RECOVER]
+const HELD_STATES := [A.STAGGER, A.KNOCKDOWN, A.RECOVER, A.FLINCH]
 
 
 func _init() -> void:

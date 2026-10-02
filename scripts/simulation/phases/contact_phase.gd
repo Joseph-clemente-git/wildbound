@@ -78,7 +78,7 @@ func _swing(state: BattleState, attacker: CombatantState, contact: Dictionary, f
 			continue
 		if in_reach(state, attacker, target, derived.attack_range, derived.arc_degrees):
 			attacker.struck.append(target.index)
-			_hit(attacker, target, contact, frame, "melee")
+			_hit(state, attacker, target, contact, frame, "melee")
 
 
 # --- Arts ------------------------------------------------------------------------
@@ -93,12 +93,12 @@ func _cast(state: BattleState, caster: CombatantState, contact: Dictionary, fram
 		E.CONE_PUSH:
 			for target in state.enemies_of(caster):
 				if target.is_alive() and in_reach(state, caster, target, ability.cast_range, ability.cone_degrees):
-					_hit(caster, target, contact, frame, "area")
+					_hit(state, caster, target, contact, frame, "area")
 		E.NOVA:
 			for target in state.enemies_of(caster):
 				if target.is_alive() and target.position.distance_to(caster.position) \
 						<= ability.radius + CombatantState.BODY_RADIUS:
-					_hit(caster, target, contact, frame, "area")
+					_hit(state, caster, target, contact, frame, "area")
 		E.DASH:
 			pass  # repositions the caster; Magic Behavior (Stage 15)
 
@@ -134,7 +134,7 @@ func _fly(state: BattleState, frame: SimFrame) -> void:
 		var blocked := not line_clear(state, from, to)
 		if struck != null and (not blocked or _nearer(from, struck.position, state, from, to)):
 			var owner := state.combatants[shot["owner"]]
-			var hit := _hit(owner, struck, {"kind": shot["kind"], "ability": shot["ability"], "swing": shot["swing"],
+			var hit := _hit(state, owner, struck, {"kind": shot["kind"], "ability": shot["ability"], "swing": shot["swing"],
 					"combo": shot["combo"]}, frame, "projectile")
 			if hit["outcome"] != "evaded":
 				state.projectiles.remove_at(i)
@@ -179,8 +179,8 @@ static func _nearer(origin: Vector2, body: Vector2, state: BattleState, from: Ve
 
 # --- Results ---------------------------------------------------------------------
 
-func _hit(attacker: CombatantState, target: CombatantState, contact: Dictionary, frame: SimFrame,
-		via: String) -> Dictionary:
+func _hit(state: BattleState, attacker: CombatantState, target: CombatantState, contact: Dictionary,
+		frame: SimFrame, via: String) -> Dictionary:
 	var direction := (target.position - attacker.position)
 	direction = direction.normalized() if direction.length() > 0.001 else attacker.facing
 	var hit := {
@@ -188,7 +188,18 @@ func _hit(attacker: CombatantState, target: CombatantState, contact: Dictionary,
 		"combo": contact.get("combo", 0), "swing": contact.get("swing", 0),
 		"ability": contact.get("ability", ""), "direction": direction, "via": via,
 	}
+	WeaponRules.shape_hit(state, attacker, target, hit)
 	DefenseRules.resolve(attacker, target, hit)
+	if hit["outcome"] == "blocked" or hit["outcome"] == "parried":
+		target.last_guard_time = frame.time
+	if hit["outcome"] == "blocked" and hit["kind"] == "heavy":
+		var breaker := WeaponRules.technique(attacker, TechniqueData.Trigger.HEAVY_VS_GUARD)
+		if breaker != null:
+			hit["technique"] = breaker.id
+	if hit["outcome"] == "evaded" or hit["outcome"] == "parried":
+		hit["technique"] = ""
+	if not hit["technique"].is_empty():
+		frame.emit("technique", attacker.index, target.index, {"technique": hit["technique"]})
 	frame.hits.append(hit)
 	frame.emit("hit", attacker.index, target.index, {"kind": hit["kind"], "via": via, "ability": hit["ability"],
 			"outcome": hit["outcome"], "perfect": hit["perfect"]})

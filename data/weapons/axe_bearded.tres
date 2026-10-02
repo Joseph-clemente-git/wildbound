@@ -26,6 +26,7 @@ heavy_stamina_cost = 24.0
 heavy_windup = 0.6
 heavy_recovery = 0.65
 weight = 4.0
+heavy_hyper_armor = true
 strength_scaling = 0.55
 stagger = 28.0
 knockback = 1.8

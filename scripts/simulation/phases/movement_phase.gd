@@ -73,7 +73,7 @@ func _accelerate(state: BattleState, fighter: CombatantState, intent: Dictionary
 	if fighter.action == A.DODGE:
 		if fighter.phase == P.ACTIVE:
 			var dodge_time := maxf(derived.dodge_iframes, 0.05)
-			fighter.velocity = fighter.dodge_direction * (derived.dodge_distance / dodge_time)
+			fighter.velocity = fighter.dodge_direction * (derived.dodge_distance * WeaponRules.dodge_factor(fighter) / dodge_time)
 		else:
 			fighter.velocity = Vector2.ZERO
 		return

@@ -42,7 +42,7 @@ func run(state: BattleState, frame: SimFrame) -> void:
 		var target := state.combatants[hit["target"]]
 		if not target.is_alive():
 			continue
-		var raw := raw_damage(attacker, hit)
+		var raw := raw_damage(attacker, hit) * WeaponRules.damage_factor(state, attacker, target, hit)
 		var opening := is_open(target)
 		if opening and outcome == "hit":
 			raw *= 1.0 + OPENING_BONUS + OPENING_BONUS_PER_RANK * mastery(attacker, hit)
@@ -50,13 +50,31 @@ func run(state: BattleState, frame: SimFrame) -> void:
 		raw *= 1.0 + state.rng.randf_range(-spread, spread)
 		var dealt := raw * (1.0 - target.spec.derived.mitigation)
 		if outcome == "blocked":
-			dealt *= target.spec.derived.block_factor
+			dealt *= target.spec.derived.block_factor * WeaponRules.guard_factor(target)
+		elif _burns(hit):
+			_set_burning(target, attacker)
 		dealt = maxf(dealt, 0.0)
 		target.health = maxf(target.health - dealt, 0.0)
 		hit["damage"] = dealt
 		hit["opening"] = opening
 		frame.emit("damage", attacker.index, target.index, {"amount": snappedf(dealt, 0.01), "kind": hit["kind"],
 				"outcome": outcome, "opening": opening, "health_left": snappedf(target.health, 0.01)})
+
+
+static func _burns(hit: Dictionary) -> bool:
+	var used := Content.technique(hit.get("technique", ""))
+	return used != null and used.trigger == TechniqueData.Trigger.HEAVY_WITH_MAGIC
+
+
+## Lasting burn from a fiery technique (ticked by Magic Behavior).
+static func _set_burning(target: CombatantState, source: CombatantState) -> void:
+	var burn := WeaponRules.FLAME_SLASH_BURN.duplicate()
+	burn["source"] = source.index
+	for effect in target.effects:
+		if effect.get("kind", "") == "burn":
+			effect.merge(burn, true)
+			return
+	target.effects.append(burn)
 
 
 ## Damage before the target's defences.

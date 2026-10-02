@@ -31,7 +31,7 @@ until the simulation replaces it.
 | 11 | Dodge / Block | Done | `simulation/defense_rules.gd`, `phases/contact_phase.gd`, `tests/unit/test_dodge_block.gd` |
 | 12 | Stamina | Done | `simulation/phases/stamina_phase.gd`, `tests/unit/test_stamina.gd` |
 | 13 | Stagger / Knockback | Done | `simulation/phases/force_phase.gd`, `tests/unit/test_force.gd` |
-| 14 | Weapon Behavior | — | |
+| 14 | Weapon Behavior | Done | `simulation/weapon_rules.gd`, `WeaponData` Behavior group, `tests/unit/test_weapon_behavior.gd` |
 | 15 | Magic Behavior | — | |
 | 16 | Combat AI Decision System | — | |
 | 17 | Victory / Defeat Conditions | — | |
@@ -427,3 +427,34 @@ apart from **Attack**:
 
 Repeated sword cuts break poise after a few blows; one hammer heavy staggers or floors a
 lightly armored target. Events: `staggered {reason, seconds}`, `knockdown`, `knockback`.
+
+## Stage 14 — Weapon Behavior
+
+Beyond their numbers (damage, speed, reach, arc, stamina, weight, Strength scaling,
+stagger, recovery), weapons now carry **behavior traits** as data (`WeaponData`,
+"Behavior" group), applied by `WeaponRules`:
+
+| Trait | Weapons | Effect |
+| --- | --- | --- |
+| `heavy_hyper_armor` | Hammer, Axe | a heavy wind-up or strike is not flinched by light blows (`armored` event); poise still builds |
+| `flank_bonus` | Dagger (+35%) | extra damage from the target's side or back (outside its front 120°) |
+| `block_bonus` | Shield (0.5) | half the damage through a guard and half the guard drain |
+| `point_blank_factor` | Bow (×0.55 within 2.5 m) | shots up close hit weakly |
+
+**Flinch.** A clean blow that doesn't stagger still interrupts what the target was doing
+for a moment (`FLINCH`, 0.35 s scaled by recovery skill and Agility) — trading blows
+matters, and fast weapons interrupt slow wind-ups unless hyper armor holds.
+
+**Techniques** (Advanced Techniques of the Skill Matrix) now work in the simulation when
+learned, triggered by context (no extra button), paying their stamina cost:
+
+| Technique | Trigger | Effect |
+| --- | --- | --- |
+| Riposte | first light cut within 0.75 s of a successful guard or parry | × its power (1.6) |
+| Guard Break | a heavy blow that gets blocked | the guard breaks; defender staggered |
+| Flame Slash | a heavy blow with Fire attuned | × its power and the target burns |
+| Wind Dash | dodging with Wind attuned | dodge distance × its power |
+
+In an 8-second exchange the sword lands ~6× as many blows, flinching its target over and
+over; each hammer blow floors the target and drives it back more than 3× as far, so the
+hammer has to close in again — the build visibly changes the fight.

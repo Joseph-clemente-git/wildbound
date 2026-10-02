@@ -5,12 +5,12 @@ extends RefCounted
 ## `spec`; everything here changes tick by tick.
 
 ## What the combatant is doing. Append only: values appear in replays.
-enum Action { IDLE, MOVE, ATTACK, HEAVY, BLOCK, DODGE, CAST, STAGGER, KNOCKDOWN, RECOVER, KO }
+enum Action { IDLE, MOVE, ATTACK, HEAVY, BLOCK, DODGE, CAST, STAGGER, KNOCKDOWN, RECOVER, KO, FLINCH }
 ## Where it is inside a timed action.
 enum Phase { NONE, WINDUP, ACTIVE, RECOVERY }
 
 const ACTION_NAMES: Array[String] = [
-	"idle", "move", "attack", "heavy", "block", "dodge", "cast", "stagger", "knockdown", "recover", "ko",
+	"idle", "move", "attack", "heavy", "block", "dodge", "cast", "stagger", "knockdown", "recover", "ko", "flinch",
 ]
 ## Body radius in metres, shared by every animal until bodies differ in data.
 const BODY_RADIUS := 0.45
@@ -51,6 +51,8 @@ var target_index := -1
 ## Built-up stagger; staggers when it passes the spec's poise.
 var stagger_meter := 0.0
 var exhausted_time := 0.0
+## Battle time of the last successful guard or parry (for ripostes).
+var last_guard_time := -100.0
 ## Seconds before stamina starts coming back after spending.
 var regen_delay := 0.0
 ## Seconds left on cooldowns by key ("magic", technique ids...).

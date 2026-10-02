@@ -46,7 +46,7 @@ static func resolve(attacker: CombatantState, target: CombatantState, hit: Dicti
 		hit["outcome"] = "blocked"
 		hit["perfect"] = perfect
 		hit["guard_drain"] = DamagePhase.raw_damage(attacker, hit) * GUARD_DRAIN_PER_DAMAGE \
-				* attacker.spec.derived.guard_pressure * (0.5 if perfect else 1.0)
+				* attacker.spec.derived.guard_pressure * (0.5 if perfect else 1.0) * WeaponRules.guard_factor(target)
 
 
 ## Whether a defender's guard covers a blow coming from `source`.

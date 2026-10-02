@@ -31,6 +31,10 @@ func run(state: BattleState, frame: SimFrame) -> void:
 		if event["type"] == "action_start":
 			var fighter := state.combatants[event["actor"]]
 			spent[fighter.index] = float(spent.get(fighter.index, 0.0)) + action_cost(fighter, event["action"])
+		elif event["type"] == "technique":
+			var used := Content.technique(event["technique"])
+			if used != null:
+				spent[event["actor"]] = float(spent.get(event["actor"], 0.0)) + used.stamina_cost
 	for hit in frame.hits:
 		if hit.get("outcome", "") == "blocked":
 			spent[hit["target"]] = float(spent.get(hit["target"], 0.0)) + float(hit.get("guard_drain", 0.0))

@@ -17,6 +17,8 @@ extends SimulationPhase
 const A := CombatantState.Action
 const P := CombatantState.Phase
 
+## A clean blow's flinch: the target's current action is interrupted briefly.
+const FLINCH_SECONDS := 0.35
 const STAGGER_SECONDS := 0.55
 const KNOCKDOWN_SECONDS := 1.1
 const PARRY_STAGGER_SECONDS := 0.7
@@ -48,6 +50,10 @@ func run(state: BattleState, frame: SimFrame) -> void:
 			"blocked":
 				if target.is_alive():
 					_struck(attacker, target, hit, frame, GUARD_STAGGER_SHARE, GUARD_PUSH_SHARE)
+					var used := Content.technique(hit.get("technique", ""))
+					if used != null and used.trigger == TechniqueData.Trigger.HEAVY_VS_GUARD:
+						frame.emit("guard_break", target.index, attacker.index, {"technique": used.id})
+						stagger(target, GUARD_BREAK_SECONDS, frame, "guard_break", attacker.index)
 			"parried":
 				if attacker.is_alive():
 					stagger(attacker, PARRY_STAGGER_SECONDS, frame, "parried", target.index)
@@ -91,16 +97,17 @@ static func stagger_seconds(fighter: CombatantState, base: float) -> float:
 
 
 static func stagger(fighter: CombatantState, base_seconds: float, frame: SimFrame, reason: String,
-		by: int, action: CombatantState.Action = CombatantState.Action.STAGGER) -> void:
+		by: int, action: CombatantState.Action = CombatantState.Action.STAGGER, keep_meter: bool = false) -> void:
 	var seconds := stagger_seconds(fighter, base_seconds)
 	fighter.action = action
 	fighter.phase = P.RECOVERY
 	fighter.phase_time = 0.0
 	fighter.phase_length = seconds
 	fighter.combo_step = 0
-	fighter.stagger_meter = 0.0
+	if not keep_meter:
+		fighter.stagger_meter = 0.0
 	fighter.velocity = Vector2.ZERO
-	frame.emit("knockdown" if action == A.KNOCKDOWN else "staggered", fighter.index, by,
+	frame.emit("knockdown" if action == A.KNOCKDOWN else ("flinch" if reason == "flinch" else "staggered"), fighter.index, by,
 			{"reason": reason, "seconds": snappedf(seconds, 0.001)})
 
 
@@ -115,6 +122,12 @@ func _struck(attacker: CombatantState, target: CombatantState, hit: Dictionary, 
 		stagger(target, KNOCKDOWN_SECONDS, frame, "knockdown", attacker.index, A.KNOCKDOWN)
 	elif target.stagger_meter >= poise:
 		stagger(target, STAGGER_SECONDS * (1.3 if hit["kind"] == "heavy" else 1.0), frame, hit["kind"], attacker.index)
+	elif stagger_share >= 1.0 and target.action not in [A.STAGGER, A.KNOCKDOWN, A.RECOVER]:
+		# A clean blow flinches — unless a heavy weapon's committed swing shrugs off a lighter one.
+		if WeaponRules.has_hyper_armor(target) and hit["kind"] != "heavy":
+			frame.emit("armored", target.index, attacker.index)
+		else:
+			stagger(target, FLINCH_SECONDS, frame, "flinch", attacker.index, A.FLINCH, true)
 	var push := knockback_of(attacker, hit) * push_taken(target) * push_share
 	if push > 0.01:
 		var direction: Vector2 = hit.get("direction", Vector2.ZERO)
