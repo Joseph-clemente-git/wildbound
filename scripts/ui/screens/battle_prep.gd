@@ -14,7 +14,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _back() -> void:
-	Router.go("fight_preview", {"trial": trial.id})
+	Router.go("champion_select", {"trial": trial.id, "champion": Game.champion().uid})
 
 
 func _ready() -> void:
@@ -22,6 +22,10 @@ func _ready() -> void:
 		Router.go("title")
 		return
 	trial = Content.trial(Router.params.get("trial", "first_steps"))
+	# The champion chosen for this fight is the one prepared and sent in.
+	var chosen: String = Router.params.get("champion", "")
+	if not chosen.is_empty() and chosen != Game.selected_uid:
+		Game.select_champion(chosen)
 	opponent = Content.opponent(trial.opponent_id)
 	Router.back_requested.connect(_back)
 	_backdrop()

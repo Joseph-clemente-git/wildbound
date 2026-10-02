@@ -21,7 +21,7 @@ until the simulation replaces it.
 | 1 | Opponent Data Model | Done | `data/opponent_data.gd`, `model/scouting_report.gd`, `tests/unit/test_opponents.gd` |
 | 2 | Battle Selection / Challenge Scene | Done | `systems/challenge_board.gd`, `ui/screens/journey.gd`, `tests/unit/test_challenges.gd` |
 | 3 | Opponent Preview | Done | `ui/screens/fight_preview.gd`, `presentation/world/fight_stage.gd`, `tests/unit/test_fight_preview.gd` |
-| 4 | Champion Selection | — | |
+| 4 | Champion Selection | Done | `systems/champion_selection.gd`, `ui/screens/champion_select.gd`, `tests/unit/test_champion_select.gd` |
 | 5 | Battle Preparation | — | |
 | 6 | Combat State Model | — | |
 | 7 | Simulation Tick System | — | |
@@ -117,9 +117,34 @@ weight, Aether aura) while a sheet answers *who*, *why* and *where*:
 
 No level, health, evasion, endurance, attack speed, skill rank, win chance or difficulty
 label is shown; tests check that the scouting sections contain no digits. *Choose
-Champion* continues (to Battle Preparation until Stage 4); Back returns to the Journey,
+Champion* continues to Champion Selection; Back returns to the Journey,
 and Battle Preparation's Back returns to the preview. A fight that can no longer be
 chosen sends the player back to the Journey once the scene transition finishes.
 
 `FightStage` builds the shared 3D set (arena mood, meadow, posed and dressed
 combatants) for the preview and Battle Preparation.
+
+## Stage 4 — Champion Selection
+
+*Choose Champion* opens **Champion Selection** (`route "champion_select"`, params
+`{"trial": id, "champion": uid?}`). Every champion in `Game.champions` is listed, ready
+ones first, with animal, movement, current build, level, capability, an energy bar and a
+mood bar. The chosen one stands in the arena on the right.
+
+`ChampionSelection` holds the rules:
+
+- **Readiness** comes from `TrialSystem.champion_blocker` (knockout, not enough energy
+  for this fight). `entry_blocker` is now "fight open" + `champion_blocker`, so readiness
+  never depends on whether the fight itself is unlocked.
+- **Notes** are warnings that do not block: no weapon equipped, low mood, energy left
+  after entering.
+- **Default choice**: the champion the Keeper was working with if ready, else the first
+  ready one.
+- **Choosing** selects the champion (`Game.select_champion`), so Battle Preparation, the
+  battle, its result and growth all apply to it. The uid also travels in the route
+  params; Stage 6's battle state will carry it explicitly.
+
+A champion that is not ready cannot be prepared; the screen says why and offers *Rest at
+the lodge*, which selects that champion first so the Rest Area cares for the right one.
+Battle Preparation's Back returns here with the same champion selected. Matchup advice
+(strengths and weaknesses against this opponent) belongs to Battle Preparation (Stage 5).

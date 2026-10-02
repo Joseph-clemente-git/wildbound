@@ -126,6 +126,25 @@ func _scenario_preview() -> void:
 	Router.go("fight_preview", {"trial": trial})
 
 
+func _scenario_champions() -> void:
+	_prepare_mid()
+	_progress(["cleared_first_steps", "cleared_stonewall_bout", "cleared_meadow_sprint"])
+	# A second, tired champion shows how the roster scales past the MVP's one dog.
+	var second := Champion.create(Content.animal("humanoid_dog"), "Mika", Game.now())
+	second.uid = "second"
+	second.palette = {"fur": Color("3a3330"), "scarf": Color("4f7ab8")}
+	second.energy = 12.0
+	second.happiness = 30.0
+	Game.champions.append(second)
+	Router.go("champion_select", {"trial": "stonewall_bout"})
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--pick="):
+			var uid := arg.trim_prefix("--pick=")
+			_at(1.5, func() -> void: get_tree().current_scene.pick(uid))
+		if arg == "--rest":
+			_at(2.5, func() -> void: get_tree().current_scene.rest_chosen())
+
+
 func _scenario_map() -> void:
 	_prepare_mid()
 	Router.go("world_map")

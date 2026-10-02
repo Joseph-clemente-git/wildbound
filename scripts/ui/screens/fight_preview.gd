@@ -48,7 +48,7 @@ func _back() -> void:
 
 func _continue() -> void:
 	Sfx.play("ui_confirm")
-	Router.go("battle_prep", {"trial": trial.id})
+	Router.go("champion_select", {"trial": trial.id})
 
 
 func _backdrop() -> void:

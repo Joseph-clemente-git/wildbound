@@ -17,6 +17,7 @@ const ROUTES := {
 	"world_map": "res://scenes/world_map/world_map.tscn",
 	"journey": "res://scenes/journey/journey.tscn",
 	"fight_preview": "res://scenes/fight_preview/fight_preview.tscn",
+	"champion_select": "res://scenes/champion_select/champion_select.tscn",
 	"battle_prep": "res://scenes/battle_prep/battle_prep.tscn",
 	"arena": "res://scenes/arena/arena.tscn",
 	"result": "res://scenes/result/battle_result.tscn",

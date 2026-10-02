@@ -19,6 +19,12 @@ static func is_unlocked(trial: TrialData) -> bool:
 static func entry_blocker(champion: Champion, trial: TrialData) -> String:
 	if not is_unlocked(trial):
 		return "This trial is not open yet."
+	return champion_blocker(champion, trial)
+
+
+## Whether this champion is fit to enter this fight, regardless of whether
+## the fight itself is open. Empty when ready.
+static func champion_blocker(champion: Champion, trial: TrialData) -> String:
 	if champion.knocked_out:
 		return "%s is recovering from a knockout. Rest first." % champion.name
 	if champion.energy < trial.energy_cost:
