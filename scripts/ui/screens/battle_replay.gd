@@ -123,7 +123,7 @@ func restart() -> void:
 
 ## Leaves for the result (already applied).
 func skip() -> void:
-	Router.go("result", {"outcome": session.result})
+	Router.go("result", {"outcome": session.result, "session": session})
 
 
 func _apply(t: float) -> void:

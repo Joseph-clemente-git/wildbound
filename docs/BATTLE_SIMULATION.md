@@ -37,7 +37,7 @@ until the simulation replaces it.
 | 17 | Victory / Defeat Conditions | Done | `simulation/victory_rules.gd`, `simulation/battle_outcome.gd`, `tools/balance_sim.gd`, `tests/unit/test_victory.gd` |
 | — | Terrain, movement types, Shark and Eagle | Done | `simulation/terrain_rules.gd`, `data/animals/humanoid_shark.tres`, `humanoid_eagle.tres`, `tests/unit/test_terrain.gd` |
 | 18 | Battle Replay | Done | `simulation/battle_session.gd`, `presentation/replay/replay_timeline.gd`, `ui/screens/battle_replay.gd`, `tests/unit/test_replay.gd` |
-| 19 | Battle Result | — | |
+| 19 | Battle Result | Done | `simulation/battle_moments.gd`, `ui/screens/battle_result.gd`, `tests/unit/test_battle_result.gd` |
 | 20 | Experience Event Tracking | — | |
 | 21 | Natural Growth | — | |
 | 22 | Trainer Development Integration | — | |
@@ -637,3 +637,21 @@ plays the battle:
   result*. The Android back button skips to the result.
 
 The legacy real-time arena scene is no longer on the player's path.
+
+## Stage 19 — Battle Result
+
+The result screen tells the simulated battle (params `{"outcome", "session"}`):
+
+- **Victory / Defeat / Draw** and how it ended — "by knockout at 0:26", "on the judges'
+  decision after 3:00", "a draw after 3:00" — and the opponent's line for that outcome
+  (`win_line` when the Keeper wins; this was reversed before).
+- **The fight** — a side-by-side table from `BattleOutcome`: damage dealt, damage received,
+  successful attacks, dodges, blocks & parries, staggers & knockdowns, knocked out.
+- **Moments** (`BattleMoments.tell`) — up to five lines from the log: the first knockdown,
+  the biggest blow (and whether it punished an opening), parries, techniques used, guard
+  breaks suffered, a comeback from below a quarter health, running out of breath.
+- What the champion **learned** (experience and natural growth — Stage 20), **rewards**
+  (coins, Keeper XP, animal XP), **condition** (energy, bond).
+- A **recruited** visitor is announced.
+- **Next**: *⟲ Watch again* (reopens the replay), *Lodge*, and the primary step — **Back to
+  the Journey**, or **Rest & recover** for a knocked-out champion. Story events play first.

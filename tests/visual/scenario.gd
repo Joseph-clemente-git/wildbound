@@ -177,6 +177,8 @@ func _scenario_replay() -> void:
 	TrialSystem.enter(Game.champion(), Content.trial(trial))
 	Router.go("replay", {"session": BattleSession.start(Content.trial(trial), Game.champion(), 31)})
 	_at(0.8, func() -> void: get_tree().current_scene.set_speed(speed))
+	if OS.get_cmdline_user_args().has("--skip"):
+		_at(1.2, func() -> void: get_tree().current_scene.skip())
 
 
 func _scenario_map() -> void:

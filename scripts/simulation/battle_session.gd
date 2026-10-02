@@ -43,4 +43,6 @@ func trial_outcome() -> Dictionary:
 		},
 		"experience": {}, "growths": [],
 		"simulation": outcome.to_dict(),
+		"how": BattleMoments.how_it_ended(outcome),
+		"moments": Array(BattleMoments.tell(battle_log, outcome)),
 	}
