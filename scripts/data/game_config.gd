@@ -53,8 +53,8 @@ extends Resource
 @export var growth_skill_progress: float = 22.0
 
 @export_group("Skill progress")
-## Progress needed to advance one rank (multiplied by the next rank index).
-@export var skill_progress_per_rank: float = 100.0
+## Progress needed to advance one rank (multiplied by the current rank).
+@export var skill_progress_per_rank: float = 60.0
 ## Stat value thresholds used to describe a stat with a rank name.
 @export var stat_rank_thresholds: PackedFloat32Array = [0.0, 1.0, 25.0, 40.0, 55.0, 70.0, 88.0]
 

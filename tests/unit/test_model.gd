@@ -144,6 +144,7 @@ func test_save_and_load_round_trip() -> void:
 
 
 func test_corrupt_save_falls_back_to_backup() -> void:
+	allow_errors = true
 	Game.profile.coins = 123
 	Game.save()
 	Game.profile.coins = 456

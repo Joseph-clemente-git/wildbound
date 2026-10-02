@@ -26,7 +26,7 @@ func set_rank(target: String, rank: int) -> void:
 
 ## Progress needed to advance from `rank` to the next one.
 static func progress_needed(rank: int) -> float:
-	return Content.config.skill_progress_per_rank * float(maxi(rank, 0) + 1)
+	return Content.config.skill_progress_per_rank * float(maxi(rank, 1))
 
 
 ## Lowest rank a target starts at when first learned.

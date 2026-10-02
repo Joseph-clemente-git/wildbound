@@ -6,7 +6,32 @@ extends Node
 const TEST_DIR := "res://tests/unit"
 
 
+## Captures engine/script errors so a test that crashes midway still fails.
+class ErrorCatcher extends Logger:
+	var errors: Array[String] = []
+	var _mutex := Mutex.new()
+
+	func _log_error(_function: String, file: String, line: int, code: String, rationale: String,
+			_editor_notify: bool, error_type: int, _script_backtrace: Array[ScriptBacktrace]) -> void:
+		_mutex.lock()
+		var kind := "SCRIPT ERROR" if error_type == ERROR_TYPE_SCRIPT else "ERROR"
+		errors.append("%s: %s %s (%s:%d)" % [kind, code, rationale, file, line])
+		_mutex.unlock()
+
+	func _log_message(_message: String, _error: bool) -> void:
+		pass
+
+	func take() -> Array[String]:
+		_mutex.lock()
+		var result := errors.duplicate()
+		errors.clear()
+		_mutex.unlock()
+		return result
+
+
 func _ready() -> void:
+	var catcher := ErrorCatcher.new()
+	OS.add_logger(catcher)
 	var filter := ""
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--filter="):
@@ -32,8 +57,13 @@ func _ready() -> void:
 				continue
 			var case: TestCase = script.new()
 			case.current_test = "%s::%s" % [file_name.get_basename(), method_name]
+			catcher.take()
 			case.before_each()
 			case.call(method_name)
+			var errors := catcher.take()
+			if not case.allow_errors:
+				for error in errors:
+					case.failures.append("%s: %s" % [case.current_test, error])
 			total += 1
 			if case.failures.is_empty():
 				print("  ok   ", case.current_test)

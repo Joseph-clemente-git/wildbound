@@ -72,6 +72,39 @@ const REVEAL_FLAGS := {
 	"techniques": "first_trial_done",
 }
 
+## Training prerequisites: discipline builds on its fundamental (target -> {target: rank}).
+const PREREQUISITES := {
+	"skill:timing": {"skill:attack": GameEnums.Rank.NOVICE},
+	"skill:positioning": {"skill:movement": GameEnums.Rank.APPRENTICE},
+	"skill:attack_control": {"skill:attack": GameEnums.Rank.APPRENTICE},
+	"skill:defense_control": {"skill:defense": GameEnums.Rank.APPRENTICE},
+	"skill:dodge_control": {"skill:dodge": GameEnums.Rank.APPRENTICE},
+	"skill:block_control": {"skill:block": GameEnums.Rank.APPRENTICE},
+	"skill:stamina_discipline": {"skill:stamina": GameEnums.Rank.APPRENTICE},
+	"skill:recovery_control": {"skill:recovery": GameEnums.Rank.APPRENTICE},
+}
+
+## Banked experience track a trainer can convert when developing a target.
+const CONVERSION_TRACKS := {
+	"stat:attack": "offensive", "stat:strength": "strength", "stat:attack_speed": "tempo",
+	"stat:agility": "agility", "stat:evasion": "evasion", "stat:defense": "defense",
+	"stat:endurance": "endurance", "stat:health": "resilience",
+	"skill:attack": "offensive", "skill:movement": "agility", "skill:dodge": "evasion",
+	"skill:defense": "defense", "skill:block": "defense", "skill:stamina": "endurance",
+	"skill:recovery": "resilience", "skill:timing": "tempo", "skill:positioning": "agility",
+	"skill:attack_control": "offensive", "skill:defense_control": "defense",
+	"skill:dodge_control": "evasion", "skill:block_control": "defense",
+	"skill:stamina_discipline": "endurance", "skill:recovery_control": "resilience",
+}
+
+
+static func conversion_track(target: String) -> String:
+	var kind := GameEnums.target_kind(target)
+	if kind == "weapon" or kind == "magic":
+		return target
+	return CONVERSION_TRACKS.get(target, "")
+
+
 ## Lowest rank each kind of skill starts at when the animal first learns it.
 const WEAPON_FIRST_RANK := GameEnums.Rank.NOVICE
 const MAGIC_FIRST_RANK := GameEnums.Rank.FOUNDATION

@@ -5,6 +5,8 @@ extends RefCounted
 
 var failures: Array[String] = []
 var current_test := ""
+## Set in a test that deliberately triggers engine errors (e.g. corrupt saves).
+var allow_errors := false
 
 
 func before_each() -> void:
