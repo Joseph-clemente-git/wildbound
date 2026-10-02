@@ -25,7 +25,7 @@ extends Resource
 
 @export_group("Experience")
 ## Experience needed for the first growth event of a track.
-@export var growth_threshold_base: float = 100.0
+@export var growth_threshold_base: float = 80.0
 ## Each growth event raises the next threshold by this factor.
 @export var growth_threshold_scale: float = 1.18
 ## Stat points gained per natural growth event (before potential limits).
@@ -39,13 +39,18 @@ extends Resource
 ## Each repetition of the same event key multiplies its value by this factor.
 @export var repeat_decay: float = 0.82
 @export var repeat_floor: float = 0.08
-## Repetition memory recovers after this many seconds without that event.
+## Repetition memory halves after this many seconds without that event.
 @export var repeat_memory_seconds: float = 6.0
 ## Hard cap of experience per track per battle (before difficulty).
-@export var per_battle_track_cap: float = 60.0
+@export var per_battle_track_cap: float = 70.0
 ## Below this fraction of remaining potential, experience gain slows down.
 @export var potential_slowdown_start: float = 0.8
 @export var potential_min_factor: float = 0.15
+## Natural familiarity can raise weapon/magic/fundamental skills only this far;
+## higher mastery needs a trainer (mechanics §19).
+@export var natural_rank_cap: int = 3
+## Skill progress added to the related fundamental on each growth event.
+@export var growth_skill_progress: float = 22.0
 
 @export_group("Skill progress")
 ## Progress needed to advance one rank (multiplied by the next rank index).

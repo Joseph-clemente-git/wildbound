@@ -5,6 +5,7 @@ const TEST_SAVE := "user://test_save.json"
 
 
 func before_each() -> void:
+	Game.autosave = true
 	Saves.path_override = TEST_SAVE
 	Saves.delete_save()
 	Game.time_override = 1000000.0
