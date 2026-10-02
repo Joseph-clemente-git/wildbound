@@ -2,6 +2,9 @@
 
 How the design documents (`mechanics.md`, `story.md`) map to this codebase.
 
+The battle system is being revised into a combat simulation, stage by stage — see
+[`BATTLE_SIMULATION.md`](BATTLE_SIMULATION.md) for the plan and what each stage changed.
+
 ## Mechanics prompts (MVP, Phase 1)
 
 | Prompt | Where |

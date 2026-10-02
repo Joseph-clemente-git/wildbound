@@ -7,6 +7,7 @@ script = ExtResource("1_s")
 id = "marla"
 display_name = "Marla Brightcoat"
 title = "Home Valley Champion"
+bio = "The reigning champion of the Home Valley: a calm swordfighter with years of trials behind her and Fire Aether at her call."
 animal_id = "humanoid_dog"
 palette = {
 "fur": Color(0.9098, 0.8471, 0.7216, 1.0),
@@ -32,6 +33,7 @@ skills = {
 "skill:block": 3,
 "skill:dodge": 3
 }
+battles_fought = 60
 weapon_id = "sword_training"
 armor_id = "armor_medium"
 magic_ability_id = "ember_bolt"
@@ -46,6 +48,8 @@ win_line = "Marla sheathes her sword with a smile. \"The valley has a new champi
 lose_line = "Marla helps your champion to its feet. \"Strong heart. Come back when it has learned a little more.\""
 sort_order = 3
 aggression = 0.6
+caution = 0.45
+mobility = 0.5
 block_skill = 0.45
 dodge_skill = 0.35
 heavy_chance = 0.3

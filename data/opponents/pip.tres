@@ -7,6 +7,7 @@ script = ExtResource("1_s")
 id = "pip"
 display_name = "Pip"
 title = "Sparring Partner"
+bio = "A young dog from the lodge across the meadow, entering its first trial the same week as yours. Eager, honest and still learning which end of the sword to trust."
 animal_id = "humanoid_dog"
 palette = {
 "fur": Color(0.8471, 0.7843, 0.6588, 1.0),
@@ -29,6 +30,7 @@ stats = {
 skills = {
 "weapon:sword": 2
 }
+battles_fought = 2
 weapon_id = "sword_training"
 armor_id = "armor_light"
 magic_ability_id = ""
@@ -62,6 +64,8 @@ win_line = "Pip wags its tail. \"You got me fair and square!\""
 lose_line = "Pip offers a paw to help you up. \"Again sometime?\""
 sort_order = 0
 aggression = 0.55
+caution = 0.2
+mobility = 0.35
 block_skill = 0.0
 dodge_skill = 0.0
 heavy_chance = 0.0
