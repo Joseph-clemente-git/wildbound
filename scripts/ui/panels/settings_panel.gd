@@ -5,7 +5,7 @@ extends RefCounted
 ## not optional"), and its key options are also offered in the first-launch
 ## comfort setup.
 
-const TABS := [["Audio", "audio"], ["Display", "display"], ["Controls", "controls"], ["Accessibility", "access"]]
+const TABS := [["Audio", "audio"], ["Display", "display"], ["Replay", "replay"], ["Accessibility", "access"]]
 const TEXT_SIZES := [["90%", 0.9], ["100%", 1.0], ["125%", 1.25], ["150%", 1.5]]
 const COLORBLIND_LABELS := {"off": "Off", "deuteranopia": "Deuteranopia", "protanopia": "Protanopia", "tritanopia": "Tritanopia"}
 
@@ -36,13 +36,12 @@ static func open(parent: Node, allow_delete_save: bool = true, tab: String = "au
 				body.add_child(_toggle("Vibration", "vibration", "Short pulses when hitting or being hit."))
 			"display":
 				body.add_child(_slider("Camera shake", "shake_strength", 0.0, 1.0, "0 turns it off."))
-				body.add_child(_slider("Battle controls opacity", "hud_opacity", 0.35, 1.0))
+				body.add_child(_slider("Replay overlay opacity", "hud_opacity", 0.35, 1.0))
 				body.add_child(_toggle("Show tutorial hints", "show_hints"))
-			"controls":
-				body.add_child(_slider("Control size", "controls_scale", 0.8, 1.3))
-				body.add_child(_toggle("Left-handed layout", "left_handed", "Joystick on the right, actions on the left."))
-				body.add_child(_toggle("Toggle Block", "toggle_block", "Tap once to raise the guard, tap again to lower it."))
-				body.add_child(UiKit.label("Keyboard: WASD move · J attack · K heavy · Space dodge · L block · U Aether · Shift sprint · Esc pause",
+			"replay":
+				body.add_child(_choice("Replay speed", "replay_speed", [["1×", 1.0], ["2×", 2.0], ["4×", 4.0]]))
+				body.add_child(_toggle("Battle commentary", "replay_commentary", "Short lines about what is happening in the replay."))
+				body.add_child(UiKit.label("Tap the battle to pause or resume. Keyboard: Space pause · ← → speed · Esc leave",
 						"DimLabel", true))
 			"access":
 				_accessibility(body)
@@ -81,9 +80,7 @@ static func _accessibility(body: VBoxContainer) -> void:
 	body.add_child(_toggle("High contrast", "high_contrast", "Darker panels, brighter text and borders."))
 	body.add_child(_toggle("Reduce motion", "reduce_motion", "Fewer camera drifts, slide-ins and hit pauses."))
 	body.add_child(_toggle("Reduce flashes", "reduce_flashes", "No bright hit flashes."))
-	body.add_child(_toggle("Combat assist", "combat_assist",
-			"Opponents telegraph longer and perfect dodge/block windows are wider. Change any time, no penalty."))
-	body.add_child(_toggle("Toggle Block", "toggle_block", "No need to hold the Block button."))
+	body.add_child(_choice("Replay speed", "replay_speed", [["1×", 1.0], ["2×", 2.0], ["4×", 4.0]]))
 
 
 ## First-launch "Before we begin" comfort setup (accessibility in the setup
@@ -98,7 +95,7 @@ static func comfort_setup(parent: Node, on_done: Callable) -> void:
 	for mode: String in Settings.COLORBLIND_MODES:
 		colour_options.append([COLORBLIND_LABELS[mode], mode])
 	body.add_child(_choice("Colour-blind palette", "colorblind", colour_options))
-	body.add_child(_toggle("Combat assist", "combat_assist", "Longer telegraphs and wider timing windows."))
+	body.add_child(_choice("Replay speed", "replay_speed", [["1×", 1.0], ["2×", 2.0], ["4×", 4.0]]))
 	body.add_child(_toggle("Show tutorial hints", "show_hints"))
 	var row := UiKit.hbox()
 	row.alignment = BoxContainer.ALIGNMENT_END

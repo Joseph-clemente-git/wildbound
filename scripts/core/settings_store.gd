@@ -1,8 +1,8 @@
 extends Node
 ## Player preferences (autoload "Settings"), stored separately from the save.
 ##
-## Also registers the keyboard / gamepad input actions so desktop testing works
-## alongside the on-screen touch controls.
+## Also registers the few keyboard / gamepad actions (back/pause and replay
+## controls) so desktop play works alongside touch.
 
 signal changed(key: String, value: Variant)
 
@@ -14,8 +14,6 @@ const DEFAULTS := {
 	"music_volume": 0.6,
 	"sfx_volume": 0.8,
 	"show_hints": true,
-	"controls_scale": 1.0,
-	"left_handed": false,
 	"vibration": true,
 	# Accessibility (ui-ux-game checklist)
 	"text_scale": 1.0,
@@ -25,8 +23,9 @@ const DEFAULTS := {
 	"reduce_motion": false,
 	"reduce_flashes": false,
 	"hud_opacity": 1.0,
-	"toggle_block": false,
-	"combat_assist": false,
+	# Battle replay
+	"replay_speed": 1.0,
+	"replay_commentary": true,
 	"comfort_setup_done": false,
 }
 
@@ -34,17 +33,10 @@ const COLORBLIND_MODES: Array[String] = ["off", "deuteranopia", "protanopia", "t
 
 ## action -> physical keys and joypad buttons.
 const ACTIONS := {
-	"move_left": {"keys": [KEY_A, KEY_LEFT], "joy": []},
-	"move_right": {"keys": [KEY_D, KEY_RIGHT], "joy": []},
-	"move_forward": {"keys": [KEY_W, KEY_UP], "joy": []},
-	"move_back": {"keys": [KEY_S, KEY_DOWN], "joy": []},
-	"attack": {"keys": [KEY_J], "joy": [JOY_BUTTON_X]},
-	"heavy": {"keys": [KEY_K], "joy": [JOY_BUTTON_Y]},
-	"dodge": {"keys": [KEY_SPACE], "joy": [JOY_BUTTON_A]},
-	"block": {"keys": [KEY_L], "joy": [JOY_BUTTON_RIGHT_SHOULDER]},
-	"magic": {"keys": [KEY_U], "joy": [JOY_BUTTON_B]},
-	"sprint": {"keys": [KEY_SHIFT], "joy": [JOY_BUTTON_LEFT_SHOULDER]},
 	"pause": {"keys": [KEY_ESCAPE], "joy": [JOY_BUTTON_START]},
+	"replay_toggle": {"keys": [KEY_SPACE], "joy": [JOY_BUTTON_A]},
+	"replay_faster": {"keys": [KEY_RIGHT, KEY_PERIOD], "joy": [JOY_BUTTON_RIGHT_SHOULDER]},
+	"replay_slower": {"keys": [KEY_LEFT, KEY_COMMA], "joy": [JOY_BUTTON_LEFT_SHOULDER]},
 }
 
 var _values: Dictionary = DEFAULTS.duplicate()

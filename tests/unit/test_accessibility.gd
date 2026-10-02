@@ -2,7 +2,7 @@ extends TestCase
 ## Accessibility settings change the live theme and combat assists.
 
 
-const KEYS := ["text_scale", "colorblind", "high_contrast", "combat_assist"]
+const KEYS := ["text_scale", "colorblind", "high_contrast", "replay_speed", "replay_commentary"]
 
 
 ## Start from defaults regardless of the player's saved settings.
@@ -37,23 +37,41 @@ func test_colorblind_palettes_swap_semantic_colours() -> void:
 	check_eq(UiTheme.GOOD, good)
 
 
-func test_combat_assist_widens_windows_and_telegraphs() -> void:
+func test_replay_follows_the_replay_settings() -> void:
 	Game.autosave = false
 	Game.new_journey("Bruno")
-	var normal := Combatant.new()
-	normal.setup_from_champion(Game.champion())
-	var normal_foe := Combatant.new()
-	normal_foe.setup_from_opponent(Content.opponent("rook"))
-	Settings.set_value("combat_assist", true)
-	var assisted := Combatant.new()
-	assisted.setup_from_champion(Game.champion())
-	var assisted_foe := Combatant.new()
-	assisted_foe.setup_from_opponent(Content.opponent("rook"))
-	check(assisted.stats.perfect_window > normal.stats.perfect_window)
-	check(assisted_foe.telegraph > normal_foe.telegraph)
-	_restore(["combat_assist"])
-	for node in [normal, normal_foe, assisted, assisted_foe]:
-		node.free()
+	Settings.set_value("replay_speed", 2.0)
+	Settings.set_value("replay_commentary", false)
+	var trial := Content.trial("first_steps")
+	TrialSystem.enter(Game.champion(), trial)
+	var session := BattleSession.start(trial, Game.champion(), 4)
+	Router.params = {"session": session}
+	var screen: Node = load(Router.ROUTES["replay"]).instantiate()
+	root.add_child(screen)
+	Router.params = {}
+	check_eq(screen.speed, 2.0, "starts at the chosen speed")
+	check(not screen._ticker.visible, "commentary off")
+	var tap := InputEventMouseButton.new()
+	tap.button_index = MOUSE_BUTTON_LEFT
+	tap.pressed = true
+	screen._unhandled_input(tap)
+	check(screen.paused, "a tap on the battle pauses")
+	check(screen._paused_note.visible, "and says how to resume")
+	screen._unhandled_input(tap)
+	check(not screen.paused, "another tap resumes")
+	var faster := InputEventAction.new()
+	faster.action = "replay_faster"
+	faster.pressed = true
+	screen._unhandled_input(faster)
+	check_eq(screen.speed, 4.0, "→ speeds up")
+	var slower := InputEventAction.new()
+	slower.action = "replay_slower"
+	slower.pressed = true
+	screen._unhandled_input(slower)
+	screen._unhandled_input(slower)
+	check_eq(screen.speed, 1.0, "← slows down, never below 1×")
+	_restore(["replay_speed", "replay_commentary"])
+	screen.free()
 
 
 func test_settings_dialog_tabs_build() -> void:

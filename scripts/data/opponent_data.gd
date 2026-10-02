@@ -66,18 +66,6 @@ const TENDENCIES: Array[String] = [
 ## Distance it tries to fight from, in metres.
 @export var preferred_range: float = 1.8
 
-@export_group("Real-time arena (legacy)")
-## Reaction knobs read by the current real-time AiController. The simulation
-## derives blocking, dodging and reaction quality from the Skill Matrix and
-## battle experience instead; these go away when it replaces the arena AI.
-@export var block_skill: float = 0.3
-@export var dodge_skill: float = 0.2
-## Seconds before reacting to the player's attacks.
-@export var reaction_time: float = 0.35
-## Multiplier on attack wind-ups (> 1 = more readable).
-@export var telegraph: float = 1.0
-## Phases ordered by threshold: [{"below": 0.7, "hint": "...", "aggression": 0.2, ...}]
-@export var phases: Array[Dictionary] = []
 
 @export_group("Story")
 @export_multiline var intro_line: String = ""

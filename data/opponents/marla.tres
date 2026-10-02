@@ -37,12 +37,6 @@ battles_fought = 60
 weapon_id = "sword_training"
 armor_id = "armor_medium"
 magic_ability_id = "ember_bolt"
-phases = Array[Dictionary]([{
-"below": 0.5,
-"hint": "Marla is calling on Fire Aether! Ember Bolts are slow — sidestep or dodge through them.",
-"magic_chance": 0.35,
-"aggression": 0.7
-}])
 intro_line = "Marla raises her blade in salute. \"The valley is watching, Keeper. Show me what you have built.\""
 win_line = "Marla sheathes her sword with a smile. \"The valley has a new champion. The road beyond is yours.\""
 lose_line = "Marla helps your champion to its feet. \"Strong heart. Come back when it has learned a little more.\""
@@ -50,10 +44,6 @@ sort_order = 3
 aggression = 0.6
 caution = 0.45
 mobility = 0.5
-block_skill = 0.45
-dodge_skill = 0.35
 heavy_chance = 0.3
 magic_chance = 0.15
-reaction_time = 0.3
-telegraph = 1.0
 preferred_range = 2.2

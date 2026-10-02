@@ -34,31 +34,6 @@ battles_fought = 2
 weapon_id = "sword_training"
 armor_id = "armor_light"
 magic_ability_id = ""
-phases = Array[Dictionary]([{
-"below": 1.01,
-"hint": "Pip winds up slowly before each swing. Watch for it — then DODGE!",
-"aggression": 0.55,
-"block_skill": 0.0,
-"dodge_skill": 0.0,
-"telegraph": 1.9,
-"heavy_chance": 0.0
-}, {
-"below": 0.7,
-"hint": "Pip is guarding now. Wait for its attack to finish, then strike the opening — or press with a HEAVY attack.",
-"aggression": 0.25,
-"block_skill": 0.85,
-"dodge_skill": 0.0,
-"telegraph": 1.5,
-"heavy_chance": 0.1
-}, {
-"below": 0.35,
-"hint": "Pip is pressing hard! Don't spend all your stamina — block, back off and breathe.",
-"aggression": 0.95,
-"block_skill": 0.2,
-"dodge_skill": 0.1,
-"telegraph": 1.15,
-"heavy_chance": 0.3
-}])
 intro_line = "Pip bounces on its toes. \"First trial for both of us! Let's make it a good one!\""
 win_line = "Pip wags its tail. \"You got me fair and square!\""
 lose_line = "Pip offers a paw to help you up. \"Again sometime?\""
@@ -66,9 +41,5 @@ sort_order = 0
 aggression = 0.55
 caution = 0.2
 mobility = 0.35
-block_skill = 0.0
-dodge_skill = 0.0
 heavy_chance = 0.0
-reaction_time = 0.5
-telegraph = 1.9
 preferred_range = 1.7

@@ -1,6 +1,6 @@
 # Battle simulation revision
 
-Battles are moving from a player-controlled real-time arena to a **combat simulation**:
+Battles are a **combat simulation** (they replaced the player-controlled real-time arena):
 the player chooses a fight, chooses and prepares a champion, then watches a 3D replay of a
 tick-based simulation whose result emerges from both combatants' animal, stats, Skill
 Matrix, battle experience, equipment, mastery, Aether Arts, condition, behaviour and the
@@ -12,9 +12,9 @@ Home / Lodge → Journey → Region → Available Fights → Select Fight → Op
 → Story / Reward → Return to Journey
 ```
 
-The work is done one verified stage at a time. The existing real-time arena
-(`Combatant`, `BattleManager`, `AiController`, `PlayerController`) keeps the game playable
-until the simulation replaces it.
+The work was done one verified stage at a time; all 25 stages are complete. The old
+real-time arena (`Combatant`, `BattleManager`, `AiController`, `PlayerController`, touch
+joystick and action pad) was retired in Stage 25.
 
 | # | Stage | Status | Where |
 | --- | --- | --- | --- |
@@ -43,7 +43,7 @@ until the simulation replaces it.
 | 22 | Trainer Development Integration | Done | `systems/battle_review.gd`, `TrialSystem.apply_result`, `ui/screens/battle_result.gd`, `tests/unit/test_development_condition.gd` |
 | 23 | Energy / Happiness Integration | Done | `simulation/condition_effects.gd`, `CombatantSpec.refresh`, `DecisionPhase.reaction_time`, `tests/unit/test_development_condition.gd` |
 | 24 | Save/Load Integration | Done | `simulation/battle_record.gd`, `CombatantSpec.from_dict`, `core/save_manager.gd` (v2), `tests/unit/test_saved_battles.gd` |
-| 25 | Mobile UX Polish | — | |
+| 25 | Mobile UX Polish | Done | `ui/screens/battle_replay.gd`, `core/settings_store.gd`, `ui/panels/settings_panel.gd`, `tests/unit/test_accessibility.gd` |
 
 ## Stage 1 — Opponent Data Model
 
@@ -57,7 +57,7 @@ simulation can treat both sides alike and never needs species code:
 | Build | `weapon_id`, `armor_id`, `accessory_id`, `magic_ability_id` | Equipment modifiers apply through `CombatStats.with_equipment`, the same rule champions use. |
 | Condition | `energy`, `happiness` | Simulation inputs, as for champions. |
 | Tendencies | `aggression`, `caution`, `mobility`, `heavy_chance`, `magic_chance`, `preferred_range` | Preferences that will drive the decision layer. They are habits, not capability. |
-| Legacy | `block_skill`, `dodge_skill`, `reaction_time`, `telegraph`, `phases` | Read only by the real-time `AiController`; the simulation derives these from the Skill Matrix and battle experience instead, and they are removed when it takes over. |
+| ~~Legacy~~ | ~~`block_skill`, `dodge_skill`, `reaction_time`, `telegraph`, `phases`~~ | Removed in Stage 25 with the real-time arena: the simulation derives guarding, dodging and reaction quality from the Skill Matrix and battle experience. |
 
 `OpponentData.validate()` checks the opponent's own data; `test_opponents.gd` checks
 references (the opponent must have learned its weapon and its Art well enough to use it).
@@ -761,4 +761,34 @@ Tests check that tired and low-mood champions never do better, and over 8 seeds 
   ordinary champion data and survive save/load.
 - **Save version 2.** `_migrate_1_to_2` gives every champion its animal's Natural Foundation
   skills when missing and fills the new record fields; old records simply have no replay.
+
+## Stage 25 — Mobile UX Polish
+
+- **The real-time arena is retired.** Nothing in the flow reached it any more; its scene,
+  route, `Combatant`, `BattleManager`, `BattleRecorder`, `AiController`,
+  `PlayerController`, `BattleHud`, touch joystick and action pad are gone, with the
+  opponent fields only that AI read. `BattleCamera` moved to `presentation/replay/`.
+  The Chapter 1 playthrough test runs entirely on the simulation (Stage 21).
+- **Replay touch UX.** Tap the battle to pause or resume (a "Paused — tap to resume" note
+  shows); the speed, replay and skip buttons sit in a thumb-reach row at the bottom with
+  72 px+ targets; Android back / Esc leaves (to the result, or the Journey for a rewatch).
+  Keyboard and gamepad: Space/A pause, ←/→ (LB/RB) speed.
+- **Settings.** The Controls tab (joystick size, left-handed layout, toggle block) and
+  *Combat assist* no longer had anything to control; they are replaced by a **Replay** tab:
+  default replay speed (1×/2×/4×), battle commentary on/off, and the overlay opacity. The
+  first-launch comfort setup offers the replay speed instead of combat assist.
+- **Result screen.** Panels are named for tests and screen readers (`Report`,
+  `MentorNotes`); the primary next step stays the large bottom-right button.
+
+## Where to extend
+
+- **New animal**: an `AnimalData` resource (movement type, base stats, natural skills).
+  No simulation code changes — the engine never branches on species (tested).
+- **New weapon / Art**: data in `WeaponData` (Behavior group) / `MagicAbilityData`.
+- **New arena feature**: `ArenaData` (`water_zones`, `air_ceiling`, obstacles) read by
+  `ArenaLayout` and `TerrainRules`.
+- **2v2 / 3v3**: `BattleState.create` takes arrays of specs per team, spawn points extend
+  automatically, targeting uses `nearest_enemy`; the flow screens choose one champion today.
+- **Balance**: `godot --headless --path . res://tools/balance_sim.tscn` runs real
+  simulations across seeds for fresh/trained/veteran champions against every opponent.
 

@@ -19,7 +19,6 @@ const ROUTES := {
 	"fight_preview": "res://scenes/fight_preview/fight_preview.tscn",
 	"champion_select": "res://scenes/champion_select/champion_select.tscn",
 	"battle_prep": "res://scenes/battle_prep/battle_prep.tscn",
-	"arena": "res://scenes/arena/arena.tscn",
 	"replay": "res://scenes/replay/battle_replay.tscn",
 	"result": "res://scenes/result/battle_result.tscn",
 }

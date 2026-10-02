@@ -3,6 +3,8 @@ extends Node3D
 ## already decided and applied (BattleSession); this screen plays the log
 ## back — every move, swing, guard, dodge, Art and knockout exactly as the
 ## simulation produced them — at 1×, 2× or 4×, with pause, replay and skip.
+## Touch: tap the battle to pause or resume; the buttons sit in thumb reach at
+## the bottom. Keyboard: Space pause, ← → speed, Esc leave.
 ## Params: {"session": BattleSession}
 
 const SPEEDS: Array[float] = [1.0, 2.0, 4.0]
@@ -30,6 +32,7 @@ var _messages: Array[String] = []
 var _speed_buttons: Array[Button] = []
 var _pause_button: Button
 var _banner: Control
+var _paused_note: Control
 var _root: Control
 
 
@@ -70,6 +73,34 @@ func _body(spec_data: Dictionary) -> CharacterVisual:
 	return visual
 
 
+# --- Input ---------------------------------------------------------------------
+
+func _unhandled_input(event: InputEvent) -> void:
+	if timeline == null:
+		return
+	if event.is_action_pressed("replay_toggle"):
+		toggle_pause()
+	elif event.is_action_pressed("replay_faster"):
+		set_speed(SPEEDS[mini(SPEEDS.find(speed) + 1, SPEEDS.size() - 1)])
+	elif event.is_action_pressed("replay_slower"):
+		set_speed(SPEEDS[maxi(SPEEDS.find(speed) - 1, 0)])
+	elif _is_tap(event) and not finished:
+		toggle_pause()
+	else:
+		return
+	get_viewport().set_input_as_handled()
+
+
+## A tap or click on the battle itself (buttons consume their own).
+static func _is_tap(event: InputEvent) -> bool:
+	if event is InputEventMouseButton:
+		var click := event as InputEventMouseButton
+		return click.pressed and click.button_index == MOUSE_BUTTON_LEFT
+	if event is InputEventScreenTouch and not ProjectSettings.get_setting("input_devices/pointing/emulate_mouse_from_touch", true):
+		return (event as InputEventScreenTouch).pressed
+	return false
+
+
 # --- Playback ------------------------------------------------------------------
 
 func _process(delta: float) -> void:
@@ -90,7 +121,7 @@ func advance(seconds: float) -> void:
 
 
 func set_speed(value: float) -> void:
-	speed = value
+	speed = value if SPEEDS.has(value) else 1.0
 	for i in _speed_buttons.size():
 		_speed_buttons[i].theme_type_variation = "TabButtonSelected" if SPEEDS[i] == value else "TabButton"
 
@@ -98,6 +129,7 @@ func set_speed(value: float) -> void:
 func toggle_pause() -> void:
 	paused = not paused
 	_pause_button.text = "▶" if paused else "❚❚"
+	_paused_note.visible = paused and not finished
 	for visual in visuals:
 		visual.animation_player.speed_scale = 0.0 if paused else 1.0
 
@@ -108,6 +140,7 @@ func restart() -> void:
 	finished = false
 	paused = false
 	_pause_button.text = "❚❚"
+	_paused_note.visible = false
 	_banner.visible = false
 	_messages.clear()
 	_ticker.text = ""
@@ -284,6 +317,7 @@ func _name(index: int) -> String:
 
 func _finish() -> void:
 	finished = true
+	_paused_note.visible = false
 	var won := session.outcome.player_won()
 	var draw := session.outcome.winner_team < 0
 	for i in visuals.size():
@@ -329,7 +363,10 @@ func _build_ui() -> void:
 			top.add_child(middle)
 	_ticker = UiKit.label("", "", true)
 	_ticker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_ticker.visible = bool(Settings.get_value("replay_commentary"))
 	column.add_child(_ticker)
+	top.modulate.a = float(Settings.get_value("hud_opacity"))
+	_ticker.modulate.a = top.modulate.a
 	column.add_child(UiKit.spacer())
 	var controls := UiKit.hbox(10)
 	controls.alignment = BoxContainer.ALIGNMENT_END
@@ -346,7 +383,9 @@ func _build_ui() -> void:
 	skip_button.name = "Skip"
 	controls.add_child(skip_button)
 	column.add_child(controls)
-	set_speed(1.0)
+	set_speed(float(Settings.get_value("replay_speed")))
+	_paused_note = _build_paused_note()
+	_root.add_child(_paused_note)
 	_banner = _build_banner()
 	_root.add_child(_banner)
 
@@ -371,6 +410,21 @@ func _update_bar(i: int, data: Dictionary) -> void:
 		return
 	(_bars[i]["health"] as ProgressBar).value = float(data["health"]) / maxf(float(data["max_health"]), 1.0)
 	(_bars[i]["stamina"] as ProgressBar).value = float(data["stamina"]) / maxf(float(data["max_stamina"]), 1.0)
+
+
+func _build_paused_note() -> Control:
+	var center := CenterContainer.new()
+	center.name = "PausedNote"
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center.visible = false
+	var panel := UiKit.panel("CardPanel")
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center.add_child(panel)
+	var label := UiKit.label("Paused — tap to resume", "")
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	panel.add_child(label)
+	return center
 
 
 func _build_banner() -> Control:

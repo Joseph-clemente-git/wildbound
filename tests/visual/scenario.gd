@@ -85,20 +85,6 @@ func _scenario_panel() -> void:
 	_at(1.0, func() -> void: _lodge().open_panel(panel))
 
 
-func _scenario_arena() -> void:
-	_prepare_mid()
-	var trial := "first_steps"
-	for arg in OS.get_cmdline_user_args():
-		if arg.begins_with("--trial="):
-			trial = arg.trim_prefix("--trial=")
-	Router.go("arena", {"trial": trial})
-	# Let an AI pilot the player so the battle plays itself for review.
-	_at(3.2, func() -> void:
-		var arena := get_tree().current_scene
-		var pilot := AiController.new(arena.hero, Content.opponent("juniper"), 5)
-		arena.battle.player_controller = pilot)
-
-
 func _scenario_result() -> void:
 	_prepare_mid()
 	TrainerManager.recruit(Game.profile, "agility_wren", true)
