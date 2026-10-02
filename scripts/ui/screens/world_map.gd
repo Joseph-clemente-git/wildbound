@@ -21,6 +21,7 @@ func _ready() -> void:
 		Router.go("lodge" if Game.is_active() else "title")
 		return
 	theme = UiTheme.get_theme()
+	Router.back_requested.connect(_back)
 	var background := ColorRect.new()
 	background.color = UiTheme.BG
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -53,6 +54,15 @@ func _ready() -> void:
 		_nodes[region.id] = button
 	_place_nodes.call_deferred()
 	_select(_selected)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("pause"):
+		_back()
+
+
+func _back() -> void:
+	Router.go("lodge")
 
 
 func _is_open(region: RegionData) -> bool:

@@ -264,10 +264,10 @@ func _tick_free(delta: float) -> void:
 	_move_with_push(delta, velocity)
 	if visual != null and state == State.FREE:
 		if is_exhausted():
-			if visual.current_clip() != "exhausted":
+			if visual.current_clip() != visual.resolve_clip("exhausted"):
 				visual.play("exhausted", -1.0, false)
 		else:
-			if visual.current_clip() == "exhausted":
+			if visual.current_clip() == visual.resolve_clip("exhausted"):
 				visual.release()
 			visual.set_locomotion(velocity.length() / maxf(stats.move_speed * 1.2, 0.1), true)
 

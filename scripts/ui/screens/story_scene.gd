@@ -43,7 +43,7 @@ func _spawn_cast() -> void:
 	maren.set_armor(GameEnums.ArmorWeight.LIGHT)
 	add_child(maren)
 	var champion := Game.champion()
-	var dog := ProceduralDogVisual.new(champion.palette if champion != null else {})
+	var dog: CharacterVisual = CharacterFactory.for_champion(champion) if champion != null else ProceduralDogVisual.new()
 	dog.position = Vector3(0.4, 0.0, -4.4)
 	dog.rotation.y = deg_to_rad(155.0)
 	add_child(dog)

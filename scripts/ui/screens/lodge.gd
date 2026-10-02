@@ -22,7 +22,7 @@ const STATIONS := {
 	"journey": ["Map Board", "journey", [["Journey", "journey"]]],
 }
 
-var champion_visual: ProceduralDogVisual
+var champion_visual: CharacterVisual
 var hud: LodgeHud
 var panels: PanelHost
 
@@ -55,6 +55,7 @@ func _ready() -> void:
 	_build_ui()
 	Sfx.play_ambient()
 	Game.changed.connect(_refresh)
+	Router.back_requested.connect(_on_back)
 	Game.notice.connect(func(text: String, color: Color) -> void: UiKit.toast(hud, text, color))
 	_refresh()
 	_update_camera(1.0)
@@ -74,9 +75,43 @@ func _process(delta: float) -> void:
 
 # --- Input: tap to select, drag to pan ---------------------------------------------
 
+var _touches: Dictionary = {}  # finger -> position, for pinch zoom
+var _pinch_distance := 0.0
+
+
+func _on_back() -> void:
+	if _dialogue.visible:
+		return
+	if panels.has_open_panel():
+		panels.close()
+	elif _context != null:
+		_close_context()
+	else:
+		hud.call("_open_menu")
+
+
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("pause"):
+		_on_back()
+		return
 	if _dialogue.visible or panels.has_open_panel():
 		return
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			_touches[event.index] = event.position
+		else:
+			_touches.erase(event.index)
+			_pinch_distance = 0.0
+	elif event is InputEventScreenDrag and _touches.has(event.index):
+		_touches[event.index] = event.position
+		if _touches.size() >= 2:
+			var points: Array = _touches.values()
+			var distance: float = (points[0] as Vector2).distance_to(points[1])
+			if _pinch_distance > 0.0:
+				_zoom = clampf(_zoom * _pinch_distance / maxf(distance, 1.0), 0.6, 1.4)
+			_pinch_distance = distance
+			_dragged = true
+			return
 	if event is InputEventScreenTouch:
 		if event.pressed:
 			_pressing = true
@@ -207,7 +242,7 @@ func play_dialogue(event_id: String, on_done: Callable = Callable()) -> void:
 
 func _spawn_champion() -> void:
 	var champion := Game.champion()
-	champion_visual = ProceduralDogVisual.new(champion.palette)
+	champion_visual = CharacterFactory.for_champion(champion)
 	champion_visual.position = Vector3(0.6, 0.0, -0.5)
 	add_child(champion_visual)
 	_dog_target = champion_visual.position
@@ -229,7 +264,7 @@ func _apply_champion_look() -> void:
 
 ## Active mentors stand at the stations they teach from.
 func _spawn_mentors() -> void:
-	var spots := [Vector3(-6.2, 0, -0.4), Vector3(-3.0, 0, -3.6), Vector3(6.0, 0, 2.6),
+	var spots := [Vector3(-5.4, 0, 1.8), Vector3(-3.0, 0, -3.6), Vector3(6.0, 0, 2.6),
 			Vector3(3.4, 0, -3.0), Vector3(-8.6, 0, 1.6)]
 	var maren := ProceduralDogVisual.new(StoryEvents.MAREN_PALETTE)
 	maren.position = Vector3(-1.2, 0.55, -6.9)

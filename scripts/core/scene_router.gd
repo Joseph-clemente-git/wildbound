@@ -6,6 +6,8 @@ extends Node
 ## inside the Lodge scene instead of separate scenes.
 
 signal route_changed(route: String)
+## Android back button / Escape outside of combat. Scenes decide what it means.
+signal back_requested
 
 const ROUTES := {
 	"boot": "res://scenes/boot/boot.tscn",
@@ -39,6 +41,11 @@ func _ready() -> void:
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_fade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_layer.add_child(_fade)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and not _busy:
+		back_requested.emit()
 
 
 func has_route(route: String) -> bool:

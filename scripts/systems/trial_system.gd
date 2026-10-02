@@ -68,7 +68,7 @@ static func apply_result(outcome: Dictionary) -> Dictionary:
 		ConditionSystem.knock_out(champion, Game.now())
 	champion.record_battle({
 		"trial": trial.display_name, "trial_id": trial.id, "opponent": trial.opponent_id, "won": won,
-		"duration": roundi(outcome.get("duration", 0.0)), "time": Game.now(),
+		"duration": float(roundi(outcome.get("duration", 0.0))), "time": Game.now(),
 	})
 	Game.set_flag("attempted_" + trial.id)
 	if trial.tutorial or trial.id == "first_steps":

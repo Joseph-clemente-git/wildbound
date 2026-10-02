@@ -35,9 +35,9 @@ func _ready() -> void:
 	battle = BattleManager.new()
 	add_child(battle)
 	var champion := Game.champion()
-	hero = _make_fighter(champion.palette)
+	hero = _make_fighter(CharacterFactory.for_champion(champion))
 	hero.setup_from_champion(champion)
-	foe = _make_fighter(opponent_data.palette)
+	foe = _make_fighter(CharacterFactory.for_opponent(opponent_data))
 	foe.setup_from_opponent(opponent_data)
 	battle.add_child(hero)
 	battle.add_child(foe)
@@ -71,12 +71,12 @@ func _ready() -> void:
 	battle.floating_text.connect(_floating_text)
 	battle.combat_event.connect(_feedback)
 	battle.ended.connect(_on_ended)
+	Router.back_requested.connect(_pause)
 	_intro()
 
 
-func _make_fighter(palette: Dictionary) -> Combatant:
+func _make_fighter(visual: CharacterVisual) -> Combatant:
 	var fighter := Combatant.new()
-	var visual := ProceduralDogVisual.new(palette)
 	fighter.add_child(visual)
 	fighter.visual = visual
 	return fighter

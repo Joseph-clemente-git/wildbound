@@ -7,11 +7,21 @@ var outcome: Dictionary
 var _content: VBoxContainer
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("pause"):
+		_back()
+
+
+func _back() -> void:
+	_continue({})
+
+
 func _ready() -> void:
 	outcome = Router.params.get("outcome", {})
 	if outcome.is_empty() or not Game.is_active():
 		Router.go("lodge" if Game.is_active() else "title")
 		return
+	Router.back_requested.connect(_back)
 	_build_backdrop()
 	_build_ui()
 	Sfx.play_ambient()
@@ -24,7 +34,7 @@ func _build_backdrop() -> void:
 	WorldBuilder.grass(self, Rect2(-12, -12, 24, 24), 1400, [Vector3(0, 0, 3.2)], 4)
 	WorldBuilder.forest_ring(self, 9.0, 20.0, 30, 2, false)
 	var champion := Game.champion()
-	var dog := ProceduralDogVisual.new(champion.palette)
+	var dog := CharacterFactory.for_champion(champion)
 	dog.position = Vector3(2.1, 0, -0.4)
 	dog.rotation.y = deg_to_rad(20)
 	var weapon := Content.weapon(champion.weapon_id)

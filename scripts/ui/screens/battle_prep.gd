@@ -8,12 +8,22 @@ var opponent: OpponentData
 var _root: Control
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("pause"):
+		_back()
+
+
+func _back() -> void:
+	Router.go("lodge", {"panel": "journey"})
+
+
 func _ready() -> void:
 	if not Game.is_active():
 		Router.go("title")
 		return
 	trial = Content.trial(Router.params.get("trial", "first_steps"))
 	opponent = Content.opponent(trial.opponent_id)
+	Router.back_requested.connect(_back)
 	_backdrop()
 	_build_ui()
 	Game.changed.connect(_build_ui)
@@ -26,7 +36,7 @@ func _backdrop() -> void:
 	WorldBuilder.grass(self, Rect2(-14, -14, 28, 28), 1600, [Vector3(0, 0, 6.3)], 8)
 	WorldBuilder.forest_ring(self, 10.0, 22.0, 30, 6, false)
 	var champion := Game.champion()
-	var dog := ProceduralDogVisual.new(champion.palette)
+	var dog := CharacterFactory.for_champion(champion)
 	dog.position = Vector3(0.0, 0, 0.0)
 	dog.rotation.y = deg_to_rad(25)
 	var weapon := Content.weapon(champion.weapon_id)
@@ -37,7 +47,7 @@ func _backdrop() -> void:
 	dog.set_aura(ability.school if ability else "")
 	dog.play("combat_idle", -1.0, false)
 	add_child(dog)
-	var rival := ProceduralDogVisual.new(opponent.palette)
+	var rival := CharacterFactory.for_opponent(opponent)
 	rival.position = Vector3(1.7, 0, -1.6)
 	rival.rotation.y = deg_to_rad(-20)
 	var rival_weapon := Content.weapon(opponent.weapon_id)

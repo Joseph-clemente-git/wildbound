@@ -4,8 +4,8 @@ render_mode cull_disabled, specular_disabled;
 // Wind-swept grass blades for the valley. Instances come from a MultiMesh;
 // the instance's world position offsets the wave so the field ripples.
 
-uniform vec4 base_color : source_color = vec4(0.18, 0.34, 0.14, 1.0);
-uniform vec4 tip_color : source_color = vec4(0.62, 0.72, 0.34, 1.0);
+uniform vec4 base_color : source_color = vec4(0.16, 0.3, 0.12, 1.0);
+uniform vec4 tip_color : source_color = vec4(0.52, 0.62, 0.3, 1.0);
 uniform float sway = 0.18;
 uniform float blade_height = 0.55;
 uniform float wind_speed = 1.6;

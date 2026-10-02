@@ -24,8 +24,9 @@ var _flash_tween: Tween
 
 ## Plays a clip. `duration > 0` time-scales the clip to last exactly that long.
 ## Locked clips (attacks, hits...) are not interrupted by locomotion updates.
-func play(clip: String, duration: float = -1.0, lock: bool = true, blend: float = BLEND_TIME) -> void:
-	if animation_player == null or not animation_player.has_animation(clip):
+func play(requested: String, duration: float = -1.0, lock: bool = true, blend: float = BLEND_TIME) -> void:
+	var clip := resolve_clip(requested)
+	if animation_player == null or clip.is_empty() or not animation_player.has_animation(clip):
 		return
 	var speed := 1.0
 	if duration > 0.0:
@@ -41,19 +42,22 @@ func play(clip: String, duration: float = -1.0, lock: bool = true, blend: float 
 
 ## Called every frame with the movement speed ratio (0 idle, ~0.5 walk, 1 run).
 func set_locomotion(speed_ratio: float, combat: bool = false) -> void:
-	var clip := ("combat_idle" if combat else "idle")
+	var clip := resolve_clip("combat_idle" if combat else "idle")
 	if speed_ratio > 0.65:
-		clip = "run"
+		clip = resolve_clip("run")
 	elif speed_ratio > 0.08:
-		clip = "walk"
+		clip = resolve_clip("walk")
+	if clip.is_empty():
+		return
 	_locomotion_clip = clip
 	if _locked:
 		return
 	if _current_clip != clip:
 		_current_clip = clip
 		animation_player.play(clip, 0.18)
-	if clip == "walk" or clip == "run":
-		animation_player.speed_scale = clampf(speed_ratio * (1.6 if clip == "walk" else 1.0), 0.6, 1.5)
+	var walking := clip == resolve_clip("walk")
+	if walking or clip == resolve_clip("run"):
+		animation_player.speed_scale = clampf(speed_ratio * (1.6 if walking else 1.0), 0.6, 1.5)
 	else:
 		animation_player.speed_scale = 1.0
 
@@ -63,7 +67,7 @@ func release() -> void:
 	_locked = false
 	_current_clip = ""
 	animation_player.speed_scale = 1.0
-	set_locomotion(0.0 if _locomotion_clip.ends_with("idle") else 0.5, _locomotion_clip == "combat_idle")
+	set_locomotion(0.0 if _locomotion_clip.ends_with("idle") else 0.5, _locomotion_clip == resolve_clip("combat_idle"))
 
 
 func is_locked() -> bool:
@@ -75,7 +79,22 @@ func current_clip() -> String:
 
 
 func has_clip(clip: String) -> bool:
-	return animation_player != null and animation_player.has_animation(clip)
+	var resolved := resolve_clip(clip)
+	return animation_player != null and not resolved.is_empty() and animation_player.has_animation(resolved)
+
+
+## Maps a shared clip name ("heavy_attack") to the name this rig uses.
+func resolve_clip(clip: String) -> String:
+	return clip
+
+
+## Required clips (mechanics §78) this rig cannot play.
+func missing_clips() -> PackedStringArray:
+	var missing := PackedStringArray()
+	for clip in CharacterAnimations.REQUIRED_CLIPS:
+		if not has_clip(clip):
+			missing.append(clip)
+	return missing
 
 
 ## Brief emissive flash used for hit feedback.
