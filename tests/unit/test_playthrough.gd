@@ -1,10 +1,9 @@
 extends TestCase
 ## End-to-end Chapter 1: the full loop from New Journey to the road beyond,
 ## driven through the same panels, systems and battle simulation the game uses.
-## Battles are piloted by a competent-player AI; time passes between them so
-## energy and knockouts recover, and the champion trains with its mentors.
-
-const DT := 1.0 / 30.0
+## Every battle is simulated from the champion's build; time passes between
+## them so energy and knockouts recover, and the champion trains with its
+## mentors.
 
 var host: PanelHost
 var log_lines: PackedStringArray = []
@@ -36,38 +35,11 @@ func _fight(trial_id: String, seed_value: int) -> bool:
 	if not TrialSystem.entry_blocker(champion, trial).is_empty():
 		_pass_time(6.0)
 	check_eq(TrialSystem.enter(champion, trial), "", "can enter " + trial_id)
-	var opponent := Content.opponent(trial.opponent_id)
-	var battle := BattleManager.new()
-	battle.auto_step = false
-	root.add_child(battle)
-	var hero := Combatant.new()
-	hero.setup_from_champion(champion)
-	var foe := Combatant.new()
-	foe.setup_from_opponent(opponent)
-	battle.add_child(hero)
-	battle.add_child(foe)
-	battle.setup(Content.arena(trial.arena_id), hero, foe)
-	var pilot := OpponentData.new()
-	pilot.aggression = 0.55
-	pilot.block_skill = 0.3
-	pilot.dodge_skill = 0.45
-	pilot.heavy_chance = 0.2
-	pilot.magic_chance = 0.25
-	pilot.reaction_time = 0.28
-	pilot.preferred_range = 1.8
-	battle.ai = AiController.new(foe, opponent, seed_value)
-	battle.player_controller = AiController.new(hero, pilot, seed_value + 7)
-	var recorder := BattleRecorder.new(battle, champion, opponent, trial)
-	battle.start()
-	recorder.start()
-	while not battle.finished:
-		battle.step(DT)
-	var result := TrialSystem.apply_result(recorder.finish(battle.winner == hero))
+	var result := BattleSession.start(trial, champion, seed_value).result
 	log_lines.append("%s: %s in %ds, +%d coins, growth %d" % [trial_id, "won" if result["won"] else "lost",
 			roundi(result["duration"]), result["coins"], result["growths"].size()])
 	if not str(result["story"]).is_empty():
 		_apply_event(result["story"])
-	battle.free()
 	return result["won"]
 
 

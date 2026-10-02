@@ -156,6 +156,11 @@ func _learned() -> void:
 			continue
 		section.add_child(UiKit.stat_row("%s Experience" % ExperienceTracks.track_name(track), "+%d" % roundi(amount),
 				champion.experience.ratio(track), UiTheme.GOOD))
+	var kept := float(outcome.get("defeat_factor", 1.0))
+	if kept < 0.5:
+		var note := "A one-sided defeat teaches little." if outcome.get("loss_streak_before", 0) == 0 \
+				else "Losing again teaches less each time — train or change the build before the next try."
+		section.add_child(UiKit.label(note, "DimLabel", true))
 	var growths: Array = outcome.get("growths", [])
 	if not growths.is_empty():
 		var growth := _section("Natural growth")

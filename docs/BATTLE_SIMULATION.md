@@ -38,8 +38,8 @@ until the simulation replaces it.
 | — | Terrain, movement types, Shark and Eagle | Done | `simulation/terrain_rules.gd`, `data/animals/humanoid_shark.tres`, `humanoid_eagle.tres`, `tests/unit/test_terrain.gd` |
 | 18 | Battle Replay | Done | `simulation/battle_session.gd`, `presentation/replay/replay_timeline.gd`, `ui/screens/battle_replay.gd`, `tests/unit/test_replay.gd` |
 | 19 | Battle Result | Done | `simulation/battle_moments.gd`, `ui/screens/battle_result.gd`, `tests/unit/test_battle_result.gd` |
-| 20 | Experience Event Tracking | — | |
-| 21 | Natural Growth | — | |
+| 20 | Experience Event Tracking | Done | `simulation/simulation_experience.gd`, `simulation/battle_session.gd`, `tests/unit/test_experience_sim.gd` |
+| 21 | Natural Growth | Done | `SimulationExperience._terrain_growth`, `GrowthSystem`, `tests/unit/test_experience_sim.gd`, `tests/unit/test_playthrough.gd` |
 | 22 | Trainer Development Integration | — | |
 | 23 | Energy / Happiness Integration | — | |
 | 24 | Save/Load Integration | — | |
@@ -655,3 +655,52 @@ The result screen tells the simulated battle (params `{"outcome", "session"}`):
 - A **recruited** visitor is announced.
 - **Next**: *⟲ Watch again* (reopens the replay), *Lodge*, and the primary step — **Back to
   the Journey**, or **Rest & recover** for a knocked-out champion. Story events play first.
+
+## Stage 20 — Experience Event Tracking
+
+`SimulationExperience.collect(champion, opponent, battle_log, outcome)` reads the battle log
+from the champion's side and reports each meaningful action to the existing
+`ExperienceSession`, which weighs it by difficulty (power ratio), repetition (anti-farming
+decay), remaining potential and the per-battle cap. Only the champion's own actions count.
+
+| In the log | Reported as | Track(s) |
+|---|---|---|
+| `damage` dealt, outcome `hit` | `hit` / `heavy_hit` / `magic_hit` | Offensive (+ weapon) / Strength (+ weapon) / magic school |
+| a hit on an `opening` | `punish` | Offensive, Attack-Speed |
+| two light blows within 1.2 s | `combo_hit` | Attack-Speed |
+| a flank `hit` | `reposition` | Agility |
+| `staggered` / `knockdown` caused | `stagger_caused` | Strength |
+| `guard_break` caused | `guard_break` | Strength, Offensive |
+| `technique` | `technique` | Offensive, weapon |
+| `cast_release` | `magic_cast` | magic school |
+| `evade` (perfect, vs heavy, vs Art) | `dodge` / `perfect_dodge` / `dodge_heavy` / `dodge_magic` | Evasion (Agility) |
+| `block`, `parry` | `block` / `block_heavy` / `perfect_block` | Defense |
+| 12 s windows of ≥3 actions without exhaustion | `stamina_discipline` | Endurance |
+| a fight over 60 s | `long_battle` | Endurance |
+| a blow ≥12% of max health survived | `heavy_damage_survived` | Resilience |
+| standing 3 s after falling under 25% | `survived_low_health` | Resilience |
+| a long, close defeat | `prolonged_defeat` | Resilience |
+
+**Defeat without loss farming.** A defeat keeps
+`clamp(damage dealt share / 0.4, 0.15, 1) × 1 / (1 + 0.5 × loss streak)` of its experience:
+a hard-fought first loss teaches in full; a token defeat keeps ~15%; each loss in a row
+keeps less. The result screen says so when most of it was lost.
+
+`BattleSession.start` collects before `TrialSystem.apply_result` (so the streak is the one
+the fight began with) and passes `experience`, `growths`, `difficulty_ratio`,
+`difficulty_multiplier` and `defeat_factor` into the result.
+
+## Stage 21 — Natural Growth
+
+Nothing grants stat points directly: banked experience becomes growth only through
+`GrowthSystem` thresholds, and the result screen lists each growth event.
+
+Terrain teaches the **Natural Foundation** whatever the animal: every second in deep water
+gives Swimming progress and every second aloft gives Flight progress (0.5 per second, at
+most 12 per battle, never past `natural_rank_cap`). A dog that keeps fighting at the
+lakeshore slowly learns to swim; one that stays on the shore learns nothing of it.
+
+The Chapter 1 playthrough test now fights every battle in the simulation
+(`BattleSession.start`) and still completes the chapter — about 25 battles in the reference run,
+with losses still teaching Bruno enough to break through.
+

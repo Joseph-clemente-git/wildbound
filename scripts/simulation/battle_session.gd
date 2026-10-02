@@ -12,6 +12,9 @@ var battle_log: BattleLog
 var outcome: BattleOutcome
 ## What TrialSystem applied (coins, XP, story, knockout...).
 var result: Dictionary = {}
+## What the champion learned (SimulationExperience.collect).
+var learned: Dictionary = {}
+var loss_streak_before := 0
 
 
 ## Simulates `champion` against the fight's opponent and applies the result.
@@ -24,6 +27,11 @@ static func start(fight: TrialData, champion: Champion, seed_value: int = 0) -> 
 	session.battle_log = sim.run()
 	session.state = sim.state
 	session.outcome = sim.outcome()
+	# Learned before the result is applied: a defeat's teaching uses the loss
+	# streak as it stood when the fight began.
+	session.loss_streak_before = champion.loss_streak
+	session.learned = SimulationExperience.collect(champion, Content.opponent(fight.opponent_id),
+			session.battle_log, session.outcome)
 	session.result = TrialSystem.apply_result(session.trial_outcome())
 	return session
 
@@ -41,7 +49,10 @@ func trial_outcome() -> Dictionary:
 			"blocks": me.get("blocks", 0), "perfect_blocks": me.get("parries", 0),
 			"exhaustions": me.get("exhaustions", 0), "spells": me.get("casts", 0),
 		},
-		"experience": {}, "growths": [],
+		"experience": learned.get("gains", {}), "growths": learned.get("growths", []),
+		"difficulty_ratio": learned.get("difficulty_ratio", 1.0),
+		"difficulty_multiplier": learned.get("difficulty_multiplier", 1.0),
+		"defeat_factor": learned.get("defeat_factor", 1.0), "loss_streak_before": loss_streak_before,
 		"simulation": outcome.to_dict(),
 		"how": BattleMoments.how_it_ended(outcome),
 		"moments": Array(BattleMoments.tell(battle_log, outcome)),
