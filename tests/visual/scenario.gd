@@ -20,6 +20,14 @@ func _ready() -> void:
 	Game.new_journey("Bruno")
 	Game.set_flag("opening_done")
 	call("_scenario_" + scenario)
+	# --scroll=<px> scrolls the screen's main list to review lower sections.
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--scroll="):
+			var amount := int(arg.trim_prefix("--scroll="))
+			_at(1.8, func() -> void:
+				var list := get_tree().current_scene.find_child("*ScrollContainer*", true, false) as ScrollContainer
+				if list != null:
+					list.scroll_vertical = amount)
 
 
 func _process(delta: float) -> void:
@@ -107,7 +115,16 @@ func _scenario_result() -> void:
 
 func _scenario_prep() -> void:
 	_prepare_mid()
-	Router.go("battle_prep", {"trial": "valley_regional"})
+	_progress(["cleared_first_steps", "cleared_stonewall_bout", "cleared_meadow_sprint"])
+	for item_id in ["hammer_iron", "armor_medium", "armor_heavy"]:
+		Game.profile.add_item(item_id)
+	Game.champion().skills.set_rank("weapon:sword", GameEnums.Rank.APPRENTICE)
+	Game.champion().skills.set_rank("magic:fire", GameEnums.Rank.FOUNDATION)
+	var trial := "stonewall_bout"
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--trial="):
+			trial = arg.trim_prefix("--trial=")
+	Router.go("battle_prep", {"trial": trial})
 
 
 func _scenario_journey() -> void:

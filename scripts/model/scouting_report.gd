@@ -49,6 +49,8 @@ var combat_range := ""
 var threats := PackedStringArray()
 ## Habits and limits the player can exploit.
 var openings := PackedStringArray()
+## The derived numbers behind the bands. For comparisons only — never shown.
+var combat: CombatStats
 
 
 static func for_opponent(opponent: OpponentData) -> ScoutingReport:
@@ -68,11 +70,29 @@ static func for_opponent(opponent: OpponentData) -> ScoutingReport:
 	return report
 
 
+## The Keeper's own champion described the same way, so the two sides can be
+## compared band for band. `overrides` previews a different build:
+## {"weapon_id", "armor_id", "accessory_id", "ability_id"}.
+static func for_champion(champion: Champion, overrides: Dictionary = {}) -> ScoutingReport:
+	var weapon_id: String = overrides.get("weapon_id", champion.weapon_id)
+	var armor_id: String = overrides.get("armor_id", champion.armor_id)
+	var ability := Content.ability(overrides.get("ability_id", champion.equipped_ability))
+	if ability != null and not EquipmentSystem.can_use_ability(champion, ability):
+		ability = null
+	var report := describe_build(CombatStats.for_champion(champion, overrides),
+			Content.weapon(weapon_id) if not weapon_id.is_empty() else null,
+			Content.armor(armor_id) if not armor_id.is_empty() else null, ability, champion.data())
+	report.name = champion.name
+	report.capability = champion.capability_name()
+	return report
+
+
 ## The build-dependent part of a report. Species-agnostic: movement and soft
 ## traits come from `animal`, everything else from the derived combat numbers.
 static func describe_build(combat: CombatStats, weapon_data: WeaponData, armor_data: ArmorData,
 		ability: MagicAbilityData, animal_data: AnimalData) -> ScoutingReport:
 	var report := ScoutingReport.new()
+	report.combat = combat
 	if animal_data != null:
 		report.animal = animal_data.display_name
 		report.movement = GameEnums.MOVEMENT_TYPE_NAMES[animal_data.movement_type]

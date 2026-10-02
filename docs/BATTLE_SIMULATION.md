@@ -22,7 +22,7 @@ until the simulation replaces it.
 | 2 | Battle Selection / Challenge Scene | Done | `systems/challenge_board.gd`, `ui/screens/journey.gd`, `tests/unit/test_challenges.gd` |
 | 3 | Opponent Preview | Done | `ui/screens/fight_preview.gd`, `presentation/world/fight_stage.gd`, `tests/unit/test_fight_preview.gd` |
 | 4 | Champion Selection | Done | `systems/champion_selection.gd`, `ui/screens/champion_select.gd`, `tests/unit/test_champion_select.gd` |
-| 5 | Battle Preparation | — | |
+| 5 | Battle Preparation | Done | `model/matchup_analysis.gd`, `ui/screens/battle_prep.gd`, `tests/unit/test_battle_prep.gd` |
 | 6 | Combat State Model | — | |
 | 7 | Simulation Tick System | — | |
 | 8 | Action System | — | |
@@ -146,5 +146,45 @@ mood bar. The chosen one stands in the arena on the right.
 
 A champion that is not ready cannot be prepared; the screen says why and offers *Rest at
 the lodge*, which selects that champion first so the Rest Area cares for the right one.
-Battle Preparation's Back returns here with the same champion selected. Matchup advice
-(strengths and weaknesses against this opponent) belongs to Battle Preparation (Stage 5).
+Battle Preparation's Back returns here with the same champion selected. 
+## Stage 5 — Battle Preparation
+
+Battle Preparation answers *"How should I prepare for this specific opponent?"*
+
+**`MatchupAnalysis.analyse(champion, opponent, arena, overrides)`** is the tactical
+preview. The champion is described with `ScoutingReport.for_champion` — the same bands
+as the opponent — so both sides compare like for like. It returns:
+
+- **Opponent Strength** (the opponent's force band) and the **Threat** (its top threat);
+- **advantages**, most important first: a better band on Strength / Defense / Mobility /
+  Range ("Reach"), *Punishing slow recoveries*, *Better weapon technique* (Skill Matrix
+  weapon rank above theirs), *Outlasting them* (stamina), *Room to outmanoeuvre* (wide
+  arena);
+- **risks**, most important first: *Fighting without a weapon*, *Untrained with the …*,
+  *Close-range pressure* (their force High+ against your Defense Medium or lower), *Being
+  worn down from range*, *Being outmanoeuvred*, *Breaking through their guard*, *Less
+  weapon technique*, *Tiring first in a long fight*, *Tight ring: little room to escape
+  pressure*.
+
+`main_advantage()` and `main_risk()` give the headline; nothing contains a number.
+`option_effects(champion, overrides)` shows what another build would change, one arrow
+per band moved ("Defense ↑↑ · Mobility ↓↓").
+
+**The screen** (sheet on the left, champion and opponent in the arena on the right):
+
+1. *Tactical read* — Opponent Strength, Threat, Your Advantage, Main Risk, then the full
+   lists.
+2. *Build for this fight* — owned weapons (with the champion's mastery rank), owned armor
+   (with weight) and learned Aether Arts (plus none). Each option shows its effect on the
+   matchup; tapping equips it on the champion, the read updates and the champion is
+   re-dressed in 3D.
+3. The champion — level, capability, the relevant Skill Matrix ranks (equipped weapon and
+   school, Dodge, Block, Stamina, Timing), techniques, energy (with this fight's cost) and
+   mood.
+4. The opponent — capability and build, and a side-by-side table of Strength / Defense /
+   Mobility / Range with the champion's better and worse bands highlighted.
+5. The arena's features and the rewards.
+
+The power-score "Difficulty" line, the old style notes based on legacy AI knobs and the
+"Change build" detour to the lodge are gone. *ENTER TRIAL* still starts the real-time
+arena until the simulation exists (Stages 6–18).
