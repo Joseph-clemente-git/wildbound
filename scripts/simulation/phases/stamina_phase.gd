@@ -73,6 +73,5 @@ func _exhaust(fighter: CombatantState, frame: SimFrame) -> void:
 	fighter.exhausted_time = fighter.spec.derived.exhaustion_seconds
 	frame.emit("exhausted", fighter.index)
 	if fighter.action == A.BLOCK:
-		fighter.action = A.IDLE
-		fighter.phase = CombatantState.Phase.NONE
 		frame.emit("guard_break", fighter.index)
+		ForcePhase.stagger(fighter, ForcePhase.GUARD_BREAK_SECONDS, frame, "guard_break", -1)

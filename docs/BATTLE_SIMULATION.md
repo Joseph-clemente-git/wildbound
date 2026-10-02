@@ -30,7 +30,7 @@ until the simulation replaces it.
 | 10 | Damage / Defense | Done | `simulation/phases/damage_phase.gd`, `tests/unit/test_damage.gd` |
 | 11 | Dodge / Block | Done | `simulation/defense_rules.gd`, `phases/contact_phase.gd`, `tests/unit/test_dodge_block.gd` |
 | 12 | Stamina | Done | `simulation/phases/stamina_phase.gd`, `tests/unit/test_stamina.gd` |
-| 13 | Stagger / Knockback | — | |
+| 13 | Stagger / Knockback | Done | `simulation/phases/force_phase.gd`, `tests/unit/test_force.gd` |
 | 14 | Weapon Behavior | — | |
 | 15 | Magic Behavior | — | |
 | 16 | Combat AI Decision System | — | |
@@ -247,7 +247,7 @@ frame rate. Every tick passes through the same pipeline, in this order:
 | Action Resolution | `action` | Stage 8 — `ActionPhase` |
 | Hit / Dodge / Block | `contact` | Stages 9 & 11 — `ContactPhase` + `DefenseRules` |
 | Damage | `damage` | Stage 10 — `DamagePhase` |
-| Stagger / Knockback | `force` | Stage 13 |
+| Stagger / Knockback | `force` | Stage 13 — `ForcePhase` |
 | Position Update | `movement` | Stage 8 — `MovementPhase` |
 | Stamina Update | `stamina` | Stage 12 — `StaminaPhase` |
 | Cooldown / Recovery | `recovery` | Stage 7 — `CooldownPhase` |
@@ -405,3 +405,25 @@ Events: `hit {outcome, perfect}`, `evade`, `parry`, `block {guard_drain}`.
 - **Overexertion**: an action may begin with too little stamina left — it plays out and
   ends in exhaustion. Managing stamina is a real decision, which the decision layer
   (Stage 16) and experience (Stage 20) build on.
+
+## Stage 13 — Stagger / Knockback
+
+`ForcePhase` applies the physical force of blows — this is where **Strength** matters
+apart from **Attack**:
+
+- **Stagger meter.** Each clean blow adds the attacker's stagger power (light: weapon
+  stagger × Strength; heavy: ~1.9× that; Arts: their stagger) × the target's
+  `stagger_taken` (armor, defense-control skill). Passing the target's **poise**
+  (40 + Defense × 0.5) staggers it and its current action is lost; one blow worth 1.4×
+  poise knocks it down. A blocked blow adds 30% as guard pressure. The meter drains at
+  30% of poise per second.
+- **Stagger time** (0.55 s, ×1.3 for heavy blows; knockdown 1.1 s) shrinks with recovery
+  skill and **Agility**.
+- **Parries** stagger the attacker (0.7 s); a **broken guard** staggers the defender
+  (0.9 s, triggered from the stamina step).
+- **Knockback** — `push_velocity`, separate from walking: attacker knockback power
+  (Strength, weapon; light blows half) × the target's resistance (armor, positioning
+  skill, **Defense**), 40% through a guard. Pushes slide out at 9 m/s² and stop at walls.
+
+Repeated sword cuts break poise after a few blows; one hammer heavy staggers or floors a
+lightly armored target. Events: `staggered {reason, seconds}`, `knockdown`, `knockback`.

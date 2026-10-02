@@ -25,6 +25,8 @@ var elevation := 0.0
 ## Unit vector the combatant faces on the floor.
 var facing := Vector2(0, -1)
 var velocity := Vector2.ZERO
+## Sliding push from knockback, separate from walking.
+var push_velocity := Vector2.ZERO
 ## Direction of the dodge under way.
 var dodge_direction := Vector2.ZERO
 
@@ -102,5 +104,6 @@ func to_dict() -> Dictionary:
 		"combo_step": combo_step, "target": target_index,
 		"stagger": snappedf(stagger_meter, 0.01), "exhausted": snappedf(exhausted_time, 0.001),
 		"regen_delay": snappedf(regen_delay, 0.001),
+		"push": [snappedf(push_velocity.x, 0.001), snappedf(push_velocity.y, 0.001)],
 		"cooldowns": cooldowns.duplicate(), "effects": effects.duplicate(true),
 	}

@@ -10,7 +10,7 @@ extends SimulationPhase
 ## - Turning toward the target uses the derived turn speed and is limited
 ##   while committed to an attack.
 ## - A dodge covers its dodge distance during its protected window, then stops.
-## - Pushes (knockback, from Stage 13) slide out while staggered.
+## - Knockback pushes (Stage 13) slide out on their own, apart from walking.
 ## - The ring edge, obstacles and other bodies stop movement.
 ##
 ## Every body moves by the same rules; terrain and movement-type differences
@@ -19,6 +19,8 @@ extends SimulationPhase
 const A := CombatantState.Action
 const P := CombatantState.Phase
 const MOVING_SPEED := 0.2
+## How quickly a push slides out (m/s²).
+const PUSH_FRICTION := 9.0
 
 
 func _init() -> void:
@@ -33,7 +35,8 @@ func run(state: BattleState, frame: SimFrame) -> void:
 		var intent: Dictionary = frame.intents.get(fighter.index, {})
 		_turn(state, fighter, frame.delta)
 		_accelerate(state, fighter, intent, frame.delta)
-		fighter.position += fighter.velocity * frame.delta
+		fighter.position += (fighter.velocity + fighter.push_velocity) * frame.delta
+		fighter.push_velocity = fighter.push_velocity.move_toward(Vector2.ZERO, PUSH_FRICTION * frame.delta)
 		_constrain(state, fighter)
 		if fighter.action == A.IDLE or fighter.action == A.MOVE:
 			fighter.action = A.MOVE if fighter.velocity.length() > MOVING_SPEED else A.IDLE
@@ -122,6 +125,9 @@ static func _stop_into(fighter: CombatantState, normal: Vector2) -> void:
 	var into := fighter.velocity.dot(normal)
 	if into < 0.0:
 		fighter.velocity -= normal * into
+	var pushed := fighter.push_velocity.dot(normal)
+	if pushed < 0.0:
+		fighter.push_velocity -= normal * pushed
 
 
 func _separate(state: BattleState) -> void:
