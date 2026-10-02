@@ -124,6 +124,39 @@ func refresh() -> void:
 	ConditionEffects.apply(derived, energy)
 
 
+## Rebuilds a spec from `to_dict()` data (a saved replay). Colours may come
+## back as html strings and numbers as floats; both are restored.
+static func from_dict(data: Dictionary) -> CombatantSpec:
+	var spec := CombatantSpec.new()
+	spec.id = str(data.get("id", ""))
+	spec.display_name = str(data.get("name", ""))
+	spec.source = str(data.get("source", ""))
+	spec.animal = Content.animal(str(data.get("animal", "")))
+	var saved_palette: Dictionary = data.get("palette", {})
+	for key: String in saved_palette:
+		var value: Variant = saved_palette[key]
+		spec.palette[key] = value if value is Color else Color.html(str(value))
+	var saved_stats: Dictionary = data.get("stats", {})
+	for stat: String in saved_stats:
+		spec.stats[stat] = float(saved_stats[stat])
+	var saved_skills: Dictionary = data.get("skills", {})
+	for target: String in saved_skills:
+		spec.skills[target] = int(saved_skills[target])
+	spec.techniques = PackedStringArray(data.get("techniques", []))
+	spec.battle_experience = int(data.get("battle_experience", 0))
+	spec.weapon = Content.weapon(str(data.get("weapon", ""))) if not str(data.get("weapon", "")).is_empty() else null
+	spec.armor = Content.armor(str(data.get("armor", ""))) if not str(data.get("armor", "")).is_empty() else null
+	spec.accessory = Content.accessory(str(data.get("accessory", ""))) if not str(data.get("accessory", "")).is_empty() else null
+	spec.ability = Content.ability(str(data.get("ability", ""))) if not str(data.get("ability", "")).is_empty() else null
+	spec.energy = float(data.get("energy", 100.0))
+	spec.happiness = float(data.get("happiness", 70.0))
+	var saved_tendencies: Dictionary = data.get("tendencies", {})
+	for key: String in saved_tendencies:
+		spec.tendencies[key] = float(saved_tendencies[key])
+	spec.refresh()
+	return spec
+
+
 ## Plain data for logs, replays and determinism checks.
 func to_dict() -> Dictionary:
 	return {

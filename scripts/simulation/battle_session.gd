@@ -15,6 +15,8 @@ var result: Dictionary = {}
 ## What the champion learned (SimulationExperience.collect).
 var learned: Dictionary = {}
 var loss_streak_before := 0
+## A saved battle watched again: nothing is applied and leaving goes back.
+var rewatch := false
 
 
 ## Simulates `champion` against the fight's opponent and applies the result.
@@ -33,6 +35,18 @@ static func start(fight: TrialData, champion: Champion, seed_value: int = 0) -> 
 	session.learned = SimulationExperience.collect(champion, Content.opponent(fight.opponent_id),
 			session.battle_log, session.outcome)
 	session.result = TrialSystem.apply_result(session.trial_outcome())
+	return session
+
+
+## Runs a saved battle again for watching only (BattleRecord.rewatch).
+static func watch(battle_state: BattleState, fight: TrialData) -> BattleSession:
+	var session := BattleSession.new()
+	session.trial = fight
+	session.rewatch = true
+	var sim := BattleSimulator.create(battle_state)
+	session.battle_log = sim.run()
+	session.state = sim.state
+	session.outcome = sim.outcome()
 	return session
 
 
@@ -55,6 +69,7 @@ func trial_outcome() -> Dictionary:
 		"difficulty_multiplier": learned.get("difficulty_multiplier", 1.0),
 		"defeat_factor": learned.get("defeat_factor", 1.0), "loss_streak_before": loss_streak_before,
 		"simulation": outcome.to_dict(),
+		"replay": BattleRecord.pack(battle_log),
 		"fatigue": ConditionEffects.battle_fatigue(outcome.duration, int(me.get("exhaustions", 0))),
 		"spirit": ConditionEffects.spirit(outcome.player_won(), 1.0 - float(foe.get("health_ratio", 1.0)),
 				float(me.get("health_ratio", 0.0))),

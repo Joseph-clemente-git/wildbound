@@ -121,8 +121,12 @@ func restart() -> void:
 	camera.snap()
 
 
-## Leaves for the result (already applied).
+## Leaves for the result (already applied) — or, for a saved battle watched
+## again, back to the Journey.
 func skip() -> void:
+	if session.rewatch:
+		Router.go("journey")
+		return
 	Router.go("result", {"outcome": session.result, "session": session})
 
 
@@ -338,7 +342,7 @@ func _build_ui() -> void:
 		_speed_buttons.append(button)
 		controls.add_child(button)
 	controls.add_child(UiKit.button("⟲ Replay", restart, "", 140))
-	var skip_button := UiKit.button("Skip ▶▶", skip, "", 140)
+	var skip_button := UiKit.button("Leave" if session.rewatch else "Skip ▶▶", skip, "", 140)
 	skip_button.name = "Skip"
 	controls.add_child(skip_button)
 	column.add_child(controls)
@@ -390,7 +394,7 @@ func _build_banner() -> Control:
 	var row := UiKit.hbox(12)
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_child(UiKit.button("⟲ Watch again", restart, "", 200))
-	var result := UiKit.primary_button("See the result", skip, 220)
+	var result := UiKit.primary_button("Done" if session.rewatch else "See the result", skip, 220)
 	result.name = "SeeResult"
 	row.add_child(result)
 	column.add_child(row)

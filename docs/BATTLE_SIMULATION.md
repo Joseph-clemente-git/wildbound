@@ -42,7 +42,7 @@ until the simulation replaces it.
 | 21 | Natural Growth | Done | `SimulationExperience._terrain_growth`, `GrowthSystem`, `tests/unit/test_experience_sim.gd`, `tests/unit/test_playthrough.gd` |
 | 22 | Trainer Development Integration | Done | `systems/battle_review.gd`, `TrialSystem.apply_result`, `ui/screens/battle_result.gd`, `tests/unit/test_development_condition.gd` |
 | 23 | Energy / Happiness Integration | Done | `simulation/condition_effects.gd`, `CombatantSpec.refresh`, `DecisionPhase.reaction_time`, `tests/unit/test_development_condition.gd` |
-| 24 | Save/Load Integration | — | |
+| 24 | Save/Load Integration | Done | `simulation/battle_record.gd`, `CombatantSpec.from_dict`, `core/save_manager.gd` (v2), `tests/unit/test_saved_battles.gd` |
 | 25 | Mobile UX Polish | — | |
 
 ## Stage 1 — Opponent Data Model
@@ -744,4 +744,21 @@ when it has one (`suggest_training` remains the fallback). The result screen sho
 
 Tests check that tired and low-mood champions never do better, and over 8 seeds win at most
 4 fewer fights than rested and content ones.
+
+## Stage 24 — Save/Load Integration
+
+- **Battles are saved as inputs, not frames.** Each champion history entry now carries
+  `reason` and a `replay`: the battle log header (every combatant's frozen spec, arena,
+  seed, teams), packed save-safe by `BattleRecord.pack` (colours as html, numbers as a
+  save loads them). The simulation is deterministic, so `BattleRecord.rewatch(entry)`
+  rebuilds the specs (`CombatantSpec.from_dict`) and runs the identical fight again, event
+  for event. Only the latest `REPLAY_LIMIT` (3) battles per champion keep their replay
+  (about 4 KB each).
+- **Rewatching changes nothing**: `BattleSession.watch` simulates without applying a result;
+  the replay screen's *Leave*/*Done* return to the Journey. The Journey lists **Recent
+  battles** with a ▶ button each.
+- **Recruits and natural skills** (Shark, Eagle and anything learned in water or air) are
+  ordinary champion data and survive save/load.
+- **Save version 2.** `_migrate_1_to_2` gives every champion its animal's Natural Foundation
+  skills when missing and fills the new record fields; old records simply have no replay.
 

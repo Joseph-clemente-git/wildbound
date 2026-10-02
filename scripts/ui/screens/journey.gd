@@ -40,6 +40,7 @@ func _ready() -> void:
 	left_column.add_child(UiKit.label("REGIONS", "DimLabel"))
 	_regions = UiKit.vbox(8)
 	left_column.add_child(UiKit.scroll(_regions))
+	_build_recent(left_column)
 	var right := UiKit.panel("SheetPanel")
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(right)
@@ -62,6 +63,33 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _back() -> void:
 	Router.go("lodge")
+
+
+## The champion's latest saved battles, ready to watch again.
+func _build_recent(parent: VBoxContainer) -> void:
+	var entries: Array[Dictionary] = []
+	for entry: Dictionary in Game.champion().history:
+		if BattleRecord.has_replay(entry):
+			entries.append(entry)
+	if entries.is_empty():
+		return
+	parent.add_child(UiKit.label("RECENT BATTLES", "DimLabel"))
+	var list := UiKit.vbox(6)
+	list.name = "RecentBattles"
+	parent.add_child(list)
+	for entry in entries:
+		var opponent := Content.opponent(str(entry.get("opponent", "")))
+		var seconds := roundi(float(entry.get("duration", 0.0)))
+		var text := "▶ %s vs %s · %d:%02d" % ["Won" if entry.get("won", false) else "Lost",
+				opponent.display_name if opponent != null else "?", seconds / 60, seconds % 60]
+		list.add_child(UiKit.button(text, watch_again.bind(entry)))
+
+
+## Replays a saved battle (nothing is applied again).
+func watch_again(entry: Dictionary) -> void:
+	var session := BattleRecord.rewatch(entry)
+	if session != null:
+		Router.go("replay", {"session": session})
 
 
 func _header() -> Control:

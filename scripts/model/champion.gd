@@ -289,6 +289,9 @@ func record_battle(entry: Dictionary) -> void:
 	history.push_front(entry)
 	while history.size() > HISTORY_LIMIT:
 		history.pop_back()
+	# Only the latest battles keep their replay (BattleRecord).
+	for i in range(BattleRecord.REPLAY_LIMIT, history.size()):
+		history[i].erase("replay")
 
 
 func to_dict() -> Dictionary:

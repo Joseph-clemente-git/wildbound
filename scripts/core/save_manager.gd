@@ -10,11 +10,12 @@ signal load_failed(reason: String)
 
 const SAVE_PATH := "user://wildbound_save.json"
 const BACKUP_PATH := "user://wildbound_save.bak.json"
-const VERSION := 1
+const VERSION := 2
 
 ## from_version -> Callable(Dictionary) -> Dictionary returning version + 1 data.
 var MIGRATIONS := {
 	0: _migrate_0_to_1,
+	1: _migrate_1_to_2,
 }
 
 var path_override := ""  # tests write elsewhere
@@ -101,3 +102,28 @@ func _migrate_0_to_1(game: Dictionary) -> Dictionary:
 	if not result.has("profile"):
 		result = {"profile": game, "champions": game.get("champions", [])}
 	return result
+
+
+## Version 2 (battle simulation): champions gain their animal's Natural
+## Foundation skills, and battle records the summary fields the Journey and
+## replays read. Older records carry no replay and are simply not watchable.
+func _migrate_1_to_2(game: Dictionary) -> Dictionary:
+	var result := game.duplicate(true)
+	for champion: Variant in result.get("champions", []):
+		if not champion is Dictionary:
+			continue
+		var animal := Content.animal(str(champion.get("animal_id", "humanoid_dog")))
+		var skills: Dictionary = champion.get("skills", {})
+		var ranks: Dictionary = skills.get("ranks", {})
+		skills["ranks"] = ranks
+		champion["skills"] = skills
+		if animal != null:
+			for target: String in animal.starting_skills:
+				if not ranks.has(target):
+					ranks[target] = int(animal.starting_skills[target])
+		for entry: Variant in champion.get("history", []):
+			if entry is Dictionary:
+				entry["reason"] = entry.get("reason", "")
+				entry["replay"] = entry.get("replay", {})
+	return result
+

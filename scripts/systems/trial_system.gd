@@ -81,6 +81,7 @@ static func apply_result(outcome: Dictionary) -> Dictionary:
 	champion.record_battle({
 		"trial": trial.display_name, "trial_id": trial.id, "opponent": trial.opponent_id, "won": won,
 		"duration": float(roundi(outcome.get("duration", 0.0))), "time": Game.now(),
+		"reason": outcome.get("reason", ""), "replay": outcome.get("replay", {}),
 	})
 	Game.set_flag("attempted_" + trial.id)
 	if trial.tutorial or trial.id == "first_steps":

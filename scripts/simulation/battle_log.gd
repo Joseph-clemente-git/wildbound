@@ -17,9 +17,12 @@ static func begin(state: BattleState, rate: int) -> BattleLog:
 	var result := BattleLog.new()
 	result.tick_rate = rate
 	var specs: Array = []
+	var teams: Array = []
 	for fighter in state.combatants:
 		specs.append(fighter.spec.to_dict())
-	result.header = {"trial": state.trial_id, "arena": state.layout.id, "seed": state.battle_seed, "combatants": specs}
+		teams.append(fighter.team)
+	result.header = {"trial": state.trial_id, "arena": state.layout.id, "seed": state.battle_seed,
+			"combatants": specs, "teams": teams}
 	result.keyframes.append(state.snapshot())
 	return result
 
