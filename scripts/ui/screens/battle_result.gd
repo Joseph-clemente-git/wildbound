@@ -169,7 +169,12 @@ func _next_steps(column: VBoxContainer) -> void:
 			row.add_child(UiKit.button("Train %s" % SkillCatalog.target_name(suggestion["target"]), _continue.bind(
 					{"panel": "training", "options": {"trainer": trainer.id, "target": suggestion["target"]}})))
 	row.add_child(UiKit.spacer(false))
-	row.add_child(UiKit.primary_button("Return to the lodge", _continue.bind({}), 260))
+	if outcome.get("knocked_out", false):
+		# First failure teaches recovery: one clear, low-stakes next step.
+		row.add_child(UiKit.button("Return to the lodge", _continue.bind({})))
+		row.add_child(UiKit.primary_button("Rest & recover", _continue.bind({"panel": "recovery"}), 260))
+	else:
+		row.add_child(UiKit.primary_button("Return to the lodge", _continue.bind({}), 260))
 	column.add_child(row)
 
 
