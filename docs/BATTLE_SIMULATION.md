@@ -27,7 +27,7 @@ until the simulation replaces it.
 | 7 | Simulation Tick System | Done | `simulation/battle_simulator.gd`, `simulation_phase.gd`, `sim_frame.gd`, `battle_log.gd`, `phases/`, `tests/unit/test_simulation_tick.gd` |
 | 8 | Action System | Done | `simulation/phases/action_phase.gd`, `movement_phase.gd`, `scripted_decision_phase.gd`, `tests/unit/test_action_system.gd` |
 | 9 | Attack Resolution | Done | `simulation/phases/contact_phase.gd`, `tests/unit/test_attack_resolution.gd` |
-| 10 | Damage / Defense | — | |
+| 10 | Damage / Defense | Done | `simulation/phases/damage_phase.gd`, `tests/unit/test_damage.gd` |
 | 11 | Dodge / Block | — | |
 | 12 | Stamina | — | |
 | 13 | Stagger / Knockback | — | |
@@ -246,7 +246,7 @@ frame rate. Every tick passes through the same pipeline, in this order:
 | Combat Decision | `decision` | Stage 16 |
 | Action Resolution | `action` | Stage 8 — `ActionPhase` |
 | Hit / Dodge / Block | `contact` | Stage 9 — `ContactPhase` (reach); Stage 11 adds dodge / block |
-| Damage | `damage` | Stage 10 |
+| Damage | `damage` | Stage 10 — `DamagePhase` |
 | Stagger / Knockback | `force` | Stage 13 |
 | Position Update | `movement` | Stage 8 — `MovementPhase` |
 | Stamina Update | `stamina` | Stage 12 |
@@ -344,3 +344,28 @@ geometry, never a roll.
 Every connection becomes a **hit** in `SimFrame.hits` — `{attacker, target, kind,
 combo, swing, ability, direction, via: melee | projectile | area}` — plus a `hit` event.
 Dodging and blocking it (Stage 11) and its damage (Stage 10) come next.
+
+## Stage 10 — Damage / Defense
+
+`DamagePhase` turns each hit that got through into lost health:
+
+```
+raw   = light: derived damage × (1 + 0.10 per combo step after the first)
+        heavy: derived heavy damage (Strength-scaled)
+        Art:   Art damage × (1 + 0.06 per magic mastery rank above its requirement)
+      × opening bonus 1.12 + 0.02 per mastery rank, when the target is committed
+        (winding up, recovering, casting, staggered)
+      × controlled variation ±(9% − 1.2% per mastery rank, at least 2%), seeded
+      × (1 − target mitigation)           Defense, armor, defense skill
+      × target block factor if blocked    (Stage 11)
+```
+
+- **Attack** raises every blow; **Strength** raises heavy blows more than light ones (and
+  drives force in Stage 13); **Defense** and armor reduce everything.
+- **Weapon mastery** is more than a small damage bonus: an expert's damage is more
+  consistent and punishes openings harder, so *High Attack + Novice Sword* and *High
+  Attack + Expert Sword* fight differently.
+- Health actually drops, so the Knockout step now ends battles: a scripted 1v1 reaches a
+  decided knockout, and the same seed reproduces it exactly.
+- Events: `damage {amount, kind, outcome, opening, health_left}`; each hit records its
+  `damage` and `opening`.
