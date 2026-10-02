@@ -14,8 +14,9 @@ extends SimulationPhase
 ##   strike everyone within their radius. Movement Arts strike no one.
 ##
 ## Teammates are never struck. Everything that connects becomes a hit in
-## the frame; whether it is dodged or blocked (Stage 11) and how much it
-## hurts (Stage 10) is decided by the steps that follow.
+## the frame, answered on the spot by DefenseRules — evaded, parried,
+## blocked or a clean hit (Stage 11) — and costed by Damage (Stage 10).
+## A dodged shot flies on past its target; a blocked one stops.
 
 const A := CombatantState.Action
 const E := MagicAbilityData.Effect
@@ -133,10 +134,12 @@ func _fly(state: BattleState, frame: SimFrame) -> void:
 		var blocked := not line_clear(state, from, to)
 		if struck != null and (not blocked or _nearer(from, struck.position, state, from, to)):
 			var owner := state.combatants[shot["owner"]]
-			_hit(owner, struck, {"kind": shot["kind"], "ability": shot["ability"], "swing": shot["swing"],
+			var hit := _hit(owner, struck, {"kind": shot["kind"], "ability": shot["ability"], "swing": shot["swing"],
 					"combo": shot["combo"]}, frame, "projectile")
-			state.projectiles.remove_at(i)
-			continue
+			if hit["outcome"] != "evaded":
+				state.projectiles.remove_at(i)
+				continue
+			shot["passed"] = shot.get("passed", []) + [struck.index]
 		if blocked:
 			frame.emit("projectile_blocked", shot["owner"], -1, {"id": shot["id"]})
 			state.projectiles.remove_at(i)
@@ -152,7 +155,7 @@ static func _first_body(state: BattleState, shot: Dictionary, from: Vector2, to:
 	var best: CombatantState = null
 	var best_distance := INF
 	for target in state.combatants:
-		if target.team == shot["team"] or not target.is_alive():
+		if target.team == shot["team"] or not target.is_alive() or shot.get("passed", []).has(target.index):
 			continue
 		var closest := Geometry2D.get_closest_point_to_segment(target.position, from, to)
 		if closest.distance_to(target.position) <= CombatantState.BODY_RADIUS + float(shot["radius"]):
@@ -176,7 +179,8 @@ static func _nearer(origin: Vector2, body: Vector2, state: BattleState, from: Ve
 
 # --- Results ---------------------------------------------------------------------
 
-func _hit(attacker: CombatantState, target: CombatantState, contact: Dictionary, frame: SimFrame, via: String) -> void:
+func _hit(attacker: CombatantState, target: CombatantState, contact: Dictionary, frame: SimFrame,
+		via: String) -> Dictionary:
 	var direction := (target.position - attacker.position)
 	direction = direction.normalized() if direction.length() > 0.001 else attacker.facing
 	var hit := {
@@ -184,5 +188,16 @@ func _hit(attacker: CombatantState, target: CombatantState, contact: Dictionary,
 		"combo": contact.get("combo", 0), "swing": contact.get("swing", 0),
 		"ability": contact.get("ability", ""), "direction": direction, "via": via,
 	}
+	DefenseRules.resolve(attacker, target, hit)
 	frame.hits.append(hit)
-	frame.emit("hit", attacker.index, target.index, {"kind": hit["kind"], "via": via, "ability": hit["ability"]})
+	frame.emit("hit", attacker.index, target.index, {"kind": hit["kind"], "via": via, "ability": hit["ability"],
+			"outcome": hit["outcome"], "perfect": hit["perfect"]})
+	match hit["outcome"]:
+		"evaded":
+			frame.emit("evade", target.index, attacker.index, {"perfect": hit["perfect"], "kind": hit["kind"]})
+		"parried":
+			frame.emit("parry", target.index, attacker.index, {"kind": hit["kind"]})
+		"blocked":
+			frame.emit("block", target.index, attacker.index, {"perfect": hit["perfect"], "kind": hit["kind"],
+					"guard_drain": snappedf(hit["guard_drain"], 0.01)})
+	return hit

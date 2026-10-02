@@ -28,7 +28,7 @@ until the simulation replaces it.
 | 8 | Action System | Done | `simulation/phases/action_phase.gd`, `movement_phase.gd`, `scripted_decision_phase.gd`, `tests/unit/test_action_system.gd` |
 | 9 | Attack Resolution | Done | `simulation/phases/contact_phase.gd`, `tests/unit/test_attack_resolution.gd` |
 | 10 | Damage / Defense | Done | `simulation/phases/damage_phase.gd`, `tests/unit/test_damage.gd` |
-| 11 | Dodge / Block | — | |
+| 11 | Dodge / Block | Done | `simulation/defense_rules.gd`, `phases/contact_phase.gd`, `tests/unit/test_dodge_block.gd` |
 | 12 | Stamina | — | |
 | 13 | Stagger / Knockback | — | |
 | 14 | Weapon Behavior | — | |
@@ -245,7 +245,7 @@ frame rate. Every tick passes through the same pipeline, in this order:
 | --- | --- | --- |
 | Combat Decision | `decision` | Stage 16 |
 | Action Resolution | `action` | Stage 8 — `ActionPhase` |
-| Hit / Dodge / Block | `contact` | Stage 9 — `ContactPhase` (reach); Stage 11 adds dodge / block |
+| Hit / Dodge / Block | `contact` | Stages 9 & 11 — `ContactPhase` + `DefenseRules` |
 | Damage | `damage` | Stage 10 — `DamagePhase` |
 | Stagger / Knockback | `force` | Stage 13 |
 | Position Update | `movement` | Stage 8 — `MovementPhase` |
@@ -369,3 +369,21 @@ raw   = light: derived damage × (1 + 0.10 per combo step after the first)
   decided knockout, and the same seed reproduces it exactly.
 - Events: `damage {amount, kind, outcome, opening, health_left}`; each hit records its
   `damage` and `opening`.
+
+## Stage 11 — Dodge / Block
+
+Each hit is answered at the moment of contact by `DefenseRules.resolve` — timing and
+position, never a roll:
+
+| Outcome | When | Effect |
+| --- | --- | --- |
+| **evaded** | the target is inside a dodge's protected window (length from dodge skill) | no damage; inside the first half of the perfect window it is *perfect* |
+| **parried** | a melee blow meets a guard raised within the perfect window (Timing widens it), facing the attacker | no damage; the attacker is left exposed (stagger in Stage 13) |
+| **blocked** | a raised guard facing the attacker (±70°) | only the block factor gets through (block skill, Defense); the guard pays `guard_drain` stamina = raw × 0.35 × attacker's guard pressure (half if perfect) — applied in Stage 12 |
+| **hit** | anything else — no guard, a guard still rising, a blow from behind, a dodge's recovery | full damage |
+
+**Evasion** is not a miss chance: it sets how far a dodge carries and how quickly it
+recovers, so a well-timed, evasive dodge gets out of reach entirely. Heavier weapons press
+a guard much harder (hammer guard pressure is over twice the sword's). A dodged shot flies
+on past its target (it can't hit the same target twice); a blocked shot stops.
+Events: `hit {outcome, perfect}`, `evade`, `parry`, `block {guard_drain}`.
