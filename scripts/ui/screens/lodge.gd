@@ -188,6 +188,9 @@ func _close_context() -> void:
 
 func open_panel(panel_id: String) -> void:
 	_close_context()
+	if panel_id == "trainers" and not Game.is_flag_set("met_first_trainer"):
+		select_station("trainers")
+		return
 	if panel_id == "champion":
 		Game.set_flag("inspected_champion")
 	panels.open(panel_id)
