@@ -21,9 +21,16 @@ func _ready() -> void:
 	add_child(camera)
 	camera.look_at(Vector3(0, 1.5, 0) if close_up else Vector3(0, 0.95, 0))
 	# `-- --human` previews the people rig (mentors, Old Marten) instead.
+	# `-- --animal=<id>` previews another champion body (e.g. humanoid_shark).
+	var animal_id := ""
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--animal="):
+			animal_id = arg.trim_prefix("--animal=")
 	if OS.get_cmdline_user_args().has("--human"):
 		_dog = ProceduralHumanVisual.new(ProceduralHumanVisual.ELDER)
 		_dog.set_weapon("staff")
+	elif not animal_id.is_empty():
+		_dog = CharacterFactory.create(Content.animal(animal_id)) as ProceduralRigVisual
 	else:
 		_dog = ProceduralDogVisual.new()
 	_dog.rotation.y = deg_to_rad(-25)

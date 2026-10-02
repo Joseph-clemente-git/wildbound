@@ -97,11 +97,7 @@ func _build_rig() -> void:
 		for toe: float in [-0.03, 0.0, 0.03]:
 			_attach(shin, _sphere(0.012, "claw"), Vector3(toe, -SHIN - 0.05, -0.18))
 
-	# Tail: three segments curling up and back.
-	var tail := _pivot(hips, "Tail", Vector3(0, 0.03, 0.15), "tail")
-	_attach(tail, _capsule(0.05, 0.22, "fur"), Vector3(0, 0, 0.1), Vector3(PI * 0.5, 0, 0))
-	_attach(tail, _capsule(0.045, 0.2, "fur"), Vector3(0, 0.0, 0.26), Vector3(PI * 0.5, 0, 0))
-	_attach(tail, _sphere(0.055, "fur_light"), Vector3(0, 0.0, 0.38), Vector3.ZERO, "TailTip", Vector3(0.9, 0.9, 1.4))
+	_build_tail(_pivot(hips, "Tail", Vector3(0, 0.03, 0.15), "tail"))
 
 	var spine := _pivot(hips, "Spine", Vector3(0, 0.1, 0), "spine")
 	_attach(spine, _capsule(0.165, 0.42, "fur"), Vector3(0, 0.12, 0), Vector3.ZERO, "Belly", Vector3(1.0, 1.0, 0.8))
@@ -127,6 +123,19 @@ func _build_rig() -> void:
 	var neck := _pivot(chest, "Neck", Vector3(0, 0.2, -0.02), "neck")
 	_attach(neck, _capsule(0.085, 0.2, "fur"), Vector3(0, 0.05, 0))
 	var head := _pivot(neck, "Head", Vector3(0, 0.15, -0.02), "head")
+	_build_head(head)
+	_build_extras(chest, hips)
+
+
+## Tail: three segments curling up and back. Other animals override.
+func _build_tail(tail: Node3D) -> void:
+	_attach(tail, _capsule(0.05, 0.22, "fur"), Vector3(0, 0, 0.1), Vector3(PI * 0.5, 0, 0))
+	_attach(tail, _capsule(0.045, 0.2, "fur"), Vector3(0, 0.0, 0.26), Vector3(PI * 0.5, 0, 0))
+	_attach(tail, _sphere(0.055, "fur_light"), Vector3(0, 0.0, 0.38), Vector3.ZERO, "TailTip", Vector3(0.9, 0.9, 1.4))
+
+
+## Dog head: skull, snout, nose, eyes and pointed ears. Other animals override.
+func _build_head(head: Node3D) -> void:
 	_attach(head, _sphere(0.165, "fur"), Vector3(0, 0.06, 0), Vector3.ZERO, "Skull", Vector3(1.0, 0.95, 1.05))
 	_attach(head, _sphere(0.1, "fur_light"), Vector3(0, -0.01, -0.12), Vector3.ZERO, "Cheeks", Vector3(1.3, 0.8, 0.8))
 	_attach(head, _capsule(0.075, 0.22, "fur_light"), Vector3(0, 0.0, -0.2), Vector3(PI * 0.5, 0, 0), "Snout", Vector3(1.0, 1.0, 0.85))
@@ -143,6 +152,13 @@ func _build_rig() -> void:
 		var inner := PrismMesh.new()
 		inner.size = Vector3(0.08, 0.13, 0.02)
 		_attach(ear, _mesh(inner, "inner_ear"), Vector3(0, 0.065, -0.018), Vector3(0, 0, -0.22 * side))
+
+
+
+
+## Fins, wings and the like on other animals.
+func _build_extras(_chest: Node3D, _hips: Node3D) -> void:
+	pass
 
 
 ## Armor pieces live under their bone but are tracked so they can be swapped.

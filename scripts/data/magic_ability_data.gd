@@ -27,6 +27,14 @@ enum Effect { PROJECTILE, CONE_PUSH, NOVA, DASH }
 ## Optional damage-over-time.
 @export var burn_dps: float = 0.0
 @export var burn_seconds: float = 0.0
+## Optional slow on whoever it strikes (0.5 = half speed).
+@export var slow_factor: float = 0.0
+@export var slow_seconds: float = 0.0
+## Optional ward on the caster: share of incoming damage turned aside.
+@export var ward_factor: float = 0.0
+@export var ward_seconds: float = 0.0
+## Knocks a flier out of the air when it strikes it aloft (wind, control).
+@export var grounds_fliers: bool = false
 ## Taking a hit while casting cancels the spell.
 @export var interruptible: bool = true
 @export_multiline var counterplay: String = ""

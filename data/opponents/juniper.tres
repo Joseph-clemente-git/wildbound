@@ -7,6 +7,7 @@ script = ExtResource("1_s")
 id = "juniper"
 display_name = "Juniper"
 title = "Meadow Runner"
+bio = "A quick, laughing runner who wins by never being where you swing. Fights in light garb and lives on footwork."
 animal_id = "humanoid_dog"
 palette = {
 "fur": Color(0.7882, 0.4157, 0.1804, 1.0),
@@ -30,18 +31,16 @@ skills = {
 "weapon:sword": 3,
 "skill:dodge": 3
 }
+battles_fought = 15
 weapon_id = "sword_training"
 armor_id = "armor_light"
 magic_ability_id = ""
-phases = Array[Dictionary]([])
 intro_line = "Juniper grins and dances backward. \"Catch me if you can!\""
 win_line = "Juniper laughs, out of breath. \"Okay, okay — you caught me!\""
 lose_line = "Juniper twirls. \"Too slow! But you're getting faster.\""
 sort_order = 2
 aggression = 0.7
-block_skill = 0.15
-dodge_skill = 0.7
+caution = 0.5
+mobility = 0.85
 heavy_chance = 0.15
-reaction_time = 0.25
-telegraph = 1.0
 preferred_range = 1.8

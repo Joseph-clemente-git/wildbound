@@ -13,6 +13,10 @@ static func create(animal: AnimalData, palette: Dictionary = {}) -> CharacterVis
 	var colours := animal.palette.duplicate() if animal != null else {}
 	colours.merge(palette, true)
 	match animal.visual_id if animal != null else "":
+		"procedural_shark":
+			return ProceduralSharkVisual.new(colours)
+		"procedural_eagle":
+			return ProceduralEagleVisual.new(colours)
 		_:
 			return ProceduralDogVisual.new(colours)
 

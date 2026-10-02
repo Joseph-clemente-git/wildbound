@@ -1,6 +1,6 @@
 class_name AetherBolt
 extends Node3D
-## Glowing projectile body with a trail. BattleManager moves it; `burst()`
+## Glowing projectile body with a trail. The replay moves it; `burst()`
 ## plays the impact and frees it.
 
 var color := Color.ORANGE

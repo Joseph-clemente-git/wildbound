@@ -104,6 +104,13 @@ func _build_matrix(container: VBoxContainer, champion: Champion) -> void:
 	potentials.append("Aether %d" % roundi(animal.get_potential(GameEnums.MAGIC_POTENTIAL)))
 	foundation.add_child(UiKit.label("Potential: " + " · ".join(potentials), "DimLabel", true))
 	foundation.add_child(UiKit.label("Combat capability: %s" % champion.capability_name()))
+	var natural := SkillCatalog.NATURAL_ORDER.filter(func(skill: String) -> bool:
+		return champion.skills.get_rank("skill:" + skill) > 0)
+	if not natural.is_empty():
+		var nature := card(SkillCatalog.CATEGORY_NAMES[SkillCatalog.NATURAL],
+				"How this body moves through water and air. It decides how terrain helps or hinders it.")
+		for skill: String in natural:
+			nature.add_child(_skill_row(champion, "skill:" + skill))
 
 	var fundamentals := card(SkillCatalog.CATEGORY_NAMES[SkillCatalog.FUNDAMENTALS])
 	var hidden := 0

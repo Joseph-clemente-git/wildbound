@@ -15,6 +15,8 @@ counterplay = "It cannot move: reposition and wait it out."
 stamina_cost = 24.0
 cast_time = 0.5
 damage = 0.0
+ward_factor = 0.5
+ward_seconds = 3.0
 
 [resource]
 script = ExtResource("1_s")

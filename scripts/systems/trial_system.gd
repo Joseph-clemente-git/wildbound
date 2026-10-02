@@ -19,6 +19,12 @@ static func is_unlocked(trial: TrialData) -> bool:
 static func entry_blocker(champion: Champion, trial: TrialData) -> String:
 	if not is_unlocked(trial):
 		return "This trial is not open yet."
+	return champion_blocker(champion, trial)
+
+
+## Whether this champion is fit to enter this fight, regardless of whether
+## the fight itself is open. Empty when ready.
+static func champion_blocker(champion: Champion, trial: TrialData) -> String:
 	if champion.knocked_out:
 		return "%s is recovering from a knockout. Rest first." % champion.name
 	if champion.energy < trial.energy_cost:
@@ -64,17 +70,27 @@ static func apply_result(outcome: Dictionary) -> Dictionary:
 		champion.losses += 1
 		champion.loss_streak += 1
 	var happiness := ConditionSystem.happiness_after_battle(champion, won)
+	# How the fight went (simulated battles): long, breathless fights tire,
+	# and a hard-fought loss stings less than a one-sided one.
+	if float(outcome.get("spirit", 0.0)) != 0.0:
+		happiness += champion.change_happiness(float(outcome["spirit"]))
+	if float(outcome.get("fatigue", 0.0)) > 0.0:
+		champion.consume_energy(minf(float(outcome["fatigue"]), champion.energy))
 	if not won and not outcome.get("forfeited", false):
 		ConditionSystem.knock_out(champion, Game.now())
 	champion.record_battle({
 		"trial": trial.display_name, "trial_id": trial.id, "opponent": trial.opponent_id, "won": won,
 		"duration": float(roundi(outcome.get("duration", 0.0))), "time": Game.now(),
+		"reason": outcome.get("reason", ""), "replay": outcome.get("replay", {}),
 	})
 	Game.set_flag("attempted_" + trial.id)
 	if trial.tutorial or trial.id == "first_steps":
 		Game.set_flag("first_trial_done")
 	if won:
 		Game.set_flag(trial.cleared_flag())
+	var recruited := ""
+	if first_win and trial.recruit_on_first_win:
+		recruited = recruit(Content.opponent(trial.opponent_id))
 	var story := ""
 	if first_win and not trial.story_after_win.is_empty():
 		story = trial.story_after_win
@@ -86,11 +102,34 @@ static func apply_result(outcome: Dictionary) -> Dictionary:
 		"owner_level_before": keeper_level, "owner_levels": owner_levels,
 		"animal_level_before": animal_level, "animal_levels": animal_levels,
 		"happiness": happiness, "energy_before": energy_before, "energy_after": champion.energy,
-		"knocked_out": champion.knocked_out, "story": story,
+		"knocked_out": champion.knocked_out, "story": story, "recruited": recruited,
 		"suggestion": suggest_training(champion, outcome.get("experience", {})),
 	}, true)
+	if outcome.has("simulation"):
+		var review := BattleReview.review(champion, profile, outcome["simulation"], outcome.get("experience", {}))
+		result["review"] = review
+		if not (review["suggestion"] as Dictionary).is_empty():
+			result["suggestion"] = review["suggestion"]
 	Game.save()
 	return result
+
+
+## A defeated visiting champion joins the lodge, bringing its weapon.
+## Returns the newcomer's name ("" if the animal is unknown).
+static func recruit(opponent: OpponentData) -> String:
+	var animal := Content.animal(opponent.animal_id)
+	if animal == null:
+		return ""
+	var newcomer := Champion.create(animal, opponent.display_name, Game.now())
+	newcomer.palette = opponent.palette.duplicate()
+	newcomer.armor_id = "armor_light"
+	if Content.weapon(opponent.weapon_id) != null:
+		Game.profile.add_item(opponent.weapon_id)
+		newcomer.weapon_id = opponent.weapon_id
+		newcomer.skills.set_rank("weapon:" + Content.weapon(opponent.weapon_id).weapon_type, SkillCatalog.WEAPON_FIRST_RANK)
+	Game.add_champion(newcomer)
+	Game.say("%s the %s joins your lodge!" % [newcomer.name, animal.display_name.to_lower()], UiTheme.GOOD)
+	return newcomer.name
 
 
 ## Story §39: after a battle, point at the experience worth building on and a

@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="OpponentData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/opponent_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "aquila"
+display_name = "Aquila"
+title = "Ridge Hunter"
+bio = "An eagle champion from the High Cliffs who hunts the valley's windy ridge. Aquila fights from the air with a quick blade and calls the wind to knock challengers off balance."
+animal_id = "humanoid_eagle"
+palette = {
+"fur": Color(0.3059, 0.2118, 0.1333, 1.0),
+"fur_light": Color(0.9608, 0.949, 0.9176, 1.0),
+"fur_dark": Color(0.1647, 0.1098, 0.0706, 1.0),
+"scarf": Color(0.6902, 0.4784, 0.1569, 1.0),
+"cloth": Color(0.2431, 0.1882, 0.1333, 1.0)
+}
+level = 3
+stats = {
+"health": 40.0,
+"attack": 48.0,
+"strength": 36.0,
+"attack_speed": 56.0,
+"defense": 32.0,
+"agility": 64.0,
+"evasion": 62.0,
+"endurance": 52.0
+}
+skills = {
+"weapon:sword": 3,
+"skill:flight": 4,
+"skill:dodge": 3,
+"magic:wind": 3,
+"skill:timing": 2
+}
+battles_fought = 20
+weapon_id = "sword_training"
+armor_id = "armor_light"
+magic_ability_id = "gale_push"
+aggression = 0.55
+caution = 0.45
+mobility = 0.8
+heavy_chance = 0.15
+magic_chance = 0.3
+preferred_range = 1.9
+intro_line = "Aquila spreads its wings on the ridge wind. \"Catch me first, valley-walker.\""
+win_line = "Aquila lands and folds its wings. \"You read the sky well. Your lodge would be a fine perch.\""
+lose_line = "Aquila circles overhead. \"The wind is mine today.\""
+sort_order = 5

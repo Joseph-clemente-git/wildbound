@@ -32,6 +32,26 @@ extends EquipmentData
 ## Stamina drained from a blocking opponent per point of damage blocked.
 @export var guard_pressure: float = 1.0
 
+@export_group("Behavior")
+## Heavy swings shrug off the flinch of light blows during their wind-up
+## and strike (poise still builds toward a stagger).
+@export var heavy_hyper_armor: bool = false
+## Extra damage when striking a target from its side or back (0.35 = +35%).
+@export var flank_bonus: float = 0.0
+## Strengthens the guard while this weapon is held: less damage through and
+## less stamina paid per blocked blow (0.5 = halves both).
+@export var block_bonus: float = 0.0
+## Damage factor for shots at targets closer than `point_blank_range`.
+@export var point_blank_factor: float = 1.0
+@export var point_blank_range: float = 2.5
+
+@export_group("Ranged")
+## Speed of the shot in m/s. 0 = a melee weapon that strikes its arc;
+## above 0 each attack looses a projectile toward the target.
+@export var projectile_speed: float = 0.0
+## Radius of the shot.
+@export var projectile_radius: float = 0.2
+
 @export_group("Mastery")
 ## Techniques this weapon type participates in (for UI hints).
 @export var techniques: PackedStringArray = []

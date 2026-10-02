@@ -8,9 +8,19 @@ the Home Valley. Champions grow from what they actually live — *"this animal b
 this because of the way I raised and fought with it."*
 
 This repository contains the complete **Chapter 1 MVP** described in `mechanics.md` and
-`story.md`: one humanoid dog, ground movement, 1v1, one arena, Sword/Hammer, Fire/Wind,
-six mentors, armor, energy, happiness, experience, Skill Matrix, training, techniques,
-results, recovery, world map and versioned saves.
+`story.md`, with a **simulation-based battle system** (see
+[`docs/BATTLE_SIMULATION.md`](docs/BATTLE_SIMULATION.md)). You do not pilot fights: you
+choose the fight, choose and prepare the champion, then watch a 3D replay of a
+deterministic, tick-based simulation. The result comes from both sides' animal, stats,
+Skill Matrix, battle experience, weapon and mastery, armor, Aether Arts, trainers'
+development, energy, happiness, movement type and the arena — never from a hidden win
+chance, a power score or the story.
+
+Content: a humanoid dog, plus a **shark** (swimming) and an **eagle** (flying) who join
+your lodge when you beat them; three arenas (meadow ring, lakeshore with deep water, windy
+ridge with open sky); seven weapon types and six Aether schools; twenty mentors; armor,
+energy, happiness, experience, Skill Matrix, training, techniques, results, recovery,
+world map and versioned saves with replays.
 
 ## Play
 
@@ -20,22 +30,23 @@ Open the folder in Godot 4.7+ and press Play, or:
 godot --path .
 ```
 
-| Action | Touch (landscape) | Keyboard | Gamepad |
+Battles are watched, not piloted:
+
+| Replay | Touch (landscape) | Keyboard | Gamepad |
 | --- | --- | --- | --- |
-| Move | Left-side floating joystick (push to the rim to sprint) | WASD / arrows (+Shift sprint) | Left stick (+LB) |
-| Attack / Heavy | Right buttons | J / K | X / Y |
-| Dodge | Right button (direction = joystick) | Space | A |
-| Block (hold) | Right button | L | RB |
-| Aether Art | Right button (cooldown ring) | U | B |
-| Pause / back | II button, Android back | Esc | Start |
+| Pause / resume | Tap the battle, or ❚❚ | Space | A |
+| Speed 1× / 2× / 4× | Speed buttons | ← / → | LB / RB |
+| Watch again | ⟲ Replay | — | — |
+| Leave (to the result) | Skip ▶▶, Android back | Esc | Start |
 
 In the lodge, tap the champion or a station; drag to pan; pinch or wheel to zoom.
 
 ## The loop
 
 `Title → New Journey → Opening story → Lodge (inspect, Skill Matrix, meet a mentor, train,
-equip, Aether) → Journey → Battle Preparation → Arena → Battle Result → Rest → develop
-again → … → Home Valley Regional Trial → World Map`.
+equip, Aether) → Journey (region → fight) → Opponent Preview → Select Champion → Battle
+Preparation → Start Simulation → Watch Battle → Result (what it learned, mentor's notes) →
+Story / Rewards → Journey → develop again → … → Home Valley Regional Trial → World Map`.
 
 ## Project layout
 
@@ -47,12 +58,15 @@ scripts/data/    Resource classes and catalogs (GameConfig, AnimalData, SkillCat
 scripts/model/   Runtime state: OwnerProfile, Champion, SkillMatrix, ExperienceTracks
 scripts/systems/ Rules: experience/growth, training, mentors, techniques, equipment,
                  trials, condition/recovery, quests, story, codex
-scripts/combat/  Combatant, BattleManager, AiController, BattleRecorder, CombatStats,
-                 PlayerController, BattleCamera
-scripts/ui/      Screens, lodge panels and components (theme, HUDs, touch controls)
-scripts/presentation/  Procedural world, humanoid rig + animation library, glTF adapter
-scenes/          One thin scene per context: boot, title, story, lodge, world map,
-                 battle prep, arena, result
+scripts/simulation/  The battle simulation: specs and state, the tick pipeline (phases/),
+                 rules (defense, weapons, effects, terrain, condition, victory), outcome,
+                 experience, sessions and saved records
+scripts/combat/  CombatStats — the derived numbers shared by previews and the simulation
+scripts/ui/      Screens, lodge panels and components (theme, HUDs)
+scripts/presentation/  Procedural world and bodies (dog, human, shark, eagle), humanoid rig
+                 + animation library, glTF adapter, replay timeline and camera
+scenes/          One thin scene per context: boot, title, story, lodge, world map, journey,
+                 fight preview, champion select, battle prep, replay, result
 tests/           Headless unit/integration tests and visual scenarios
 tools/           run_tests.sh, balance_sim
 docs/            Asset pipeline and implementation map
@@ -66,20 +80,23 @@ Every balance number lives in `GameConfig` (`data/config/game_config.tres`).
 
 ```bash
 tools/run_tests.sh              # re-import + all headless tests (unit, UI smoke, full Chapter 1 playthrough)
-tools/run_tests.sh combat       # only files whose name contains "combat"
+tools/run_tests.sh terrain      # only files whose name contains "terrain"
 godot --headless --path . res://tools/balance_sim.tscn   # win rates vs every opponent
 # Screenshots of any state (needs a display or xvfb-run):
 godot --path . --write-movie out.png --fixed-fps 10 --quit-after 60 \
-      res://tests/visual/scenario.tscn -- --scenario=arena --trial=valley_regional
+      res://tests/visual/scenario.tscn -- --scenario=replay --trial=valley_regional
 ```
 
-Scenarios: `story`, `lodge`, `lodge_context`, `lodge_mid`, `panel --panel=<id>`, `arena`,
-`result`, `prep`, `map`; `tests/visual/dog_preview.tscn` renders every animation clip.
+Scenarios: `story`, `lodge`, `lodge_context`, `lodge_mid`, `panel --panel=<id>`, `result`,
+`prep --trial=<id>`, `journey`, `preview --trial=<id>`, `champions`, `replay --trial=<id>
+--speed=<n> [--skip]`, `map`; add `--scroll=<px>` to scroll a screen's list.
+`tests/visual/dog_preview.tscn -- --animal=<id>` renders every animation clip for an animal.
 
 ## Art
 
 All visuals are procedural placeholders built from primitives so the game runs with no
-external assets. Champions are animals (`ProceduralDogVisual`); mentors, Old Marten and
+external assets. Champions are animals (`ProceduralDogVisual` and the shark and eagle
+bodies built on it); mentors, Old Marten and
 other Keepers are people (`ProceduralHumanVisual`). Both share one humanoid rig, so they
 play the same animation clips. The rig follows the reusable skeleton from the design, so the
 Blender master character can replace it without touching gameplay — see

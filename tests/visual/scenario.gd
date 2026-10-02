@@ -20,6 +20,14 @@ func _ready() -> void:
 	Game.new_journey("Bruno")
 	Game.set_flag("opening_done")
 	call("_scenario_" + scenario)
+	# --scroll=<px> scrolls the screen's main list to review lower sections.
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--scroll="):
+			var amount := int(arg.trim_prefix("--scroll="))
+			_at(1.8, func() -> void:
+				var list := get_tree().current_scene.find_child("*ScrollContainer*", true, false) as ScrollContainer
+				if list != null:
+					list.scroll_vertical = amount)
 
 
 func _process(delta: float) -> void:
@@ -77,20 +85,6 @@ func _scenario_panel() -> void:
 	_at(1.0, func() -> void: _lodge().open_panel(panel))
 
 
-func _scenario_arena() -> void:
-	_prepare_mid()
-	var trial := "first_steps"
-	for arg in OS.get_cmdline_user_args():
-		if arg.begins_with("--trial="):
-			trial = arg.trim_prefix("--trial=")
-	Router.go("arena", {"trial": trial})
-	# Let an AI pilot the player so the battle plays itself for review.
-	_at(3.2, func() -> void:
-		var arena := get_tree().current_scene
-		var pilot := AiController.new(arena.hero, Content.opponent("juniper"), 5)
-		arena.battle.player_controller = pilot)
-
-
 func _scenario_result() -> void:
 	_prepare_mid()
 	TrainerManager.recruit(Game.profile, "agility_wren", true)
@@ -107,7 +101,70 @@ func _scenario_result() -> void:
 
 func _scenario_prep() -> void:
 	_prepare_mid()
-	Router.go("battle_prep", {"trial": "valley_regional"})
+	_progress(["cleared_first_steps", "cleared_stonewall_bout", "cleared_meadow_sprint"])
+	for item_id in ["hammer_iron", "armor_medium", "armor_heavy"]:
+		Game.profile.add_item(item_id)
+	Game.champion().skills.set_rank("weapon:sword", GameEnums.Rank.APPRENTICE)
+	Game.champion().skills.set_rank("magic:fire", GameEnums.Rank.FOUNDATION)
+	var trial := "stonewall_bout"
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--trial="):
+			trial = arg.trim_prefix("--trial=")
+	Router.go("battle_prep", {"trial": trial})
+
+
+func _scenario_journey() -> void:
+	_prepare_mid()
+	Game.set_flag("cleared_stonewall_bout")
+	Router.go("journey")
+
+
+func _scenario_preview() -> void:
+	_prepare_mid()
+	_progress(["cleared_first_steps", "cleared_stonewall_bout", "cleared_meadow_sprint"])
+	var trial := "stonewall_bout"
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--trial="):
+			trial = arg.trim_prefix("--trial=")
+	Router.go("fight_preview", {"trial": trial})
+
+
+func _scenario_champions() -> void:
+	_prepare_mid()
+	_progress(["cleared_first_steps", "cleared_stonewall_bout", "cleared_meadow_sprint"])
+	# A second, tired champion shows how the roster scales past the MVP's one dog.
+	var second := Champion.create(Content.animal("humanoid_dog"), "Mika", Game.now())
+	second.uid = "second"
+	second.palette = {"fur": Color("3a3330"), "scarf": Color("4f7ab8")}
+	second.energy = 12.0
+	second.happiness = 30.0
+	Game.champions.append(second)
+	Router.go("champion_select", {"trial": "stonewall_bout"})
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--pick="):
+			var uid := arg.trim_prefix("--pick=")
+			_at(1.5, func() -> void: get_tree().current_scene.pick(uid))
+		if arg == "--rest":
+			_at(2.5, func() -> void: get_tree().current_scene.rest_chosen())
+
+
+## Simulates a fight and opens its replay. --trial=<id>, --speed=<1|2|4>.
+func _scenario_replay() -> void:
+	_prepare_mid()
+	_progress(["cleared_first_steps", "cleared_stonewall_bout", "cleared_meadow_sprint"])
+	Game.champion().skills.set_rank("weapon:sword", GameEnums.Rank.APPRENTICE)
+	var trial := "stonewall_bout"
+	var speed := 1.0
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--trial="):
+			trial = arg.trim_prefix("--trial=")
+		if arg.begins_with("--speed="):
+			speed = float(arg.trim_prefix("--speed="))
+	TrialSystem.enter(Game.champion(), Content.trial(trial))
+	Router.go("replay", {"session": BattleSession.start(Content.trial(trial), Game.champion(), 31)})
+	_at(0.8, func() -> void: get_tree().current_scene.set_speed(speed))
+	if OS.get_cmdline_user_args().has("--skip"):
+		_at(1.2, func() -> void: get_tree().current_scene.skip())
 
 
 func _scenario_map() -> void:

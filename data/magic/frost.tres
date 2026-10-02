@@ -16,6 +16,8 @@ stamina_cost = 20.0
 cast_time = 0.45
 damage = 18.0
 speed = 18.0
+slow_factor = 0.45
+slow_seconds = 2.5
 
 [resource]
 script = ExtResource("1_s")

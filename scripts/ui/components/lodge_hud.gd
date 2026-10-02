@@ -74,8 +74,8 @@ static func needs_attention(panel_id: String) -> bool:
 		"journey":
 			if not champion.can_fight():
 				return false
-			for trial: TrialData in Content.list("trials"):
-				if TrialSystem.is_unlocked(trial) and not Game.is_flag_set(trial.cleared_flag()):
+			for region: RegionData in ChallengeBoard.regions():
+				if ChallengeBoard.is_region_open(region) and ChallengeBoard.open_count(region.id) > 0:
 					return true
 		"recovery":
 			return champion.knocked_out or (champion.energy < 30.0 and ConditionSystem.short_rest_ready(champion, Game.now()))

@@ -75,33 +75,3 @@ func test_training_suggestion_points_at_a_mentor() -> void:
 	check_eq(suggestion["trainer"], "swordmaster_corin")
 	check_eq(suggestion["target"], "weapon:sword")
 	check(TrialSystem.suggest_training(Game.champion(), {"evasion": 2.0}).is_empty(), "nothing significant")
-
-
-func test_recorded_battle_produces_experience() -> void:
-	var battle := BattleManager.new()
-	battle.auto_step = false
-	root.add_child(battle)
-	var hero := Combatant.new()
-	hero.setup_from_champion(Game.champion())
-	var foe := Combatant.new()
-	foe.setup_from_opponent(Content.opponent("pip"))
-	battle.add_child(hero)
-	battle.add_child(foe)
-	battle.setup(Content.arena("meadow_ring"), hero, foe)
-	var trial := Content.trial("first_steps")
-	var recorder := BattleRecorder.new(battle, Game.champion(), Content.opponent("pip"), trial)
-	battle.ai = AiController.new(foe, Content.opponent("pip"), 11)
-	battle.player_controller = AiController.new(hero, Content.opponent("juniper"), 12)
-	battle.start()
-	recorder.start()
-	for i in 60 * 120:
-		battle.step(1.0 / 60.0)
-		if battle.finished:
-			break
-	var outcome := recorder.finish(battle.winner == hero)
-	check(not outcome["experience"].is_empty(), "the fight taught something")
-	check(outcome["tallies"]["hits"] + outcome["tallies"]["heavy_hits"] > 0)
-	var result := TrialSystem.apply_result(outcome)
-	check(result["coins"] > 0)
-	check(Game.champion().experience.active_tracks().size() > 0)
-	battle.free()

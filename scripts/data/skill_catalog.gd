@@ -9,12 +9,14 @@ extends RefCounted
 ## prerequisites and the save file: stat:<stat>, skill:<skill>,
 ## weapon:<weapon type>, magic:<school>.
 
+const NATURAL := "natural"
 const FUNDAMENTALS := "fundamentals"
 const DISCIPLINE := "discipline"
 const WEAPONS := "weapons"
 const MAGIC := "magic"
 
 const CATEGORY_NAMES := {
+	NATURAL: "Natural Foundation",
 	FUNDAMENTALS: "Combat Fundamentals",
 	DISCIPLINE: "Combat Discipline",
 	WEAPONS: "Weapon Proficiency",
@@ -24,6 +26,10 @@ const CATEGORY_NAMES := {
 ## Skill id -> definition. `reveal` names the story stage that shows it in the
 ## Skill Matrix (story §18: do not show 50 nodes on the first screen).
 const SKILLS := {
+	"swimming": {"name": "Swimming", "category": NATURAL, "reveal": "basic",
+			"description": "Moving and fighting in water. Eases the penalties of deep water and sharpens a swimmer's edge in it."},
+	"flight": {"name": "Flight", "category": NATURAL, "reveal": "basic",
+			"description": "Staying aloft. Flying costs less stamina, and swoops come faster."},
 	"movement": {"name": "Movement", "category": FUNDAMENTALS, "reveal": "basic",
 			"description": "Footwork and turning. Makes repositioning more responsive."},
 	"attack": {"name": "Attack", "category": FUNDAMENTALS, "reveal": "basic",
@@ -56,6 +62,8 @@ const SKILLS := {
 			"description": "Composure. Shorter exhaustion when stamina runs out."},
 }
 
+## Natural Foundation: how a body moves through its world (by movement type).
+const NATURAL_ORDER: Array[String] = ["swimming", "flight"]
 const FUNDAMENTAL_ORDER: Array[String] = ["movement", "attack", "defense", "dodge", "block", "stamina", "recovery"]
 const DISCIPLINE_ORDER: Array[String] = [
 	"timing", "positioning", "attack_control", "defense_control",
@@ -95,6 +103,7 @@ const CONVERSION_TRACKS := {
 	"skill:attack_control": "offensive", "skill:defense_control": "defense",
 	"skill:dodge_control": "evasion", "skill:block_control": "defense",
 	"skill:stamina_discipline": "endurance", "skill:recovery_control": "resilience",
+	"skill:swimming": "agility", "skill:flight": "agility",
 }
 
 
@@ -112,7 +121,7 @@ const MAGIC_FIRST_RANK := GameEnums.Rank.FOUNDATION
 
 static func all_skill_targets() -> Array[String]:
 	var result: Array[String] = []
-	for skill: String in FUNDAMENTAL_ORDER + DISCIPLINE_ORDER:
+	for skill: String in NATURAL_ORDER + FUNDAMENTAL_ORDER + DISCIPLINE_ORDER:
 		result.append("skill:" + skill)
 	for weapon: String in GameEnums.WEAPON_TYPES:
 		result.append("weapon:" + weapon)

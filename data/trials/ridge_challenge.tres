@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="TrialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trial_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "ridge_challenge"
+display_name = "Ridge Challenge"
+description = "Aquila, an eagle champion from the High Cliffs, hunts the windy ridge from the air."
+reason = "Aquila tests every lodge it passes. Bring it down and it may stay — a champion who owns the sky."
+region_id = "home_valley"
+challenge_type = 5
+opponent_id = "aquila"
+arena_id = "windy_ridge"
+energy_cost = 25
+coins = 110
+owner_xp = 70
+animal_xp = 65
+first_clear_coins = 80
+first_clear_owner_xp = 60
+requires_flags = PackedStringArray("first_trial_done")
+recruit_on_first_win = true
+tutorial = false
+sort_order = 5

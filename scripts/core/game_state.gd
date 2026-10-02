@@ -115,6 +115,17 @@ func champion() -> Champion:
 	return null
 
 
+## Welcomes a new champion to the lodge.
+func add_champion(champion: Champion) -> void:
+	while champions.any(func(existing: Champion) -> bool: return existing.uid == champion.uid):
+		champion.uid += "x"
+	champions.append(champion)
+	if not champion.changed.is_connected(_on_model_changed):
+		champion.changed.connect(_on_model_changed)
+	save()
+	changed.emit()
+
+
 func select_champion(uid: String) -> void:
 	selected_uid = uid
 	changed.emit()

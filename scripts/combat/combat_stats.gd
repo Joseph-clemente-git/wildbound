@@ -131,23 +131,33 @@ static func for_champion(champion: Champion, overrides: Dictionary = {}) -> Comb
 	var weapon_id: String = overrides.get("weapon_id", champion.weapon_id)
 	var armor_id: String = overrides.get("armor_id", champion.armor_id)
 	var accessory_id: String = overrides.get("accessory_id", champion.accessory_id)
-	var stats := {}
+	var developed := {}
 	for stat: String in GameEnums.STATS:
-		var value := champion.developed_stat(stat)
-		for item_id: String in [weapon_id, armor_id, accessory_id]:
-			var item := Content.equipment(item_id) if not item_id.is_empty() else null
-			if item != null:
-				value += float(item.stat_modifiers.get(stat, 0.0))
-		stats[stat] = clampf(value, 1.0, 120.0)
+		developed[stat] = champion.developed_stat(stat)
+	var stats := with_equipment(developed, [weapon_id, armor_id, accessory_id])
 	var weapon := Content.weapon(weapon_id) if not weapon_id.is_empty() else null
 	var armor := Content.armor(armor_id) if not armor_id.is_empty() else null
 	return build(stats, champion.rank_of, weapon, armor, champion.data())
 
 
 static func for_opponent(opponent: OpponentData) -> CombatStats:
-	var rank_of := func(target: String) -> int: return int(opponent.skills.get(target, GameEnums.Rank.FOUNDATION))
-	return build(opponent.stats, rank_of, Content.weapon(opponent.weapon_id), Content.armor(opponent.armor_id),
-			Content.animal(opponent.animal_id))
+	var armor := Content.armor(opponent.armor_id) if not opponent.armor_id.is_empty() else null
+	return build(with_equipment(opponent.stats, opponent.equipment_ids()), opponent.rank_of,
+			Content.weapon(opponent.weapon_id), armor, Content.animal(opponent.animal_id))
+
+
+## Final stats: developed stats plus equipment modifiers, clamped. One rule for
+## champions and opponents alike.
+static func with_equipment(developed: Dictionary, item_ids: Array) -> Dictionary:
+	var stats := {}
+	for stat: String in GameEnums.STATS:
+		var value := float(developed.get(stat, 30.0))
+		for item_id: String in item_ids:
+			var item := Content.equipment(item_id) if not item_id.is_empty() else null
+			if item != null:
+				value += float(item.stat_modifiers.get(stat, 0.0))
+		stats[stat] = clampf(value, 1.0, 120.0)
+	return stats
 
 
 ## Player-facing summary used by equipment previews (mechanics §65).

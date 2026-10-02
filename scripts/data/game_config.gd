@@ -126,3 +126,22 @@ extends Resource
 @export var block_damage_factor: float = 0.25
 @export var defense_mitigation_per_point: float = 0.0045
 @export var perfect_window_seconds: float = 0.18
+
+@export_group("Simulation")
+## Fixed simulation steps per simulated second. Battles are computed in these
+## discrete ticks, independent of the display frame rate.
+@export var simulation_tick_rate: int = 30
+## A battle that has not ended by knockout stops here (Stage 17 decides how).
+@export var simulation_max_seconds: float = 180.0
+## A full state snapshot is kept every this many ticks for replays.
+@export var simulation_keyframe_ticks: int = 3
+## Movement responsiveness: acceleration (m/s²) at 0 Agility and per point.
+@export var simulation_accel_base: float = 9.0
+@export var simulation_accel_per_agility: float = 0.14
+## Seconds to raise a guard before it protects.
+@export var simulation_block_raise_seconds: float = 0.08
+## Fraction of move speed kept while winding up an attack, and while guarding.
+@export var simulation_attack_move_factor: float = 0.25
+@export var simulation_block_move_factor: float = 0.4
+## Fraction of turn speed kept while an attack is active or recovering.
+@export var simulation_committed_turn_factor: float = 0.3

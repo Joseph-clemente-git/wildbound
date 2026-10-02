@@ -188,7 +188,10 @@ func _start_new_journey() -> void:
 
 func _open_lodge_panel(panel: String) -> void:
 	if Game.continue_journey():
-		Router.go("lodge", {"panel": panel})
+		if panel == "journey":
+			Router.go("journey")
+		else:
+			Router.go("lodge", {"panel": panel})
 
 
 func _gap(height: float) -> Control:

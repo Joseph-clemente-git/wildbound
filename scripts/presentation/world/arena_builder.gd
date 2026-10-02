@@ -30,6 +30,18 @@ static func build(parent: Node3D, arena: ArenaData) -> Node3D:
 		WorldBuilder.cylinder(root, 0.06, 4.0, WorldBuilder.WOOD_DARK, spot + Vector3(0, 2.0, 0))
 		var cloth := WorldBuilder.box(root, Vector3(0.9, 1.6, 0.04), arena.banner_color, spot + Vector3(0, 3.0, 0))
 		cloth.rotation.y = -angle + PI * 0.5
+	# Deep water: a calm, slightly sunken pool with a pale shoreline.
+	for zone: Vector3 in arena.water_zones:
+		var shore := WorldBuilder.cylinder(root, zone.z + 0.25, 0.04, Color("c8b88a"), Vector3(zone.x, 0.01, zone.y), -1.0, 40)
+		shore.name = "Shore"
+		var water := WorldBuilder.cylinder(root, zone.z, 0.06, Color(0.22, 0.45, 0.62), Vector3(zone.x, 0.03, zone.y), -1.0, 40)
+		water.name = "Water"
+		var material := water.material_override as StandardMaterial3D
+		if material != null:
+			material = material.duplicate()
+			material.roughness = 0.08
+			material.metallic = 0.3
+			water.material_override = material
 	# Obstacles inside the ring (kept so the camera can fade them when they block the view).
 	var obstacle_nodes: Array[GeometryInstance3D] = []
 	for obstacle: Vector4 in arena.obstacles:

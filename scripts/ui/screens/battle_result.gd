@@ -1,9 +1,18 @@
 extends Node3D
-## Battle Result (mechanics §72, story §21, §37): told as the champion's growth.
-## "What did my animal learn from this battle?"
-## Params: {"outcome": TrialSystem.apply_result() dictionary}
+## Battle Result (mechanics §72, story §21, §37): what happened, what the
+## champion learned and what comes next — told from the simulated battle.
+## Params: {"outcome": TrialSystem.apply_result() dictionary,
+##          "session": BattleSession (optional, enables Watch again)}
+
+## Fight report rows: [label, tally key(s) summed].
+const REPORT := [
+	["Damage dealt", ["damage_dealt"]], ["Damage received", ["damage_taken"]],
+	["Successful attacks", ["hits_landed"]], ["Dodges", ["dodges"]], ["Blocks & parries", ["blocks", "parries"]],
+	["Staggers & knockdowns", ["staggers_caused", "knockdowns_caused"]],
+]
 
 var outcome: Dictionary
+var session: BattleSession
 var _content: VBoxContainer
 
 
@@ -18,6 +27,7 @@ func _back() -> void:
 
 func _ready() -> void:
 	outcome = Router.params.get("outcome", {})
+	session = Router.params.get("session", null)
 	if outcome.is_empty() or not Game.is_active():
 		Router.go("lodge" if Game.is_active() else "title")
 		return
@@ -68,14 +78,23 @@ func _build_ui() -> void:
 	sheet.add_child(column)
 	var trial := Content.trial(outcome["trial_id"])
 	column.add_child(UiKit.label("TRIAL COMPLETE — %s" % trial.display_name.to_upper(), "DimLabel"))
-	var headline := UiKit.label("Victory" if outcome["won"] else ("Forfeited" if outcome.get("forfeited") else "Defeat"), "TitleLabel")
-	headline.add_theme_color_override("font_color", UiTheme.GOOD if outcome["won"] else UiTheme.BAD)
+	var draw: bool = outcome.get("reason", "") == "draw"
+	var headline := UiKit.label("Victory" if outcome["won"] else ("Draw" if draw else ("Forfeited" if outcome.get("forfeited") else "Defeat")), "TitleLabel")
+	headline.add_theme_color_override("font_color", UiTheme.GOOD if outcome["won"] else (UiTheme.TEXT if draw else UiTheme.BAD))
+	headline.name = "Headline"
 	column.add_child(headline)
+	if outcome.has("how"):
+		column.add_child(UiKit.label(str(outcome["how"]), "DimLabel"))
 	var opponent := Content.opponent(outcome["opponent_id"])
-	column.add_child(UiKit.label(opponent.win_line if not outcome["won"] else opponent.lose_line, "DimLabel", true))
+	# win_line is what the opponent says when the Keeper's champion wins.
+	var line := UiKit.label(opponent.win_line if outcome["won"] else opponent.lose_line, "DimLabel", true)
+	line.name = "OpponentLine"
+	column.add_child(line)
 	_content = UiKit.vbox(14)
 	column.add_child(UiKit.scroll(_content))
+	_fight_report()
 	_learned()
+	_mentor_notes()
 	_rewards()
 	_condition()
 	_next_steps(column)
@@ -93,6 +112,37 @@ func _section(title: String) -> VBoxContainer:
 	return column
 
 
+## Side-by-side tallies and the moments worth telling (simulated battles).
+func _fight_report() -> void:
+	var simulation: Dictionary = outcome.get("simulation", {})
+	if simulation.is_empty():
+		return
+	var fighters: Array = simulation["fighters"]
+	var section := _section("The fight")
+	section.get_parent().name = "Report"
+	var grid := UiKit.grid(3, 10)
+	for text in ["", fighters[0]["name"], fighters[1]["name"]]:
+		var header := UiKit.label(text, "DimLabel")
+		header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		grid.add_child(header)
+	for row: Array in REPORT:
+		grid.add_child(UiKit.label(row[0]))
+		for side in 2:
+			var total := 0.0
+			for key: String in row[1]:
+				total += float(fighters[side].get(key, 0))
+			grid.add_child(UiKit.label(str(roundi(total))))
+	grid.add_child(UiKit.label("Knocked out"))
+	for side in 2:
+		grid.add_child(UiKit.label("Yes" if fighters[side].get("knocked_out", false) else "—"))
+	section.add_child(grid)
+	var moments: Array = outcome.get("moments", [])
+	for line in moments:
+		section.add_child(UiKit.label("• " + str(line), "", true))
+	if not outcome["won"] and not outcome.get("forfeited", false):
+		section.add_child(UiKit.label("Defeat teaches survival: resilience and defense grow from hard fights.", "DimLabel", true))
+
+
 func _learned() -> void:
 	var champion := Game.champion()
 	var section := _section("%s learned from the trial" % champion.name)
@@ -107,8 +157,11 @@ func _learned() -> void:
 			continue
 		section.add_child(UiKit.stat_row("%s Experience" % ExperienceTracks.track_name(track), "+%d" % roundi(amount),
 				champion.experience.ratio(track), UiTheme.GOOD))
-	var multiplier: float = outcome.get("difficulty_multiplier", 1.0)
-	section.add_child(UiKit.label("Encounter: %s (experience ×%.2f)" % [PowerRating.difficulty_label(outcome.get("difficulty_ratio", 1.0)), multiplier], "DimLabel"))
+	var kept := float(outcome.get("defeat_factor", 1.0))
+	if kept < 0.5:
+		var note := "A one-sided defeat teaches little." if outcome.get("loss_streak_before", 0) == 0 \
+				else "Losing again teaches less each time — train or change the build before the next try."
+		section.add_child(UiKit.label(note, "DimLabel", true))
 	var growths: Array = outcome.get("growths", [])
 	if not growths.is_empty():
 		var growth := _section("Natural growth")
@@ -117,17 +170,25 @@ func _learned() -> void:
 			line.add_theme_color_override("font_color", UiTheme.GOOD)
 			growth.add_child(line)
 		Sfx.play("growth")
-	var tallies: Dictionary = outcome.get("tallies", {})
-	var record := _section("The fight")
-	record.add_child(UiKit.label("Hits %d · Heavy %d · Staggers %d · Dodges %d (perfect %d) · Blocks %d (perfect %d)%s" % [
-			tallies.get("hits", 0), tallies.get("heavy_hits", 0), tallies.get("staggers", 0), tallies.get("dodges", 0),
-			tallies.get("perfect_dodges", 0), tallies.get("blocks", 0), tallies.get("perfect_blocks", 0),
-			(" · Aether %d" % tallies.get("spells", 0)) if tallies.get("spells", 0) > 0 else ""], "", true))
-	record.add_child(UiKit.label("Duration %d:%02d · Exhausted %d time%s" % [int(outcome.get("duration", 0)) / 60,
-			int(outcome.get("duration", 0)) % 60, tallies.get("exhaustions", 0),
-			"" if tallies.get("exhaustions", 0) == 1 else "s"], "DimLabel"))
-	if not outcome["won"] and not outcome.get("forfeited", false):
-		record.add_child(UiKit.label("Defeat teaches survival: resilience and defense grow from hard fights.", "DimLabel", true))
+
+
+## The mentors' read of the fight (BattleReview): what worked and what to fix.
+func _mentor_notes() -> void:
+	var review: Dictionary = outcome.get("review", {})
+	var strengths: Array = review.get("strengths", [])
+	var weaknesses: Array = review.get("weaknesses", [])
+	if strengths.is_empty() and weaknesses.is_empty():
+		return
+	var section := _section("Mentor's notes")
+	section.get_parent().name = "MentorNotes"
+	for lesson: Dictionary in strengths.slice(0, 2):
+		var line := UiKit.label("✓ " + str(lesson["text"]), "", true)
+		line.add_theme_color_override("font_color", UiTheme.GOOD)
+		section.add_child(line)
+	for lesson: Dictionary in weaknesses.slice(0, 2):
+		var line := UiKit.label("△ " + str(lesson["text"]), "", true)
+		line.add_theme_color_override("font_color", UiTheme.WARN)
+		section.add_child(line)
 
 
 func _rewards() -> void:
@@ -160,30 +221,61 @@ func _next_steps(column: VBoxContainer) -> void:
 	var row := UiKit.hbox(12)
 	if not suggestion.is_empty():
 		var trainer := Content.trainer(suggestion.get("trainer", ""))
-		var text := "%s gained significant %s Experience." % [Game.champion().name, ExperienceTracks.track_name(suggestion["track"])]
-		if trainer != null:
-			text += " %s (%s) can build on it%s." % [trainer.display_name, trainer.title,
-					"" if suggestion.get("active", false) else " once active"]
+		var text := ""
+		if suggestion.has("reason") and trainer != null:
+			text = "%s %s (%s) can develop %s%s." % [suggestion["reason"], trainer.display_name, trainer.title,
+					SkillCatalog.target_name(suggestion["target"]), "" if suggestion.get("active", false) else " once active"]
+			if float(suggestion.get("banked", 0.0)) >= 1.0:
+				text += " %d banked %s Experience is ready to convert." % [roundi(float(suggestion["banked"])),
+						ExperienceTracks.track_name(suggestion["track"])]
+		else:
+			text = "%s gained significant %s Experience." % [Game.champion().name, ExperienceTracks.track_name(suggestion["track"])]
+			if trainer != null:
+				text += " %s (%s) can build on it%s." % [trainer.display_name, trainer.title,
+						"" if suggestion.get("active", false) else " once active"]
 		column.add_child(UiKit.label(text, "", true))
 		if trainer != null and suggestion.get("active", false):
 			row.add_child(UiKit.button("Train %s" % SkillCatalog.target_name(suggestion["target"]), _continue.bind(
 					{"panel": "training", "options": {"trainer": trainer.id, "target": suggestion["target"]}})))
+	if session != null:
+		var again := UiKit.button("⟲ Watch again", func() -> void: Router.go("replay", {"session": session}))
+		again.name = "WatchAgain"
+		row.add_child(again)
 	row.add_child(UiKit.spacer(false))
+	if outcome.get("recruited", "") != "":
+		column.add_child(_recruit_note(str(outcome["recruited"])))
 	if outcome.get("knocked_out", false):
 		# First failure teaches recovery: one clear, low-stakes next step.
-		row.add_child(UiKit.button("Return to the lodge", _continue.bind({})))
-		row.add_child(UiKit.primary_button("Rest & recover", _continue.bind({"panel": "recovery"}), 260))
+		row.add_child(UiKit.button("Lodge", _continue.bind({})))
+		var rest := UiKit.primary_button("Rest & recover", _continue.bind({"panel": "recovery"}), 240)
+		rest.name = "Next"
+		row.add_child(rest)
 	else:
-		row.add_child(UiKit.primary_button("Return to the lodge", _continue.bind({}), 260))
+		row.add_child(UiKit.button("Lodge", _continue.bind({})))
+		var journey := UiKit.primary_button("Back to the Journey", _continue.bind({"journey": true}), 260)
+		journey.name = "Next"
+		row.add_child(journey)
 	column.add_child(row)
 
 
-func _continue(lodge_params: Dictionary) -> void:
+func _recruit_note(name: String) -> Control:
+	var note := UiKit.label("%s was so impressed that it joined your lodge! Choose it for any fight." % name, "", true)
+	note.add_theme_color_override("font_color", UiTheme.GOOD)
+	note.name = "Recruited"
+	return note
+
+
+## Story first, then where the Keeper chose to go: the Journey or the lodge.
+func _continue(choice: Dictionary) -> void:
 	var story: String = outcome.get("story", "")
-	var params := {"panel": lodge_params.get("panel", "")}
-	if lodge_params.has("options"):
-		params["panel_options"] = lodge_params["options"]
+	var route := "lodge"
+	var params := {"panel": choice.get("panel", "")}
+	if choice.get("journey", false):
+		route = "journey"
+		params = {"region": Content.trial(outcome["trial_id"]).region_id}
+	elif choice.has("options"):
+		params["panel_options"] = choice["options"]
 	if not story.is_empty():
-		Router.go("story", {"event": story, "next": "lodge", "next_params": params})
+		Router.go("story", {"event": story, "next": route, "next_params": params})
 	else:
-		Router.go("lodge", params)
+		Router.go(route, params)

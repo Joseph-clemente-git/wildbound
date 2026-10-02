@@ -136,15 +136,8 @@ func _select(region_id: String) -> void:
 		locked.add_theme_color_override("font_color", UiTheme.WARN)
 		_info.add_child(locked)
 		return
-	var trials := Content.list("trials").filter(func(t: TrialData) -> bool: return t.region_id == region.id)
-	_info.add_child(UiKit.label("Trials", "HeadingLabel"))
-	for trial: TrialData in trials:
-		var cleared := Game.is_flag_set(trial.cleared_flag())
-		var row := UiKit.hbox(10)
-		var name_label := UiKit.label("%s%s" % [trial.display_name, " ✓" if cleared else ""], "", true)
-		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(name_label)
-		var prepare := UiKit.button("Prepare", func() -> void: Router.go("battle_prep", {"trial": trial.id}))
-		prepare.disabled = not TrialSystem.is_unlocked(trial)
-		row.add_child(prepare)
-		_info.add_child(row)
+	var fights := ChallengeBoard.fights(region.id)
+	var waiting := ChallengeBoard.open_count(region.id)
+	_info.add_child(UiKit.label("%d fight%s here%s" % [fights.size(), "" if fights.size() == 1 else "s",
+			(" · %d to win" % waiting) if waiting > 0 else ""], "DimLabel", true))
+	_info.add_child(UiKit.primary_button("Choose a fight", func() -> void: Router.go("journey", {"region": region.id})))

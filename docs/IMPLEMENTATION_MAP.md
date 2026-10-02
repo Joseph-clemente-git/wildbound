@@ -2,6 +2,10 @@
 
 How the design documents (`mechanics.md`, `story.md`) map to this codebase.
 
+Battles are a tick-based combat simulation watched as a 3D replay — see
+[`BATTLE_SIMULATION.md`](BATTLE_SIMULATION.md) for the 25 stages and what each changed.
+Rows below that named the retired real-time arena now point at the simulation.
+
 ## Mechanics prompts (MVP, Phase 1)
 
 | Prompt | Where |
@@ -20,21 +24,21 @@ How the design documents (`mechanics.md`, `story.md`) map to this codebase.
 | 15 Technique prerequisites | `data/technique_data.gd`, `systems/technique_system.gd` |
 | 16–17 Equipment data + UI | `data/weapon_data.gd`, `armor_data.gd`, `accessory_data.gd`, `systems/equipment_system.gd`, `ui/panels/equipment_panel.gd` |
 | 18–19 Weapon / magic familiarity + mastery | experience tracks `weapon:*`/`magic:*` (familiarity capped at Apprentice) + trainer mastery |
-| 20 Combat foundation | `combat/combatant.gd`, `combat/battle_manager.gd`, `combat/combat_stats.gd` |
-| 21 Combat experience events | `combat/battle_recorder.gd` |
-| 22 Mobile controls | `ui/components/touch_joystick.gd`, `action_pad.gd`, `combat/player_controller.gd` |
-| 23 Stamina | `Combatant` stamina/exhaustion, `GameConfig` combat group |
+| 20 Combat foundation | `simulation/*` (spec, state, simulator, phases), `combat/combat_stats.gd` |
+| 21 Combat experience events | `simulation/simulation_experience.gd` |
+| 22 Mobile controls | replay controls in `ui/screens/battle_replay.gd` (battles are watched, not piloted) |
+| 23 Stamina | `simulation/phases/stamina_phase.gd`, `GameConfig` combat group |
 | 24 Sword + Hammer | `data/weapons/*.tres` + heavy-weapon hyper armor |
-| 25 Fire + Wind | `data/magic/fire.tres`, `wind.tres`, `BattleManager.release_ability` |
+| 25 Fire + Wind | `data/magic/*.tres`, `simulation/effect_rules.gd`, `phases/action_phase.gd` |
 | 26 Balance / counterplay | `AnimalData` balance profile + `combat_traits`, `tools/balance_sim.gd` |
-| 27 First arena | `data/arenas/meadow_ring.tres`, `presentation/world/arena_builder.gd`, `combat/battle_camera.gd` |
-| 28 Battle preparation | `ui/screens/battle_prep.gd` |
-| 29 Battle results | `systems/trial_system.gd`, `ui/screens/battle_result.gd` |
+| 27 First arena | `data/arenas/meadow_ring.tres`, `presentation/world/arena_builder.gd`, `presentation/replay/battle_camera.gd` |
+| 28 Battle preparation | `ui/screens/battle_prep.gd` (fights are chosen first on `ui/screens/journey.gd`) |
+| 29 Battle results | `systems/trial_system.gd`, `systems/battle_review.gd`, `ui/screens/battle_result.gd` |
 | 30 Recovery | `systems/condition_system.gd`, `ui/panels/recovery_panel.gd` |
 | 31 Save / load | `core/save_manager.gd` (versioned JSON, migrations, backup), `Game.to_dict/load_from_dict` |
 | 32 Character pipeline | `presentation/character/*`, `docs/ASSET_PIPELINE.md` |
-| 33 Mobile UX | safe areas, touch sizes, side sheets, back button, pinch zoom, control scale, left-handed layout |
-| 34 Combat polish | hit-stop, shake, floating text, vibration, audio hooks, perfect windows |
+| 33 Mobile UX | safe areas, touch sizes, side sheets, back button, pinch zoom, tap-to-pause replay |
+| 34 Combat polish | replay camera shake, floating text, vibration, audio hooks, battle moments |
 
 ## Story steps
 
@@ -50,10 +54,9 @@ Trials (§33), mentor suggestions after battle (§39), knockouts not deaths (§3
 
 Per the design's "do not implement future features early":
 
-- Second animal, Flying, Swimming, Amphibious movement (data supports `MovementType`).
 - 2v2 / 3v3 and larger arenas (`ArenaData.format` exists).
-- Combat behaviour for Dagger, Spear, Axe, Shield, Bow and the Frost/Earth/Lightning/
-  Nature schools — their data exists and is region-locked.
+- Amphibious champions (the movement type and its rules exist; no amphibious animal yet).
+- Choosing teams for 2v2 / 3v3 in the flow (the simulation already runs them).
 - Regions beyond the Home Valley (shown on the map as later chapters).
 - Environmental magic interactions with terrain.
 - Real Blender assets and recorded audio (pipeline + hooks are ready).

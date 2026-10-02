@@ -3,7 +3,7 @@ extends TestCase
 
 
 func test_all_categories_loaded() -> void:
-	check_eq(Content.list("animals").size(), 1, "animals")
+	check_eq(Content.list("animals").size(), 3, "animals: dog, shark, eagle")
 	check_eq(Content.list("weapons").size(), GameEnums.WEAPON_TYPES.size(), "weapons")
 	check_eq(Content.list("armor").size(), 3, "armor")
 	check_eq(Content.list("magic").size(), GameEnums.MAGIC_SCHOOLS.size(), "schools")

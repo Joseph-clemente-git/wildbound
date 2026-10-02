@@ -154,26 +154,36 @@ func rank_cap(target: String) -> int:
 # --- Capability --------------------------------------------------------------------
 
 func capability_score() -> float:
-	var fundamentals := 0.0
-	for skill: String in SkillCatalog.FUNDAMENTAL_ORDER:
-		fundamentals += skills.get_rank("skill:" + skill)
-	fundamentals /= SkillCatalog.FUNDAMENTAL_ORDER.size()
-	var discipline := 0.0
-	for skill: String in SkillCatalog.DISCIPLINE_ORDER:
-		discipline += skills.get_rank("skill:" + skill)
-	discipline /= SkillCatalog.DISCIPLINE_ORDER.size()
-	var best_weapon := 0
-	for weapon_type: String in GameEnums.WEAPON_TYPES:
-		best_weapon = maxi(best_weapon, skills.get_rank("weapon:" + weapon_type))
-	var best_magic := 0
-	for school: String in GameEnums.MAGIC_SCHOOLS:
-		best_magic = maxi(best_magic, skills.get_rank("magic:" + school))
-	return fundamentals * 0.35 + discipline * 0.2 + best_weapon * 0.3 + best_magic * 0.1 \
-			+ minf(techniques.size(), 3) * 0.25
+	return score_capability(skills.get_rank, techniques.size())
 
 
 func capability_rank() -> int:
-	var score := capability_score()
+	return capability_rank_for(capability_score())
+
+
+## Learned capability from Skill Matrix ranks, shared by champions and
+## opponents so a capability name means the same on both sides.
+## `rank_of` is a Callable(target: String) -> int.
+static func score_capability(rank_of: Callable, technique_count: int) -> float:
+	var fundamentals := 0.0
+	for skill: String in SkillCatalog.FUNDAMENTAL_ORDER:
+		fundamentals += rank_of.call("skill:" + skill)
+	fundamentals /= SkillCatalog.FUNDAMENTAL_ORDER.size()
+	var discipline := 0.0
+	for skill: String in SkillCatalog.DISCIPLINE_ORDER:
+		discipline += rank_of.call("skill:" + skill)
+	discipline /= SkillCatalog.DISCIPLINE_ORDER.size()
+	var best_weapon := 0
+	for weapon_type: String in GameEnums.WEAPON_TYPES:
+		best_weapon = maxi(best_weapon, rank_of.call("weapon:" + weapon_type))
+	var best_magic := 0
+	for school: String in GameEnums.MAGIC_SCHOOLS:
+		best_magic = maxi(best_magic, rank_of.call("magic:" + school))
+	return fundamentals * 0.35 + discipline * 0.2 + best_weapon * 0.3 + best_magic * 0.1 \
+			+ minf(technique_count, 3) * 0.25
+
+
+static func capability_rank_for(score: float) -> int:
 	for i in CAPABILITY_THRESHOLDS.size():
 		if score < CAPABILITY_THRESHOLDS[i]:
 			return i
@@ -279,6 +289,9 @@ func record_battle(entry: Dictionary) -> void:
 	history.push_front(entry)
 	while history.size() > HISTORY_LIMIT:
 		history.pop_back()
+	# Only the latest battles keep their replay (BattleRecord).
+	for i in range(BattleRecord.REPLAY_LIMIT, history.size()):
+		history[i].erase("replay")
 
 
 func to_dict() -> Dictionary:
