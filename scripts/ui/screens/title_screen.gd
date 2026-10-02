@@ -50,7 +50,7 @@ func _process(delta: float) -> void:
 			_finish_intro()
 	else:
 		# Gentle idle drift so the shot never feels frozen.
-		var t := Time.get_ticks_msec() / 1000.0
+		var t := 0.0 if Settings.get_value("reduce_motion") else Time.get_ticks_msec() / 1000.0
 		_camera.position = CAMERA_END + Vector3(sin(t * 0.15) * 0.6, sin(t * 0.21) * 0.15, 0)
 		_camera.look_at(LOOK_END)
 
@@ -112,7 +112,7 @@ func _build_ui() -> void:
 	_menu.alignment = BoxContainer.ALIGNMENT_CENTER
 	safe.add_child(_menu)
 	var title := UiKit.label("WILDBOUND", "TitleLabel")
-	title.add_theme_font_size_override("font_size", 72)
+	title.add_theme_font_size_override("font_size", UiTheme.fs(72))
 	_menu.add_child(title)
 	var subtitle := UiKit.label("Chronicles of the Aether", "HeadingLabel")
 	_menu.add_child(subtitle)
@@ -167,6 +167,9 @@ func _on_continue() -> void:
 
 
 func _on_new_journey() -> void:
+	if not Settings.get_value("comfort_setup_done"):
+		SettingsPanel.comfort_setup(_ui_root, _on_new_journey)
+		return
 	if Saves.has_save():
 		UiKit.confirm(_ui_root, "Begin a new journey?",
 				"Starting over replaces your current lodge, champions and mentors.",

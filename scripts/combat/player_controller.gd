@@ -8,6 +8,7 @@ var fighter: Combatant
 var camera: Camera3D
 var joystick: TouchJoystick
 var enabled := true
+var _block_toggled := false
 
 
 func _init(player_fighter: Combatant, battle_camera: Camera3D, stick: TouchJoystick) -> void:
@@ -36,7 +37,14 @@ func update(_delta: float) -> void:
 	var world := right * stick.x + forward * -stick.y
 	fighter.move_input = Vector2(world.x, world.z).limit_length(1.0)
 	fighter.sprint = sprinting
-	fighter.block_held = Input.is_action_pressed("block")
+	if Settings.get_value("toggle_block"):
+		if Input.is_action_just_pressed("block"):
+			_block_toggled = not _block_toggled
+		fighter.block_held = _block_toggled and not fighter.is_exhausted()
+		if fighter.is_exhausted():
+			_block_toggled = false
+	else:
+		fighter.block_held = Input.is_action_pressed("block")
 	for action: String in ["attack", "heavy", "dodge", "magic"]:
 		if Input.is_action_just_pressed(action):
 			fighter.request(action)

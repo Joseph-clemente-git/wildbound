@@ -76,7 +76,7 @@ func _check_phase() -> void:
 	for key: String in phase:
 		if params.has(key):
 			params[key] = phase[key]
-	me.telegraph = params["telegraph"]
+	me.telegraph = float(params["telegraph"]) * (1.3 if Settings.get_value("combat_assist") else 1.0)
 	if phase.has("hint") and battle != null and Settings.get_value("show_hints"):
 		battle.hint.emit(phase["hint"])
 

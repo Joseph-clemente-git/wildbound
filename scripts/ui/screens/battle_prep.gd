@@ -115,7 +115,7 @@ func _card(parent: VBoxContainer, title: String) -> VBoxContainer:
 	panel.add_child(column)
 	var heading := UiKit.label(title)
 	heading.add_theme_color_override("font_color", UiTheme.ACCENT)
-	heading.add_theme_font_size_override("font_size", 24)
+	heading.add_theme_font_size_override("font_size", UiTheme.fs(24))
 	column.add_child(heading)
 	parent.add_child(panel)
 	return column

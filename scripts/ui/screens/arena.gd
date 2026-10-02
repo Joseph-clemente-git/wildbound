@@ -147,6 +147,8 @@ func _feedback(who: Combatant, kind: String, data: Dictionary) -> void:
 
 
 func _hit_pause(seconds: float) -> void:
+	if Settings.get_value("reduce_motion"):
+		return
 	Engine.time_scale = 0.15
 	_hit_stop = seconds
 

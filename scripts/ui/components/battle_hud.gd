@@ -62,7 +62,7 @@ func _ready() -> void:
 	_banner.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_banner.grow_vertical = Control.GROW_DIRECTION_BOTH
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_banner.add_theme_font_size_override("font_size", 64)
+	_banner.add_theme_font_size_override("font_size", UiTheme.fs(64))
 	_banner.modulate.a = 0.0
 	add_child(_banner)
 

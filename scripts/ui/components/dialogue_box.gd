@@ -44,7 +44,7 @@ func _ready() -> void:
 	_speaker = UiKit.label("", "HeadingLabel")
 	inner.add_child(_speaker)
 	_text = UiKit.rich("")
-	_text.add_theme_font_size_override("normal_font_size", 24)
+	_text.add_theme_font_size_override("normal_font_size", UiTheme.fs(24))
 	inner.add_child(_text)
 	_name_row = UiKit.hbox(12)
 	_name_edit = LineEdit.new()

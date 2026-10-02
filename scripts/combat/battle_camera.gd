@@ -25,8 +25,9 @@ func snap() -> void:
 
 
 func shake(strength: float) -> void:
-	if Settings.get_value("camera_shake"):
-		_shake = maxf(_shake, strength)
+	var amount: float = Settings.get_value("shake_strength")
+	if amount > 0.0:
+		_shake = maxf(_shake, strength * amount)
 
 
 func _process(delta: float) -> void:
