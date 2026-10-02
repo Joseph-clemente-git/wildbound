@@ -7,7 +7,7 @@ const SHOTS := {
 	"circle": [Vector3(11.5, 2.4, 6.0), Vector3(7.5, 0.8, 1.0)],
 	"lodge": [Vector3(2.5, 2.4, 13.0), Vector3(0.0, 1.8, -8.0)],
 	"porch": [Vector3(1.6, 2.0, -2.2), Vector3(-0.6, 1.7, -6.6)],
-	"dog": [Vector3(1.2, 1.5, -1.6), Vector3(0.4, 1.1, -4.4)],
+	"dog": [Vector3(2.4, 1.5, -1.8), Vector3(1.5, 1.1, -4.6)],
 	"default": [Vector3(3.5, 2.6, 4.0), Vector3(0.0, 1.4, -5.0)],
 }
 
@@ -36,15 +36,14 @@ func _ready() -> void:
 
 
 func _spawn_cast() -> void:
-	var maren := ProceduralDogVisual.new(StoryEvents.MAREN_PALETTE)
-	maren.position = Vector3(-0.6, 0.55, -6.9)
-	maren.rotation.y = deg_to_rad(200.0)
-	maren.scale = Vector3.ONE * 0.95
-	maren.set_armor(GameEnums.ArmorWeight.LIGHT)
-	add_child(maren)
+	var marten := ProceduralHumanVisual.new(StoryEvents.OWNER_APPEARANCE)
+	marten.position = Vector3(-0.6, 0.55, -6.9)
+	marten.rotation.y = deg_to_rad(200.0)
+	add_child(marten)
+	marten.set_weapon("staff")
 	var champion := Game.champion()
 	var dog: CharacterVisual = CharacterFactory.for_champion(champion) if champion != null else ProceduralDogVisual.new()
-	dog.position = Vector3(0.4, 0.0, -4.4)
+	dog.position = Vector3(1.5, 0.0, -4.6)
 	dog.rotation.y = deg_to_rad(155.0)
 	add_child(dog)
 

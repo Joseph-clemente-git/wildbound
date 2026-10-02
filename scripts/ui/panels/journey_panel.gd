@@ -7,7 +7,7 @@ func build(container: VBoxContainer) -> void:
 	set_title("Journey — Home Valley")
 	var champion := Game.champion()
 	if Game.is_flag_set("world_map_unlocked"):
-		var map := card("World Map", "Maren's map of the valley and the regions beyond.")
+		var map := card("World Map", "Marten's map of the valley and the regions beyond.")
 		map.add_child(UiKit.primary_button("Open the World Map", func() -> void: Router.go("world_map")))
 	card("Trials", "Organized trials: prove your champion's skill, earn coins and grow the lodge's reputation. Defeat means a knockout, never worse.")
 	for trial: TrialData in Content.list("trials"):

@@ -113,3 +113,12 @@ func _scenario_prep() -> void:
 func _scenario_map() -> void:
 	_prepare_mid()
 	Router.go("world_map")
+
+
+func _scenario_story_porch() -> void:
+	Router.go("story", {"event": "opening"})
+	_at(1.0, func() -> void:
+		var box: DialogueBox = get_tree().current_scene._dialogue
+		for i in 4:
+			box._finish_reveal()
+			box._advance())

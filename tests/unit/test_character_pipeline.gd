@@ -89,3 +89,27 @@ func test_factory_uses_model_scene_when_present() -> void:
 	check(visual is GltfCharacterVisual)
 	visual.free()
 	scene.free()
+
+
+func test_people_share_the_humanoid_rig() -> void:
+	for look: Dictionary in [{}, ProceduralHumanVisual.ELDER, {"hair_style": "long", "robe": true},
+			{"hair_style": "bun"}, {"hair_style": "hood"}, {"hair_style": "bald", "beard": true}]:
+		var person := ProceduralHumanVisual.new(look)
+		check_eq(person.missing_clips().size(), 0, "person plays every shared clip")
+		for key: String in CharacterAnimations.BONES:
+			check(person.has_node(CharacterAnimations.BONES[key]), "person pivot " + key)
+		check(person.find_child("Snout", true, false) == null, "people have no snout")
+		person.set_weapon("staff")
+		person.play("cast", 0.6)
+		person.free()
+	var elder := ProceduralHumanVisual.new(ProceduralHumanVisual.ELDER)
+	check(elder.find_child("Beard", true, false) != null, "the old owner has a beard")
+	check(elder.find_child("Robe", true, false) != null)
+	elder.free()
+
+
+func test_every_mentor_is_a_person() -> void:
+	for trainer: TrainerData in Content.list("trainers"):
+		check(trainer.appearance.get("skin") is Color, trainer.id + " has a human appearance")
+		check(not trainer.appearance.has("fur"), trainer.id + " is not an animal")
+	check(StoryEvents.OWNER_APPEARANCE.get("beard", false), "Old Marten is bearded")

@@ -19,11 +19,17 @@ teachable_techniques = PackedStringArray("guard_break")
 region_id = "home_valley"
 recruit_cost = 520
 story_recruit = false
-palette = {
-"fur": Color(0.3529, 0.2392, 0.1686, 1.0),
-"fur_light": Color(0.6588, 0.5176, 0.4078, 1.0),
-"fur_dark": Color(0.1647, 0.1098, 0.0784, 1.0),
-"scarf": Color(0.4196, 0.3529, 0.1647, 1.0),
-"cloth": Color(0.2902, 0.2275, 0.1647, 1.0)
+appearance = {
+"skin": Color(0.5412, 0.3529, 0.2353, 1.0),
+"hair": Color(0.1647, 0.1098, 0.0784, 1.0),
+"beard_color": Color(0.1647, 0.1098, 0.0784, 1.0),
+"beard": true,
+"hair_style": "bald",
+"tunic": Color(0.4196, 0.3529, 0.1647, 1.0),
+"trousers": Color(0.2431, 0.2039, 0.1569, 1.0),
+"boots": Color(0.1647, 0.1255, 0.0863, 1.0),
+"accent": Color(0.6039, 0.6392, 0.6588, 1.0),
+"build": 1.25,
+"height": 1.05
 }
 sort_order = 1

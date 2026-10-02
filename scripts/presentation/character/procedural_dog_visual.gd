@@ -1,5 +1,5 @@
 class_name ProceduralDogVisual
-extends CharacterVisual
+extends ProceduralRigVisual
 ## Humanoid dog built from primitive meshes on the reusable humanoid rig.
 ##
 ## This is the placeholder for the Blender master character: upright, two arms,
@@ -21,56 +21,16 @@ const DEFAULT_PALETTE := {
 	"cloth": Color("5d4a35"),
 }
 
-var palette: Dictionary = DEFAULT_PALETTE.duplicate()
-var right_hand: Node3D
-var left_hand: Node3D
-var aura_light: OmniLight3D
-
-var _materials: Dictionary = {}  # palette key -> StandardMaterial3D
 var _armor_pieces: Array[Node] = []
-var _weapon_root: Node3D
-var _offhand_root: Node3D
-var _bones: Dictionary = {}
 
 
 func _init(initial_palette: Dictionary = {}) -> void:
+	palette = DEFAULT_PALETTE.duplicate()
 	palette.merge(initial_palette, true)
 	_build_materials()
 	_build_rig()
-	animation_player = AnimationPlayer.new()
-	animation_player.name = "AnimationPlayer"
-	add_child(animation_player)
-	animation_player.add_animation_library("", CharacterAnimations.build_library(HIP_HEIGHT))
-	animation_player.animation_finished.connect(_on_animation_finished)
-	animation_player.play("idle")
-	_current_clip = "idle"
+	_finish_setup(HIP_HEIGHT)
 	set_armor(GameEnums.ArmorWeight.LIGHT)
-
-
-func bone(key: String) -> Node3D:
-	return _bones.get(key)
-
-
-func set_palette(new_palette: Dictionary) -> void:
-	palette.merge(new_palette, true)
-	for key: String in _materials:
-		if palette.has(key):
-			(_materials[key] as StandardMaterial3D).albedo_color = palette[key]
-
-
-func set_weapon(new_weapon_type: String) -> void:
-	weapon_type = new_weapon_type
-	for child in _weapon_root.get_children():
-		child.queue_free()
-	for child in _offhand_root.get_children():
-		child.queue_free()
-	if new_weapon_type.is_empty():
-		return
-	var model := WeaponVisuals.build(new_weapon_type)
-	if new_weapon_type == "shield" or new_weapon_type == "bow":
-		_offhand_root.add_child(model)
-	else:
-		_weapon_root.add_child(model)
 
 
 func set_armor(weight: int) -> void:
@@ -101,20 +61,10 @@ func set_armor(weight: int) -> void:
 				_armor_part(_bones[key + "fore"], _capsule(0.07, 0.2, "metal"), Vector3(0, -0.13, 0))
 
 
-func set_aura(school: String) -> void:
-	aura_school = school
-	if school.is_empty():
-		aura_light.visible = false
-		return
-	aura_light.visible = true
-	aura_light.light_color = MagicVisuals.school_color(school)
-
-
 # --- Construction --------------------------------------------------------------
 
 func _build_materials() -> void:
-	for key: String in palette:
-		_materials[key] = _make_material(palette[key], 0.92)
+	_build_palette_materials()
 	_materials["leather"] = _make_material(Color("6b4a2b"), 0.8)
 	_materials["metal"] = _make_material(Color("9aa3a8"), 0.35, 0.75)
 	_materials["metal_dark"] = _make_material(Color("4d5257"), 0.4, 0.7)
@@ -124,14 +74,6 @@ func _build_materials() -> void:
 	_materials["claw"] = _make_material(Color("e8e0d0"), 0.5)
 	for key: String in ["fur", "fur_light", "fur_dark", "cloth", "leather", "metal", "metal_dark"]:
 		_flash_materials.append(_materials[key])
-
-
-func _make_material(color: Color, roughness: float, metallic: float = 0.0) -> StandardMaterial3D:
-	var material := StandardMaterial3D.new()
-	material.albedo_color = color
-	material.roughness = roughness
-	material.metallic = metallic
-	return material
 
 
 func _build_rig() -> void:
@@ -179,16 +121,7 @@ func _build_rig() -> void:
 		var fore := _pivot(arm, prefix + "Forearm", Vector3(0, -UPPER_ARM, 0), key + "fore")
 		_attach(fore, _capsule(0.06, FOREARM + 0.05, "fur"), Vector3(0, -FOREARM * 0.5, 0))
 		_attach(fore, _sphere(0.068, "fur_dark"), Vector3(0, -FOREARM - 0.03, 0), Vector3.ZERO, "Paw", Vector3(1.0, 1.1, 0.9))
-		var hand := Node3D.new()
-		hand.name = prefix + "Hand"
-		hand.position = Vector3(0, -FOREARM - 0.04, 0)
-		fore.add_child(hand)
-		if side > 0:
-			right_hand = hand
-			_weapon_root = hand
-		else:
-			left_hand = hand
-			_offhand_root = hand
+		_hand(fore, prefix, side, Vector3(0, -FOREARM - 0.04, 0))
 
 	# Neck and head
 	var neck := _pivot(chest, "Neck", Vector3(0, 0.2, -0.02), "neck")
@@ -211,81 +144,9 @@ func _build_rig() -> void:
 		inner.size = Vector3(0.08, 0.13, 0.02)
 		_attach(ear, _mesh(inner, "inner_ear"), Vector3(0, 0.065, -0.018), Vector3(0, 0, -0.22 * side))
 
-	aura_light = OmniLight3D.new()
-	aura_light.name = "Aura"
-	aura_light.omni_range = 2.2
-	aura_light.light_energy = 1.4
-	aura_light.position = Vector3(0, 1.1, -0.2)
-	aura_light.visible = false
-	add_child(aura_light)
-
-
-func _pivot(parent: Node3D, node_name: String, offset: Vector3, key: String) -> Node3D:
-	var node := Node3D.new()
-	node.name = node_name
-	node.position = offset
-	parent.add_child(node)
-	_bones[key] = node
-	return node
-
-
-func _attach(parent: Node3D, mesh_instance: MeshInstance3D, offset: Vector3,
-		rotation_euler: Vector3 = Vector3.ZERO, node_name: String = "",
-		scale_factor: Vector3 = Vector3.ONE) -> MeshInstance3D:
-	if not node_name.is_empty():
-		mesh_instance.name = node_name
-	mesh_instance.position = offset
-	mesh_instance.rotation = rotation_euler
-	mesh_instance.scale = scale_factor
-	parent.add_child(mesh_instance)
-	return mesh_instance
-
 
 ## Armor pieces live under their bone but are tracked so they can be swapped.
 func _armor_part(parent: Node3D, mesh_instance: MeshInstance3D, offset: Vector3,
 		rotation_euler: Vector3 = Vector3.ZERO, scale_factor: Vector3 = Vector3.ONE) -> void:
 	_attach(parent, mesh_instance, offset, rotation_euler, "", scale_factor)
 	_armor_pieces.append(mesh_instance)
-
-
-func _mesh(mesh: Mesh, material_key: String) -> MeshInstance3D:
-	var instance := MeshInstance3D.new()
-	instance.mesh = mesh
-	instance.material_override = _materials[material_key]
-	return instance
-
-
-func _sphere(radius: float, material_key: String) -> MeshInstance3D:
-	var mesh := SphereMesh.new()
-	mesh.radius = radius
-	mesh.height = radius * 2.0
-	mesh.radial_segments = 16
-	mesh.rings = 8
-	return _mesh(mesh, material_key)
-
-
-func _capsule(radius: float, height: float, material_key: String) -> MeshInstance3D:
-	var mesh := CapsuleMesh.new()
-	mesh.radius = radius
-	mesh.height = maxf(height, radius * 2.0)
-	mesh.radial_segments = 14
-	mesh.rings = 4
-	return _mesh(mesh, material_key)
-
-
-func _cylinder(top: float, bottom: float, height: float, material_key: String) -> MeshInstance3D:
-	var mesh := CylinderMesh.new()
-	mesh.top_radius = top
-	mesh.bottom_radius = bottom
-	mesh.height = height
-	mesh.radial_segments = 16
-	return _mesh(mesh, material_key)
-
-
-func _torus(inner: float, outer: float, material_key: String) -> MeshInstance3D:
-	var mesh := TorusMesh.new()
-	mesh.inner_radius = inner
-	mesh.outer_radius = outer
-	mesh.rings = 16
-	mesh.ring_segments = 8
-	return _mesh(mesh, material_key)

@@ -43,7 +43,7 @@ static func build(parent: Node3D, arena: ArenaData) -> Node3D:
 	return root
 
 
-## A few champions of the valley watch from outside the ring.
+## A few champions of the valley and their Keepers watch from outside the ring.
 static func _onlookers(root: Node3D, arena: ArenaData) -> void:
 	var palettes := [
 		{"fur": Color("6b4a2e"), "fur_light": Color("d8c0a0"), "scarf": Color("4f7a3a")},
@@ -61,3 +61,15 @@ static func _onlookers(root: Node3D, arena: ArenaData) -> void:
 		root.add_child(watcher)
 		if i % 2 == 0:
 			watcher.play("victory", 1.2 + i * 0.1, false)
+	# Their Keepers watch beside them.
+	var keepers := [
+		{"skin": Color("c49a74"), "hair": Color("2a1c14"), "tunic": Color("4f6b8a"), "hair_style": "short", "beard": true},
+		{"skin": Color("f0c9a4"), "hair": Color("8a5a30"), "tunic": Color("7a4a5a"), "hair_style": "long"},
+	]
+	for i in keepers.size():
+		var angle := PI * 0.85 + (i + 0.5) * 0.64
+		var spot := Vector3(cos(angle), 0, sin(angle)) * (arena.radius + 4.3)
+		var keeper := ProceduralHumanVisual.new(keepers[i])
+		keeper.position = spot
+		keeper.rotation.y = atan2(spot.x, spot.z)
+		root.add_child(keeper)

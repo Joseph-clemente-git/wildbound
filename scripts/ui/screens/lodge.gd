@@ -262,19 +262,21 @@ func _apply_champion_look() -> void:
 	champion_visual.set_aura(ability.school if ability != null else "")
 
 
-## Active mentors stand at the stations they teach from.
+## Old Marten keeps watch from the porch; active mentors (people, not
+## champions) stand at the stations they teach from.
 func _spawn_mentors() -> void:
 	var spots := [Vector3(-5.4, 0, 1.8), Vector3(-3.0, 0, -3.6), Vector3(6.0, 0, 2.6),
 			Vector3(3.4, 0, -3.0), Vector3(-8.6, 0, 1.6)]
-	var maren := ProceduralDogVisual.new(StoryEvents.MAREN_PALETTE)
-	maren.position = Vector3(-1.2, 0.55, -6.9)
-	maren.scale = Vector3.ONE * 0.95
-	add_child(maren)
+	var marten := ProceduralHumanVisual.new(StoryEvents.OWNER_APPEARANCE)
+	marten.position = Vector3(-1.2, 0.55, -6.9)
+	marten.rotation.y = PI  # facing the yard
+	add_child(marten)
+	marten.set_weapon("staff")
 	var index := 0
 	for trainer in TrainerManager.active(Game.profile):
 		if index >= spots.size():
 			break
-		var mentor := ProceduralDogVisual.new(trainer.palette)
+		var mentor := ProceduralHumanVisual.new(trainer.appearance)
 		mentor.position = spots[index]
 		mentor.rotation.y = atan2(mentor.position.x - 0.6, mentor.position.z + 0.5)
 		match trainer.category:
@@ -283,7 +285,7 @@ func _spawn_mentors() -> void:
 				mentor.set_weapon(weapon_type)
 			GameEnums.TrainerCategory.MAGIC:
 				mentor.set_aura(GameEnums.target_id(trainer.primary_discipline[0]))
-		mentor.set_armor(GameEnums.ArmorWeight.MEDIUM)
+				mentor.set_weapon("staff")
 		mentor.add_to_group("mentor_visual")
 		add_child(mentor)
 		index += 1

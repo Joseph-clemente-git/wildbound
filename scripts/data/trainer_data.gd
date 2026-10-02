@@ -1,7 +1,8 @@
 class_name TrainerData
 extends Resource
-## A mentor. Trainers are universal: any trainer can train any champion
-## (mechanics §32). Rarity scales training capability, never battle power.
+## A mentor: a person who has dedicated their life to a discipline. Trainers
+## are universal — any trainer can train any champion (mechanics §32).
+## Rarity scales training capability, never battle power.
 
 @export var id: String = ""
 @export var display_name: String = ""
@@ -28,7 +29,8 @@ extends Resource
 @export var recruit_cost: int = 0
 ## Joins the lodge through the story rather than the trainer board.
 @export var story_recruit: bool = false
-@export var palette: Dictionary = {}
+## How the mentor looks (ProceduralHumanVisual appearance keys).
+@export var appearance: Dictionary = {}
 @export var sort_order: int = 0
 
 

@@ -5,7 +5,7 @@ extends Node3D
 
 const CLIP_SECONDS := 1.2
 
-var _dog: ProceduralDogVisual
+var _dog: ProceduralRigVisual
 var _label: Label3D
 var _clips: Array[String] = []
 var _index := -1
@@ -16,10 +16,16 @@ func _ready() -> void:
 	WorldBuilder.environment(self, "day")
 	WorldBuilder.ground(self, 30.0)
 	var camera := Camera3D.new()
-	camera.position = Vector3(1.9, 1.4, 2.6)
+	var close_up := OS.get_cmdline_user_args().has("--face")
+	camera.position = Vector3(-0.25, 1.62, -0.85) if close_up else Vector3(1.9, 1.4, 2.6)
 	add_child(camera)
-	camera.look_at(Vector3(0, 0.95, 0))
-	_dog = ProceduralDogVisual.new()
+	camera.look_at(Vector3(0, 1.5, 0) if close_up else Vector3(0, 0.95, 0))
+	# `-- --human` previews the people rig (mentors, Old Marten) instead.
+	if OS.get_cmdline_user_args().has("--human"):
+		_dog = ProceduralHumanVisual.new(ProceduralHumanVisual.ELDER)
+		_dog.set_weapon("staff")
+	else:
+		_dog = ProceduralDogVisual.new()
 	_dog.rotation.y = deg_to_rad(-25)
 	add_child(_dog)
 	_label = Label3D.new()
@@ -28,6 +34,8 @@ func _ready() -> void:
 	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	add_child(_label)
 	_clips.assign(_dog.animation_player.get_animation_list())
+	if close_up:
+		_clips.assign(["idle"])
 	_next()
 
 
@@ -45,6 +53,7 @@ func _next() -> void:
 		return
 	var clip := _clips[_index]
 	_dog.set_armor(_index % 3)
-	_dog.set_weapon(["sword", "hammer", "sword"][_index % 3])
+	if _dog is ProceduralDogVisual:
+		_dog.set_weapon(["sword", "hammer", "sword"][_index % 3])
 	_dog.play(clip, CLIP_SECONDS)
 	_label.text = clip

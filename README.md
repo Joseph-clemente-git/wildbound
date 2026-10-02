@@ -1,8 +1,9 @@
 # WILDBOUND: Chronicles of the Aether
 
 A mobile-first 3D animal fantasy adventure built with **Godot 4.7** (GL Compatibility, Jolt).
-You are the Keeper of a small training lodge. Raise a young humanoid dog into a champion:
-train it with universal mentors, equip it, teach it the Aether Arts and enter the trials of
+You are the Keeper of a small training lodge, inherited from its old owner, Old Marten.
+Raise a young humanoid dog into a champion: train it with human mentors who can teach any
+champion, equip it, teach it the Aether Arts and enter the trials of
 the Home Valley. Champions grow from what they actually live — *"this animal became good at
 this because of the way I raised and fought with it."*
 
@@ -78,7 +79,9 @@ Scenarios: `story`, `lodge`, `lodge_context`, `lodge_mid`, `panel --panel=<id>`,
 ## Art
 
 All visuals are procedural placeholders built from primitives so the game runs with no
-external assets. The humanoid rig follows the reusable skeleton from the design, so the
+external assets. Champions are animals (`ProceduralDogVisual`); mentors, Old Marten and
+other Keepers are people (`ProceduralHumanVisual`). Both share one humanoid rig, so they
+play the same animation clips. The rig follows the reusable skeleton from the design, so the
 Blender master character can replace it without touching gameplay — see
 [`docs/ASSET_PIPELINE.md`](docs/ASSET_PIPELINE.md). Sounds are synthesized placeholders
 behind named hooks (`Sfx.play("heavy_hit")`).
