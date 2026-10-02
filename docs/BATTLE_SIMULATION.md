@@ -23,7 +23,7 @@ until the simulation replaces it.
 | 3 | Opponent Preview | Done | `ui/screens/fight_preview.gd`, `presentation/world/fight_stage.gd`, `tests/unit/test_fight_preview.gd` |
 | 4 | Champion Selection | Done | `systems/champion_selection.gd`, `ui/screens/champion_select.gd`, `tests/unit/test_champion_select.gd` |
 | 5 | Battle Preparation | Done | `model/matchup_analysis.gd`, `ui/screens/battle_prep.gd`, `tests/unit/test_battle_prep.gd` |
-| 6 | Combat State Model | — | |
+| 6 | Combat State Model | Done | `simulation/combatant_spec.gd`, `combatant_state.gd`, `arena_layout.gd`, `battle_state.gd`, `tests/unit/test_battle_state.gd` |
 | 7 | Simulation Tick System | — | |
 | 8 | Action System | — | |
 | 9 | Attack Resolution | — | |
@@ -188,3 +188,49 @@ per band moved ("Defense ↑↑ · Mobility ↓↓").
 The power-score "Difficulty" line, the old style notes based on legacy AI knobs and the
 "Change build" detour to the lodge are gone. *ENTER TRIAL* still starts the real-time
 arena until the simulation exists (Stages 6–18).
+
+## Stage 6 — Combat State Model
+
+The simulation lives in `scripts/simulation/`, apart from the legacy real-time
+`scripts/combat/`. Stage 6 is data only — nothing moves yet.
+
+```
+BattleState                      the whole battle
+├─ arena: ArenaData, layout: ArenaLayout
+├─ combatants: [CombatantState]  any number per team (team 0 = Keeper's side)
+│   ├─ spec: CombatantSpec       frozen inputs
+│   └─ position, elevation, facing, velocity, health, stamina, action, phase,
+│      combo_step, target, stagger_meter, exhaustion, cooldowns, effects
+├─ tick, time
+├─ battle_seed, rng              all controlled variation comes from here
+└─ finished, winner_team
+```
+
+**`CombatantSpec`** — one combatant's inputs, built the same way for both sides
+(`from_champion`, `from_opponent`): id, name, source, animal, movement type, final stats
+(developed + equipment via `CombatStats.with_equipment`), the whole Skill Matrix,
+techniques, battle experience (a champion's wins + losses, an opponent's
+`battles_fought`), weapon, armor, accessory, the Aether Art it can actually use, weapon
+and magic mastery, energy, happiness, tendencies, and `derived` combat numbers from the
+same `CombatStats` formula the previews read. It is a snapshot: changing the champion
+afterwards does not change a battle already set up. Champions use neutral default
+tendencies (a preferred range from their weapon's reach, a magic preference when they
+carry an Art); build-driven behaviour comes with the decision system (Stages 16–17).
+
+**`CombatantState`** — the live, per-tick part: planar position (x, z) plus elevation,
+facing, velocity, health and stamina pools, the current `Action` (idle, move, attack,
+heavy, block, dodge, cast, stagger, knockdown, recover, KO) and `Phase` (wind-up,
+active, recovery), combo step, target, stagger meter, exhaustion, cooldowns and effects.
+
+**`ArenaLayout`** — the arena as geometry: ring radius, circular obstacles with heights,
+and spawn points per team. Extra teammates line up beside the first spawn, so 2v2 and
+3v3 work on any arena. Water, elevation and air zones can be added here later.
+
+**`BattleState.create(arena, player_specs, opponent_specs, seed)`** places everyone,
+faces each combatant toward its nearest enemy and fills health and stamina.
+`for_fight(trial, champion)` builds the MVP 1v1 and derives the seed from the fight and
+the champion's record (a new bout varies slightly; the same bout replays exactly).
+`validate()` rejects empty teams, starts outside the ring, inside obstacles or on top
+of each other. `snapshot()` is plain data — two states built from the same inputs and
+seed produce identical snapshots, the basis for deterministic replays. A test checks
+that nothing in `scripts/simulation/` refers to a species.
