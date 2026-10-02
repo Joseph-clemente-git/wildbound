@@ -41,6 +41,8 @@ static func create(battle: BattleState) -> BattleSimulator:
 ## The phase used for each pipeline step until a later stage provides one.
 static func default_phase(phase_name: String) -> SimulationPhase:
 	match phase_name:
+		"decision":
+			return DecisionPhase.new()
 		"action":
 			return ActionPhase.new()
 		"contact":

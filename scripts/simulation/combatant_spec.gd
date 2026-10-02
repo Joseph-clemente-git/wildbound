@@ -9,8 +9,8 @@ extends RefCounted
 ## A spec is a snapshot: later changes to the champion do not reach a battle
 ## that has already been set up.
 
-## Tendencies used when a combatant has no profile of its own (champions).
-## `preferred_range` is filled from the weapon's reach.
+## Fallback tendencies for keys a profile leaves out. Champions take theirs
+## from their build (CombatStyle.tendencies_for).
 const DEFAULT_TENDENCIES := {
 	"aggression": 0.5, "caution": 0.4, "mobility": 0.4,
 	"heavy_chance": 0.25, "magic_chance": 0.0, "preferred_range": 1.8,
@@ -71,11 +71,9 @@ static func from_champion(champion: Champion) -> CombatantSpec:
 	spec.ability = ability if ability != null and EquipmentSystem.can_use_ability(champion, ability) else null
 	spec.energy = champion.energy
 	spec.happiness = champion.happiness
-	spec.tendencies = DEFAULT_TENDENCIES.duplicate()
-	if spec.ability != null:
-		spec.tendencies["magic_chance"] = 0.3
 	spec.refresh()
-	spec.tendencies["preferred_range"] = maxf(spec.derived.attack_range * 0.9, 1.2)
+	# Champions fight the way their build suggests (CombatStyle).
+	spec.tendencies = CombatStyle.tendencies_for(spec)
 	return spec
 
 

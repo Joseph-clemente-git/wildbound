@@ -82,6 +82,8 @@ func test_ticks_are_discrete_and_fixed() -> void:
 
 func test_without_combat_nothing_is_decided() -> void:
 	var sim := _sim()
+	for phase_name: String in ["decision", "action", "contact", "damage", "force", "movement", "stamina"]:
+		sim.use_phase(SimulationPhase.new(phase_name))
 	var start := sim.state.snapshot()
 	var battle_log := sim.run()
 	check(sim.state.finished)

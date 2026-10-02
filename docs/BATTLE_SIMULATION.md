@@ -33,7 +33,7 @@ until the simulation replaces it.
 | 13 | Stagger / Knockback | Done | `simulation/phases/force_phase.gd`, `tests/unit/test_force.gd` |
 | 14 | Weapon Behavior | Done | `simulation/weapon_rules.gd`, `WeaponData` Behavior group, `tests/unit/test_weapon_behavior.gd` |
 | 15 | Magic Behavior | Done | `simulation/effect_rules.gd`, `phases/action_phase.gd`, `tests/unit/test_magic_behavior.gd` |
-| 16 | Combat AI Decision System | — | |
+| 16 | Combat AI Decision System | Done | `simulation/phases/decision_phase.gd`, `simulation/combat_style.gd`, `tests/unit/test_combat_ai.gd` |
 | 17 | Victory / Defeat Conditions | — | |
 | 18 | Battle Replay | — | |
 | 19 | Battle Result | — | |
@@ -243,7 +243,7 @@ frame rate. Every tick passes through the same pipeline, in this order:
 
 | Step | Pipeline name | Built in |
 | --- | --- | --- |
-| Combat Decision | `decision` | Stage 16 |
+| Combat Decision | `decision` | Stage 16 — `DecisionPhase` |
 | Action Resolution | `action` | Stage 8 — `ActionPhase` |
 | Hit / Dodge / Block | `contact` | Stages 9 & 11 — `ContactPhase` + `DefenseRules` |
 | Damage | `damage` | Stage 10 — `DamagePhase` |
@@ -486,3 +486,52 @@ effects never stack into something unanswerable.
 above the Art's requirement (to 60%). **Interruption** is the core counterplay: a clean
 hit during a cast's wind-up cancels it — the stamina is spent, nothing is released and no
 cooldown starts (`interrupted` event); uninterruptible Arts shrug off flinches.
+
+## Stage 16 — Combat AI Decision System
+
+`DecisionPhase` gives each combatant a **mind** that reads the battle state every tick
+and produces an intent. It decides what a fighter *tries*; the pipeline decides what that
+achieves. The only randomness is a small seeded spread on reactions, timing and how
+eagerly a tendency acts.
+
+**Threats → answers.** An enemy wind-up that will reach, a cast aimed its way or a shot in
+flight is noticed after a **reaction time** (0.30 s − 0.03 per Timing rank − Agility ×
+0.001 − battle experience × 0.0015, 0.08–0.40 s). The mind scores its answers —
+
+- **dodge**: dodge skill, Evasion, mobility, heavy or ranged threats, light armor, agile and
+  ranged builds;
+- **block**: block skill, Defense, a shield, light blows; worse against heavies or when low
+  on stamina;
+- **counter**: when its own wind-up lands first and the attacker has no hyper armor;
+- **sidestep**: for slow shots —
+
+and times it for the perfect moment with an error of ±(0.20 − 0.022 × Timing − 0.0012 ×
+experience − 0.012 × the matching skill rank). A fresh champion reads only heavies; a
+drilled veteran reads sword cuts and evades, blocks and parries far more. Fighters also
+**anticipate**: with an enemy in reach, careful fighters raise a guard before anything is
+thrown, and strike out of it the moment the enemy opens up.
+
+**Initiative.** Openings (wind-ups, recoveries, casts, staggers, exhaustion) are punished
+at once — with a heavy when it lands in time. Guards are pressured with heavies (more with
+high guard pressure). Otherwise attacks come at a pace set by **aggression** (swinging into
+a ready opponent risks a dodge, parry or counter). Combos continue while they work. Arts
+are cast when their shape fits: bolts from range or at openings, cones and bursts when
+pressed, dashes when cornered.
+
+**Condition and position.** Low stamina (threshold rises with **caution**) stops new
+attacks and backs off to recover; low health turns defensive. Fighters hold their build's
+preferred range, circle by **mobility**, steer off the ring edge and around obstacles.
+
+**Build changes behavior** (`CombatStyle`, from gear and body, never species):
+
+| Style | Builds | Behavior |
+| --- | --- | --- |
+| heavy | hyper-armored weapons (Hammer, Axe) | closes in, favours heavies (≈5× a sword's share), punishes into short windows, rarely guards |
+| agile | flanking weapons (Dagger) or a very agile light build | circles to the flank while the target is committed, prefers dodging, strikes openings |
+| ranged | ranged weapons (Bow) | shoots from 5 m+, never from under 3.5 m, kites on a curve |
+| balanced | everything else (Sword) | a mix |
+
+Champions' tendencies come from their build (`CombatStyle.tendencies_for`); opponents use
+their profile. Probe results over 12 seeds each: a fresh Bruno beats Pip 12/12, Juniper
+~7/12, Rook ~2/12, Marla 0/12; a trained Bruno (Skilled sword, block, dodge, timing;
++12 stats) wins 11–12/12 against all four. Every fight ends by knockout.

@@ -7,6 +7,8 @@ extends SimulationPhase
 ##   armor and defense-control skill. Passing the target's poise (from
 ##   Defense) staggers it — the current action is lost — and one huge blow
 ##   knocks it down. A blocked blow still adds a little guard pressure.
+## - Lesser clean blows flinch (a brief interruption) when they carry at
+##   least a quarter of the target's poise; weaker ones are shrugged off.
 ## - Staggers last longer for heavier blows and shorter with recovery skill
 ##   and Agility. The meter drains when left alone.
 ## - A parry staggers the attacker; a broken guard staggers the defender.
@@ -19,6 +21,9 @@ const P := CombatantState.Phase
 
 ## A clean blow's flinch: the target's current action is interrupted briefly.
 const FLINCH_SECONDS := 0.35
+## A blow flinches only if its stagger reaches this share of the target's
+## poise — light cuts do not interrupt a heavily armored, high-Defense body.
+const FLINCH_SHARE := 0.25
 const STAGGER_SECONDS := 0.55
 const KNOCKDOWN_SECONDS := 1.1
 const PARRY_STAGGER_SECONDS := 0.7
@@ -124,7 +129,7 @@ func _struck(attacker: CombatantState, target: CombatantState, hit: Dictionary, 
 		stagger(target, KNOCKDOWN_SECONDS, frame, "knockdown", attacker.index, A.KNOCKDOWN)
 	elif target.stagger_meter >= poise:
 		stagger(target, STAGGER_SECONDS * (1.3 if hit["kind"] == "heavy" else 1.0), frame, hit["kind"], attacker.index)
-	elif stagger_share >= 1.0 and target.action not in [A.STAGGER, A.KNOCKDOWN, A.RECOVER]:
+	elif stagger_share >= 1.0 and target.action not in [A.STAGGER, A.KNOCKDOWN, A.RECOVER] and build >= poise * FLINCH_SHARE:
 		# A clean blow flinches — unless a heavy weapon's committed swing shrugs off a lighter one.
 		if WeaponRules.has_hyper_armor(target) and hit["kind"] != "heavy":
 			frame.emit("armored", target.index, attacker.index)
