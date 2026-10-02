@@ -31,7 +31,7 @@ The battle system is being revised into a combat simulation, stage by stage — 
 | 25 Fire + Wind | `data/magic/fire.tres`, `wind.tres`, `BattleManager.release_ability` |
 | 26 Balance / counterplay | `AnimalData` balance profile + `combat_traits`, `tools/balance_sim.gd` |
 | 27 First arena | `data/arenas/meadow_ring.tres`, `presentation/world/arena_builder.gd`, `combat/battle_camera.gd` |
-| 28 Battle preparation | `ui/screens/battle_prep.gd` |
+| 28 Battle preparation | `ui/screens/battle_prep.gd` (fights are chosen first on `ui/screens/journey.gd`) |
 | 29 Battle results | `systems/trial_system.gd`, `ui/screens/battle_result.gd` |
 | 30 Recovery | `systems/condition_system.gd`, `ui/panels/recovery_panel.gd` |
 | 31 Save / load | `core/save_manager.gd` (versioned JSON, migrations, backup), `Game.to_dict/load_from_dict` |

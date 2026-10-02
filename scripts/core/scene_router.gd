@@ -2,7 +2,7 @@ extends Node
 ## Scene navigation with a fade transition (autoload "Router").
 ##
 ## Dedicated scenes are only used where the gameplay context truly changes
-## (title, story, lodge, map, arena, result). Lodge sub-screens are panels
+## (title, story, lodge, map, journey, arena, result). Lodge sub-screens are panels
 ## inside the Lodge scene instead of separate scenes.
 
 signal route_changed(route: String)
@@ -15,6 +15,7 @@ const ROUTES := {
 	"story": "res://scenes/story/story_scene.tscn",
 	"lodge": "res://scenes/lodge/lodge.tscn",
 	"world_map": "res://scenes/world_map/world_map.tscn",
+	"journey": "res://scenes/journey/journey.tscn",
 	"battle_prep": "res://scenes/battle_prep/battle_prep.tscn",
 	"arena": "res://scenes/arena/arena.tscn",
 	"result": "res://scenes/result/battle_result.tscn",

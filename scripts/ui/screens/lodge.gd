@@ -237,6 +237,9 @@ func open_panel(panel_id: String, panel_options: Dictionary = {}) -> void:
 		Game.set_flag("inspected_champion")
 	if LodgeHud.is_new(panel_id):
 		Game.set_flag("seen_" + panel_id)
+	if panel_id == "journey":
+		Router.go("journey")  # choosing a fight leaves the lodge
+		return
 	panels.open(panel_id, panel_options)
 
 

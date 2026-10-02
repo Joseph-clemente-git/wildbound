@@ -110,6 +110,12 @@ func _scenario_prep() -> void:
 	Router.go("battle_prep", {"trial": "valley_regional"})
 
 
+func _scenario_journey() -> void:
+	_prepare_mid()
+	Game.set_flag("cleared_stonewall_bout")
+	Router.go("journey")
+
+
 func _scenario_map() -> void:
 	_prepare_mid()
 	Router.go("world_map")

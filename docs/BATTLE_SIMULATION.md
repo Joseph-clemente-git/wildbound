@@ -19,7 +19,7 @@ until the simulation replaces it.
 | # | Stage | Status | Where |
 | --- | --- | --- | --- |
 | 1 | Opponent Data Model | Done | `data/opponent_data.gd`, `model/scouting_report.gd`, `tests/unit/test_opponents.gd` |
-| 2 | Battle Selection / Challenge Scene | — | |
+| 2 | Battle Selection / Challenge Scene | Done | `systems/challenge_board.gd`, `ui/screens/journey.gd`, `tests/unit/test_challenges.gd` |
 | 3 | Opponent Preview | — | |
 | 4 | Champion Selection | — | |
 | 5 | Battle Preparation | — | |
@@ -77,3 +77,26 @@ only shows names and bands:
 Health, attack speed, evasion, endurance, exact ranks and tendencies are never shown as
 numbers; tests enforce that no preview field contains a digit. `describe_build` is
 species-agnostic and is reused later to describe the player's own build in preparation.
+
+## Stage 2 — Battle Selection / Challenge Scene
+
+A fight is a `TrialData`: opponent, arena, region, energy cost, rewards, story hooks and
+now a `challenge_type` (`GameEnums.ChallengeType`: Story Battle, Local Trial, Regional
+Trial, Trainer Challenge, Wild Encounter, Elite Trial, Champion Battle — append-only), a
+`reason` (why the Keeper would take it) and `repeatable` (one-time story fights become
+*Completed* once won). The MVP content uses Local and Regional Trials; the other types
+need only data.
+
+`ChallengeBoard` holds the rules: regions (open first), the fights a region offers,
+each fight's status (Available / Cleared / Completed / Locked), plain-language
+requirements for locked fights, and how many fights are still to win. Selecting a
+fight never looks at the champion — readiness (energy, knockout) belongs to champion
+selection.
+
+The **Journey** scene (`route "journey"`) replaces the lodge's Journey side panel:
+regions on the left, the selected region's fights on the right. Each card shows the
+challenge type, status, who you would face, why the fight matters, the arena, energy
+cost and rewards — no power comparison or difficulty label. The lodge Map Board, the
+title shortcut and the World Map ("Choose a fight") all lead here, and Battle
+Preparation's Back returns here. Until Stage 3, *Select Fight* goes straight to the
+existing Battle Preparation.

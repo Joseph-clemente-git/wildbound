@@ -20,6 +20,12 @@ enum ArmorWeight { LIGHT, MEDIUM, HEAVY }
 
 enum BattleFormat { ONE_V_ONE, TWO_V_TWO, THREE_V_THREE }
 
+## Kinds of fight the Journey offers. Append only: values are stored in content.
+enum ChallengeType {
+	STORY_BATTLE, LOCAL_TRIAL, REGIONAL_TRIAL, TRAINER_CHALLENGE,
+	WILD_ENCOUNTER, ELITE_TRIAL, CHAMPION_BATTLE,
+}
+
 # --- Core combat stats -------------------------------------------------------
 
 const STATS: Array[String] = [
@@ -79,6 +85,11 @@ const MOVEMENT_TYPE_NAMES: Array[String] = ["Ground", "Flying", "Swimming", "Amp
 
 const ARMOR_WEIGHT_NAMES: Array[String] = ["Light", "Medium", "Heavy"]
 
+const CHALLENGE_TYPE_NAMES: Array[String] = [
+	"Story Battle", "Local Trial", "Regional Trial", "Trainer Challenge",
+	"Wild Encounter", "Elite Trial", "Champion Battle",
+]
+
 
 static func rank_name(rank: int) -> String:
 	return RANK_NAMES[clampi(rank, 0, RANK_NAMES.size() - 1)]
@@ -90,6 +101,10 @@ static func rarity_name(rarity: int) -> String:
 
 static func rarity_color(rarity: int) -> Color:
 	return RARITY_COLORS[clampi(rarity, 0, RARITY_COLORS.size() - 1)]
+
+
+static func challenge_type_name(challenge_type: int) -> String:
+	return CHALLENGE_TYPE_NAMES[clampi(challenge_type, 0, CHALLENGE_TYPE_NAMES.size() - 1)]
 
 
 static func stat_name(stat: String) -> String:

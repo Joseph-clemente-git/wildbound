@@ -14,7 +14,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _back() -> void:
-	Router.go("lodge", {"panel": "journey"})
+	Router.go("journey", {"region": trial.region_id})
 
 
 func _ready() -> void:
@@ -100,7 +100,7 @@ func _build_ui() -> void:
 		warn.add_theme_color_override("font_color", UiTheme.BAD)
 		column.add_child(warn)
 	var row := UiKit.hbox(12)
-	row.add_child(UiKit.button("Back", func() -> void: Router.go("lodge", {"panel": "journey"})))
+	row.add_child(UiKit.button("Back", _back))
 	row.add_child(UiKit.button("Change build", func() -> void: Router.go("lodge", {"panel": "equipment"})))
 	row.add_child(UiKit.spacer(false))
 	var enter := UiKit.primary_button("ENTER TRIAL", _enter, 240)

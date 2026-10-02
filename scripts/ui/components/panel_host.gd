@@ -14,7 +14,6 @@ const PANELS := {
 	"equipment": "res://scripts/ui/panels/equipment_panel.gd",
 	"aether": "res://scripts/ui/panels/aether_panel.gd",
 	"recovery": "res://scripts/ui/panels/recovery_panel.gd",
-	"journey": "res://scripts/ui/panels/journey_panel.gd",
 	"codex": "res://scripts/ui/panels/codex_panel.gd",
 }
 
