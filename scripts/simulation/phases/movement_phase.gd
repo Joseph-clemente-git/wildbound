@@ -34,6 +34,7 @@ func run(state: BattleState, frame: SimFrame) -> void:
 			continue
 		var intent: Dictionary = frame.intents.get(fighter.index, {})
 		_turn(state, fighter, frame.delta)
+		TerrainRules.fly(state, fighter, frame.delta)
 		_accelerate(state, fighter, intent, frame.delta)
 		fighter.position += (fighter.velocity + fighter.push_velocity) * frame.delta
 		fighter.push_velocity = fighter.push_velocity.move_toward(Vector2.ZERO, PUSH_FRICTION * frame.delta)
@@ -62,10 +63,9 @@ static func speed_factor(fighter: CombatantState) -> float:
 	return 0.0
 
 
-## Ground everywhere for now. Water, air and elevation zones will change
-## speed here by movement type, never by species.
-static func terrain_speed(_state: BattleState, _fighter: CombatantState) -> float:
-	return 1.0
+## Water and air change speed by movement type, never by species.
+static func terrain_speed(state: BattleState, fighter: CombatantState) -> float:
+	return TerrainRules.speed_factor(state, fighter)
 
 
 func _accelerate(state: BattleState, fighter: CombatantState, intent: Dictionary, delta: float) -> void:
@@ -74,7 +74,7 @@ func _accelerate(state: BattleState, fighter: CombatantState, intent: Dictionary
 		if fighter.phase == P.ACTIVE:
 			var dodge_time := maxf(fighter.phase_length, 0.05)
 			var distance := fighter.dash_distance if fighter.dash_distance > 0.0 \
-					else derived.dodge_distance * WeaponRules.dodge_factor(fighter)
+					else derived.dodge_distance * WeaponRules.dodge_factor(fighter) * TerrainRules.dodge_factor(state, fighter)
 			fighter.velocity = fighter.dodge_direction * (distance / dodge_time)
 		else:
 			fighter.velocity = Vector2.ZERO
@@ -107,7 +107,10 @@ func _turn(state: BattleState, fighter: CombatantState, delta: float) -> void:
 
 func _constrain(state: BattleState, fighter: CombatantState) -> void:
 	var body := CombatantState.BODY_RADIUS
-	for obstacle in state.layout.obstacles:
+	for i in state.layout.obstacles.size():
+		var obstacle := state.layout.obstacles[i]
+		if i < state.layout.obstacle_heights.size() and fighter.elevation > state.layout.obstacle_heights[i]:
+			continue  # flying over it
 		var centre := Vector2(obstacle.x, obstacle.y)
 		var offset := fighter.position - centre
 		var reach := obstacle.z + body
@@ -139,7 +142,7 @@ func _separate(state: BattleState) -> void:
 		if not a.is_alive():
 			continue
 		for b in state.combatants:
-			if b.index <= a.index or not b.is_alive():
+			if b.index <= a.index or not b.is_alive() or absf(a.elevation - b.elevation) > 1.0:
 				continue
 			var offset := b.position - a.position
 			var distance := offset.length()

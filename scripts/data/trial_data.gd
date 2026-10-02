@@ -22,6 +22,8 @@ extends Resource
 ## Extra rewards for the first victory.
 @export var first_clear_coins: int = 60
 @export var first_clear_owner_xp: int = 40
+## On the first victory the defeated champion asks to join the lodge.
+@export var recruit_on_first_win: bool = false
 ## Story flags that must be set before the fight is offered.
 @export var requires_flags: PackedStringArray = []
 ## Story event played after the first victory ("" = none).

@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="AnimalData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/animal_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "humanoid_shark"
+display_name = "Humanoid Shark"
+description = "A broad, powerful champion from the lakes, built for deep water. On dry land it is slower and tires sooner, but in water it is fast, slippery and hits like a wave."
+movement_type = 2
+visual_id = "procedural_shark"
+palette = {
+"fur": Color(0.4275, 0.498, 0.549, 1.0),
+"fur_light": Color(0.8941, 0.9137, 0.9255, 1.0),
+"fur_dark": Color(0.2353, 0.2902, 0.3333, 1.0),
+"scarf": Color(0.1843, 0.4353, 0.6039, 1.0),
+"cloth": Color(0.1804, 0.2471, 0.2902, 1.0)
+}
+base_stats = {
+"health": 52.0,
+"attack": 50.0,
+"strength": 52.0,
+"attack_speed": 40.0,
+"defense": 46.0,
+"agility": 40.0,
+"evasion": 36.0,
+"endurance": 52.0
+}
+potential = {
+"health": 92.0,
+"attack": 88.0,
+"strength": 92.0,
+"attack_speed": 74.0,
+"defense": 86.0,
+"agility": 72.0,
+"evasion": 66.0,
+"endurance": 88.0,
+"magic": 60.0
+}
+starting_skills = {
+"skill:swimming": 4,
+"skill:attack": 2,
+"skill:defense": 1,
+"skill:stamina": 1,
+"skill:movement": 1,
+"skill:recovery": 1
+}
+strengths = PackedStringArray("Fast, slippery and hard-hitting in deep water", "Heavy frame that shrugs off knockback", "Strong natural bite and strength")
+weaknesses = PackedStringArray("Slow and short of breath on dry land", "Clumsy dodges out of water", "Turns slowly")
+counterplay = PackedStringArray("Keep the fight on dry ground", "Out-pace it with quick footwork", "Strike from the flank while it turns")
+combat_traits = {
+"knockback_taken": 0.85,
+"stagger_taken": 0.88,
+"dodge_efficiency": 0.9,
+"turn_speed": 0.88
+}
+default_names = PackedStringArray("Finn", "Marlo", "Brine", "Coral")
+personality = "Calm and patient until the water churns; fiercely loyal once it trusts you."
+sort_order = 1

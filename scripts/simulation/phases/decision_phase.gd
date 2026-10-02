@@ -52,6 +52,8 @@ class Mind:
 	var strafe := 1.0
 	var strafe_until := 0.0
 	var threat_key := ""
+	var noticed_at := INF
+	var replanned := false
 	var response := ""
 	var respond_at := INF
 	var give_up_at := INF
@@ -109,6 +111,8 @@ func decide(state: BattleState, me: CombatantState, mind: Mind, frame: SimFrame)
 	var target := state.target_of(me)
 	var intent := {"move": _movement(state, me, target, mind, frame)}
 	var answer := _answer_threats(state, me, mind, frame)
+	if answer.get("hold", false):
+		return intent  # a blow it has seen coming: no new attack into it
 	if not answer.is_empty():
 		intent.merge(answer, true)
 		return intent
@@ -197,16 +201,26 @@ func _answer_threats(state: BattleState, me: CombatantState, mind: Mind, frame: 
 	if threat.is_empty():
 		mind.threat_key = ""
 		mind.response = ""
+		mind.noticed_at = INF
 		if me.action == A.BLOCK and state.time < mind.guard_until:
 			return {"action": "block"}
 		return {}
 	if threat["key"] != mind.threat_key:
-		_plan_answer(state, me, mind, threat)
+		_plan_answer(state, me, mind, threat, INF)
+	elif mind.response.is_empty() and not mind.replanned and state.time >= mind.noticed_at \
+			and (ActionPhase.is_free(me) or (me.action == A.ATTACK and me.phase == P.RECOVERY)):
+		# Seen while committed; free again before it lands — answer it now.
+		mind.replanned = true
+		_plan_answer(state, me, mind, threat, state.time)
+	var seen := state.time >= mind.noticed_at
 	if mind.response.is_empty() or state.time > mind.give_up_at:
-		return {}
+		# Seen but unanswerable: at least do not swing into it.
+		return {"hold": true} if seen and state.time <= mind.give_up_at else {}
 	if state.time + frame.delta * 0.5 < mind.respond_at:
-		# Seen it coming: hold still or keep the current guard while waiting.
-		return {"action": "block"} if me.action == A.BLOCK else {}
+		# Seen it coming: keep the guard up or hold back while waiting.
+		if me.action == A.BLOCK:
+			return {"action": "block"}
+		return {"hold": true} if seen else {}
 	match mind.response:
 		"dodge":
 			mind.response = ""
@@ -222,11 +236,15 @@ func _answer_threats(state: BattleState, me: CombatantState, mind: Mind, frame: 
 	return {}
 
 
-## Chooses and times the answer to a newly seen threat.
-func _plan_answer(state: BattleState, me: CombatantState, mind: Mind, threat: Dictionary) -> void:
-	mind.threat_key = threat["key"]
+## Chooses and times the answer to a threat — when first seen, or again
+## when the combatant frees up (`seen_at`) before it lands.
+func _plan_answer(state: BattleState, me: CombatantState, mind: Mind, threat: Dictionary, seen_at: float) -> void:
+	if seen_at == INF:
+		mind.threat_key = threat["key"]
+		mind.replanned = false
+		mind.noticed_at = state.time + mind.reaction * (1.0 + state.rng.randf_range(-0.15, 0.15))
 	mind.response = ""
-	var noticed := state.time + mind.reaction * (1.0 + state.rng.randf_range(-0.15, 0.15))
+	var noticed := maxf(mind.noticed_at, state.time)
 	var strike := state.time + float(threat["time"])
 	mind.give_up_at = strike + GUARD_HOLD
 	if noticed >= strike - 0.02:
@@ -240,6 +258,10 @@ func _plan_answer(state: BattleState, me: CombatantState, mind: Mind, threat: Di
 	var side := Vector2(-direction.y, direction.x)
 	if (me.position + side).length() > (me.position - side).length():
 		side = -side  # sidestep toward the open ring
+	var reach := spec.derived.dodge_distance
+	if TerrainRules.preferred_terrain(spec) == "land" and state.layout.in_water(me.position + side * reach) \
+			and not state.layout.in_water(me.position - side * reach):
+		side = -side  # and away from deep water
 	var scores := {}
 	var stamina := me.stamina
 	if stamina >= derived.dodge_stamina * 0.8:
@@ -298,7 +320,7 @@ func _initiative(state: BattleState, me: CombatantState, target: CombatantState,
 	var caution := spec.tendency("caution")
 	var aggression := spec.tendency("aggression") * (0.6 if me.health_ratio() < 0.3 else 1.0)
 	var open := DamagePhase.is_open(target) or target.is_exhausted()
-	var in_reach := ContactPhase.in_reach(state, me, target, derived.attack_range, derived.arc_degrees)
+	var in_reach := can_reach(state, me, target)
 	# Keep a chain going while it is working.
 	if me.action == A.ATTACK and me.phase == P.RECOVERY and me.combo_step < derived.combo_max \
 			and mind.style != CombatStyle.HEAVY:
@@ -352,6 +374,8 @@ func _initiative(state: BattleState, me: CombatantState, target: CombatantState,
 	var rate := 1.1 * aggression
 	if mind.style == CombatStyle.HEAVY:
 		rate *= 0.8
+	if is_flagging(target):
+		rate *= 2.5  # a tired opponent is pressed hard
 	if not _chance(state, rate, frame.delta):
 		return {}
 	var heavy_wish := spec.tendency("heavy_chance") + (0.2 if target.stagger_meter > target.spec.derived.poise * 0.5 else 0.0)
@@ -421,8 +445,8 @@ func _movement(state: BattleState, me: CombatantState, target: CombatantState, m
 		wanted = maxf(wanted, 4.5 + caution * 2.0)  # back off and breathe
 	elif hurt and caution > 0.4:
 		wanted += 1.0
-	elif DamagePhase.is_open(target) or target.is_exhausted():
-		wanted = minf(wanted, spec.derived.attack_range * 0.7 + CombatantState.BODY_RADIUS)  # step in to punish
+	elif DamagePhase.is_open(target) or target.is_exhausted() or is_flagging(target):
+		wanted = minf(wanted, spec.derived.attack_range * 0.7 + CombatantState.BODY_RADIUS)  # step in to punish or press
 	var radial := 0.0
 	if distance > wanted + 0.3:
 		radial = 1.0
@@ -433,8 +457,10 @@ func _movement(state: BattleState, me: CombatantState, target: CombatantState, m
 		if state.rng.randf() < 0.35 + mobility * 0.3:
 			mind.strafe = -mind.strafe
 	var circling := (0.25 + mobility * 0.75) if distance < wanted + 1.5 else 0.2
-	if mind.style == CombatStyle.AGILE and not ActionPhase.is_free(target) and distance < wanted + 1.0:
-		# The target cannot turn while committed: slip round to its flank.
+	if mind.style == CombatStyle.AGILE and target.action in [A.ATTACK, A.HEAVY, A.CAST] \
+			and target.phase != P.RECOVERY and distance < wanted + 1.0:
+		# The target cannot turn while it swings: slip round to its flank,
+		# then step in to punish the recovery.
 		circling = 1.2
 		radial = 0.0 if distance > CombatantState.BODY_RADIUS * 2.5 else -0.3
 	if mind.style == CombatStyle.RANGED and distance < RANGED_SHOOT:
@@ -446,9 +472,46 @@ func _movement(state: BattleState, me: CombatantState, target: CombatantState, m
 		move += -me.position.normalized() * 1.2
 		if tangent.dot(me.position) > 0.0:
 			mind.strafe = -mind.strafe
-	if not ContactPhase.line_clear(state, me.position, target.position):
+	if not ContactPhase.line_clear(state, me.position, target.position) and me.elevation < 1.5:
 		move += Vector2(-toward.y, toward.x) * mind.strafe
+	move += _terrain_pull(state, me)
+	move = _hold_shore(state, me, move)
 	return move.limit_length(1.0)
+
+
+## A walker on dry land does not wade in after a swimmer: steps that would
+## enter deep water slide along the shore instead. The swimmer has to come
+## to the shallows to fight.
+static func _hold_shore(state: BattleState, me: CombatantState, move: Vector2) -> Vector2:
+	if state.layout.water_zones.is_empty() or me.elevation > 0.5 or TerrainRules.preferred_terrain(me.spec) != "land":
+		return move
+	if state.layout.in_water(me.position) or move.length() < 0.01:
+		return move
+	var ahead := me.position + move.normalized() * 0.6
+	if not state.layout.in_water(ahead):
+		return move
+	var inward := (state.layout.nearest_water(me.position) - me.position).normalized()
+	var along := move - inward * maxf(move.dot(inward), 0.0)
+	return along
+
+
+## Swimmers drift toward water, walkers out of it — a gentle pull that
+## shapes where a fight happens without overriding it.
+static func _terrain_pull(state: BattleState, me: CombatantState) -> Vector2:
+	if state.layout.water_zones.is_empty() or me.elevation > 0.5:
+		return Vector2.ZERO
+	var water := state.layout.nearest_water(me.position)
+	var toward_water := water - me.position
+	if toward_water.length() < 0.01:
+		return Vector2.ZERO
+	match TerrainRules.preferred_terrain(me.spec):
+		"water":
+			if not state.layout.in_water(me.position):
+				return toward_water.normalized() * 0.6
+		"land":
+			if state.layout.in_water(me.position):
+				return -toward_water.normalized() * 0.7
+	return Vector2.ZERO
 
 
 func _retarget(state: BattleState, fighter: CombatantState) -> void:
@@ -458,10 +521,26 @@ func _retarget(state: BattleState, fighter: CombatantState) -> void:
 		fighter.target_index = nearest.index if nearest != null else -1
 
 
+## Whether `me` could land a melee blow on `target` by attacking now. A
+## flier that can fly dives into its swoop during the wind-up, so its own
+## height does not stop it; a target high in the air is out of reach.
+static func can_reach(state: BattleState, me: CombatantState, target: CombatantState) -> bool:
+	var derived := me.spec.derived
+	var diver := TerrainRules.can_fly(state, me)
+	if not diver and not TerrainRules.vertical_reach(me, target):
+		return false
+	return ContactPhase.in_reach(state, me, target, derived.attack_range, derived.arc_degrees, -1.0)
+
+
 static func _enemy_reaches(state: BattleState, enemy: CombatantState, me: CombatantState) -> bool:
 	var derived := enemy.spec.derived
 	return enemy.position.distance_to(me.position) - CombatantState.BODY_RADIUS <= derived.attack_range + THREAT_MARGIN \
 			and ContactPhase.line_clear(state, enemy.position, me.position)
+
+
+## Running low on breath, or landed to recover it: time to press.
+static func is_flagging(target: CombatantState) -> bool:
+	return target.stamina_ratio() < 0.25 or target.resting
 
 
 static func _flanking(me: CombatantState, target: CombatantState) -> bool:

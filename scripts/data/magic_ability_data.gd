@@ -33,6 +33,8 @@ enum Effect { PROJECTILE, CONE_PUSH, NOVA, DASH }
 ## Optional ward on the caster: share of incoming damage turned aside.
 @export var ward_factor: float = 0.0
 @export var ward_seconds: float = 0.0
+## Knocks a flier out of the air when it strikes it aloft (wind, control).
+@export var grounds_fliers: bool = false
 ## Taking a hit while casting cancels the spell.
 @export var interruptible: bool = true
 @export_multiline var counterplay: String = ""

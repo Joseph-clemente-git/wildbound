@@ -53,6 +53,10 @@ var target_index := -1
 ## Built-up stagger; staggers when it passes the spec's poise.
 var stagger_meter := 0.0
 var exhausted_time := 0.0
+## Seconds a flier is held on the ground after being staggered or knocked down.
+var grounded_time := 0.0
+## A flier that landed to recover its breath.
+var resting := false
 ## Battle time of the last successful guard or parry (for ripostes).
 var last_guard_time := -100.0
 ## Seconds before stamina starts coming back after spending.
@@ -109,5 +113,6 @@ func to_dict() -> Dictionary:
 		"stagger": snappedf(stagger_meter, 0.01), "exhausted": snappedf(exhausted_time, 0.001),
 		"regen_delay": snappedf(regen_delay, 0.001),
 		"push": [snappedf(push_velocity.x, 0.001), snappedf(push_velocity.y, 0.001)],
+		"grounded": snappedf(grounded_time, 0.001), "resting": resting,
 		"cooldowns": cooldowns.duplicate(), "effects": effects.duplicate(true),
 	}

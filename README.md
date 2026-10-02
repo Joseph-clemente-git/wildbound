@@ -8,7 +8,8 @@ the Home Valley. Champions grow from what they actually live — *"this animal b
 this because of the way I raised and fought with it."*
 
 This repository contains the complete **Chapter 1 MVP** described in `mechanics.md` and
-`story.md`: one humanoid dog, ground movement, 1v1, one arena, Sword/Hammer, Fire/Wind,
+`story.md`, now with a simulation-based battle system (see `docs/BATTLE_SIMULATION.md`): a humanoid dog
+plus a shark and an eagle who can join your lodge, ground movement, 1v1, one arena, Sword/Hammer, Fire/Wind,
 six mentors, armor, energy, happiness, experience, Skill Matrix, training, techniques,
 results, recovery, world map and versioned saves.
 

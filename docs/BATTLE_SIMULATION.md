@@ -35,6 +35,7 @@ until the simulation replaces it.
 | 15 | Magic Behavior | Done | `simulation/effect_rules.gd`, `phases/action_phase.gd`, `tests/unit/test_magic_behavior.gd` |
 | 16 | Combat AI Decision System | Done | `simulation/phases/decision_phase.gd`, `simulation/combat_style.gd`, `tests/unit/test_combat_ai.gd` |
 | 17 | Victory / Defeat Conditions | Done | `simulation/victory_rules.gd`, `simulation/battle_outcome.gd`, `tools/balance_sim.gd`, `tests/unit/test_victory.gd` |
+| — | Terrain, movement types, Shark and Eagle | Done | `simulation/terrain_rules.gd`, `data/animals/humanoid_shark.tres`, `humanoid_eagle.tres`, `tests/unit/test_terrain.gd` |
 | 18 | Battle Replay | — | |
 | 19 | Battle Result | — | |
 | 20 | Experience Event Tracking | — | |
@@ -562,3 +563,46 @@ their profile. Probe results over 12 seeds each: a fresh Bruno beats Pip 12/12, 
 | veteran (Skilled sword, more training) | 100% | 100% | 96% | 63% |
 
 Every fight ends by knockout; the regional champion asks for real development.
+
+## Terrain, movement types, Shark and Eagle
+
+Two new animals — the **Humanoid Shark** (Swimming) and the **Humanoid Eagle** (Flying) —
+and the terrain that makes their movement types matter. Everything is keyed by
+`MovementType` and the new **Natural Foundation** skills, never by species
+(`TerrainRules`):
+
+| Movement | On land | In deep water | In the air |
+| --- | --- | --- | --- |
+| Ground | normal | ×0.62 speed, ×0.75 dodge, ×0.8 recovery | — |
+| Swimming | ×0.72 speed, ×0.8 dodge, ×0.85 recovery | ×1.25 speed, ×1.25 dodge, ×1.2 recovery, ×1.06 damage | — |
+| Amphibious | ×0.95 speed | ×1.12 speed | — |
+| Flying | normal when grounded | not slowed while aloft | ×1.15 speed, flies over low obstacles |
+
+- **Natural Foundation** (new top layer of the Skill Matrix): **Swimming** and **Flight**.
+  Each rank eases water penalties / flight costs and sharpens a swimmer's edge or a
+  diver's swoop, for any animal (a dog with Swimming wades better). Shown in the Skill
+  Matrix when learned.
+- **Arenas** gain `water_zones` (deep water circles) and `air_ceiling` (open air for
+  fliers; 0 = none). `features()` mentions water and open sky.
+- **Fliers** cruise at 2.4 m above melee reach where the arena has air, paying stamina
+  and recovering at about a third of the usual rate while aloft. They **swoop** to 0.4 m
+  to strike or cast — and are within reach while they do. Shots reach them aloft; wind
+  Arts reach up and **ground** them (`grounds_fliers`, Gale Push); any stagger or
+  knockdown knocks them out of the air for 1.4 s; a tired flier lands to rest. Flight is
+  mobility, not immunity.
+- **The decision layer** knows terrain: fliers dive into reach (`can_reach`), walkers hold
+  the shoreline instead of wading after a swimmer and dodge away from deep water,
+  swimmers drift back to the water, and tired or resting opponents are pressed hard.
+- **Bodies**: `ProceduralSharkVisual` (pointed head, jaw and teeth, gill flaps on the ear
+  bones, dorsal and crescent tail fins) and `ProceduralEagleVisual` (white head, hooked
+  beak, crest on the ear bones, folding wings, tail fan) share the humanoid rig and every
+  animation clip with the dog.
+- **Content**: arenas *Lakeshore Shallows* (half deep water) and *Windy Ridge* (tall
+  stones, high open sky); visiting champions **Finn** (shark, hammer) and **Aquila**
+  (eagle, sword, Gale Push); two **Elite Trials** in the Home Valley. Beating a visitor the
+  first time **recruits** it: it joins the lodge (with its weapon) and can be chosen for
+  any fight (`TrialData.recruit_on_first_win`, `Game.add_champion`).
+
+Outcomes (Bruno, Apprentice sword, 10 seeds): vs Finn on its shore 2/10, on the same
+arena drained 9/10, on the meadow 8/10 — swimming is a home advantage, not an automatic
+win. Vs Aquila on the ridge 3/10, with no room to fly 9/10.

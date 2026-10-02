@@ -114,6 +114,8 @@ static func stagger(fighter: CombatantState, base_seconds: float, frame: SimFram
 	if not keep_meter:
 		fighter.stagger_meter = 0.0
 	fighter.velocity = Vector2.ZERO
+	if fighter.spec.movement_type == GameEnums.MovementType.FLYING and action != A.FLINCH:
+		fighter.grounded_time = maxf(fighter.grounded_time, TerrainRules.GROUNDED_SECONDS)  # knocked out of the air
 	frame.emit("knockdown" if action == A.KNOCKDOWN else ("flinch" if reason == "flinch" else "staggered"), fighter.index, by,
 			{"reason": reason, "seconds": snappedf(seconds, 0.001)})
 
@@ -137,7 +139,11 @@ func _struck(attacker: CombatantState, target: CombatantState, hit: Dictionary, 
 			frame.emit("armored", target.index, attacker.index)
 		else:
 			stagger(target, FLINCH_SECONDS, frame, "flinch", attacker.index, A.FLINCH, true)
-	var push := knockback_of(attacker, hit) * push_taken(target) * push_share
+	var ability := Content.ability(hit.get("ability", "")) if hit["kind"] == "cast" else null
+	if ability != null and ability.grounds_fliers and target.elevation > 0.5 and stagger_share >= 1.0 \
+			and target.action != A.KNOCKDOWN:
+		stagger(target, KNOCKDOWN_SECONDS * 0.6, frame, "grounded", attacker.index, A.KNOCKDOWN)
+	var push := knockback_of(attacker, hit) * push_taken(target) * push_share * TerrainRules.push_factor(target)
 	if push > 0.01:
 		var direction: Vector2 = hit.get("direction", Vector2.ZERO)
 		target.push_velocity += direction * push * PUSH_SPEED

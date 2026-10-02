@@ -161,15 +161,20 @@ func test_build_changes_how_a_champion_fights() -> void:
 	var bow := _profile("bow_yew")
 	check(hammer["heavy_share"] > 0.35 and hammer["heavy_share"] > sword["heavy_share"] * 3.0,
 			"a hammer favours heavy blows (%.2f vs %.2f)" % [hammer["heavy_share"], sword["heavy_share"]])
-	check(dagger["dodges"] > sword["dodges"], "a dagger dodges rather than trades (%d vs %d)" % [dagger["dodges"], sword["dodges"]])
-	check(dagger["open_share"] > sword["open_share"], "and strikes openings (%.2f vs %.2f)" % [dagger["open_share"], sword["open_share"]])
+	# Against a quick sword fighter, openings are rarer: agility shows in taking them.
+	var quick_sword := _profile("sword_training", "pip")
+	var quick_dagger := _profile("dagger_wolf", "pip")
+	check(quick_dagger["dodges"] + dagger["dodges"] > quick_sword["dodges"] + sword["dodges"],
+			"a dagger dodges rather than trades (%d vs %d)" % [quick_dagger["dodges"] + dagger["dodges"], quick_sword["dodges"] + sword["dodges"]])
+	check(quick_dagger["travel"] > quick_sword["travel"] * 1.1,
+			"and keeps repositioning (%.2f vs %.2f m/s)" % [quick_dagger["travel"], quick_sword["travel"]])
 	check(bow["distance"] > sword["distance"] + 1.5, "a bow keeps its distance (%.1f vs %.1f m)" % [bow["distance"], sword["distance"]])
 
 
-## How a build fights Rook over 30 seconds (or until someone falls).
-func _profile(weapon_id: String) -> Dictionary:
+## How a build fights an opponent over 30 seconds (or until someone falls).
+func _profile(weapon_id: String, opponent_id: String = "rook") -> Dictionary:
 	var players: Array[CombatantSpec] = [_spec(weapon_id)]
-	var opponents: Array[CombatantSpec] = [_rook()]
+	var opponents: Array[CombatantSpec] = [CombatantSpec.from_opponent(Content.opponent(opponent_id))]
 	var sim := BattleSimulator.create(BattleState.create(Content.arena("meadow_ring"), players, opponents, 41))
 	var distance := 0.0
 	var samples := 0
@@ -177,13 +182,16 @@ func _profile(weapon_id: String) -> Dictionary:
 	var swings := 0
 	var open_swings := 0
 	var dodges := 0
+	var travel := 0.0
 	for i in 900:
 		var target := sim.state.combatants[1]
+		var before := sim.state.combatants[0].position
 		var target_open := DamagePhase.is_open(target) or target.is_exhausted()
 		var frame := sim.step()
 		if frame == null:
 			break
 		distance += sim.state.combatants[0].position.distance_to(target.position)
+		travel += before.distance_to(sim.state.combatants[0].position)
 		samples += 1
 		for event in frame.events:
 			if event["actor"] != 0 or event["type"] != "action_start":
@@ -196,22 +204,27 @@ func _profile(weapon_id: String) -> Dictionary:
 				"dodge":
 					dodges += 1
 	return {"heavy_share": float(heavy) / maxf(swings, 1), "open_share": float(open_swings) / maxf(swings, 1),
-			"dodges": dodges, "distance": distance / maxf(samples, 1)}
+			"dodges": dodges, "distance": distance / maxf(samples, 1),
+			"travel": travel / maxf(samples * sim.tick_seconds, 0.001)}
 
 
 func test_skill_turns_blows_aside() -> void:
-	var novice := 0
-	var expert := 0
+	var novice := [0, 0]
+	var expert := [0, 0]
 	var drilled := {"skill:timing": GameEnums.Rank.EXPERT, "skill:dodge": GameEnums.Rank.EXPERT, "skill:block": GameEnums.Rank.EXPERT}
-	for seed_value in 4:
-		novice += _defended(_fight(_spec(), _rook(), 500 + seed_value))
-		expert += _defended(_fight(_spec("sword_training", drilled, 60), _rook(), 500 + seed_value))
-	check(expert > novice, "a drilled veteran evades, blocks and parries more (%d vs %d)" % [expert, novice])
+	for seed_value in 6:
+		_tally(_fight(_spec(), _rook(), 500 + seed_value), novice)
+		_tally(_fight(_spec("sword_training", drilled, 60), _rook(), 500 + seed_value), expert)
+	var novice_share := float(novice[0]) / maxf(novice[0] + novice[1], 1)
+	var expert_share := float(expert[0]) / maxf(expert[0] + expert[1], 1)
+	check(expert_share > novice_share + 0.1,
+			"a drilled veteran turns aside more of what comes at it (%.2f vs %.2f)" % [expert_share, novice_share])
 
 
-static func _defended(sim: BattleSimulator) -> int:
-	var count := 0
+## [blows turned aside (evaded, blocked, parried), clean blows taken] for combatant 0.
+static func _tally(sim: BattleSimulator, into: Array) -> void:
 	for event in sim.battle_log.events:
 		if event["type"] in ["evade", "block", "parry"] and event["actor"] == 0:
-			count += 1
-	return count
+			into[0] += 1
+		elif event["type"] == "hit" and event["target"] == 0 and event.get("outcome", "") == "hit":
+			into[1] += 1

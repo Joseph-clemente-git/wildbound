@@ -81,6 +81,9 @@ static func apply_result(outcome: Dictionary) -> Dictionary:
 		Game.set_flag("first_trial_done")
 	if won:
 		Game.set_flag(trial.cleared_flag())
+	var recruited := ""
+	if first_win and trial.recruit_on_first_win:
+		recruited = recruit(Content.opponent(trial.opponent_id))
 	var story := ""
 	if first_win and not trial.story_after_win.is_empty():
 		story = trial.story_after_win
@@ -92,11 +95,29 @@ static func apply_result(outcome: Dictionary) -> Dictionary:
 		"owner_level_before": keeper_level, "owner_levels": owner_levels,
 		"animal_level_before": animal_level, "animal_levels": animal_levels,
 		"happiness": happiness, "energy_before": energy_before, "energy_after": champion.energy,
-		"knocked_out": champion.knocked_out, "story": story,
+		"knocked_out": champion.knocked_out, "story": story, "recruited": recruited,
 		"suggestion": suggest_training(champion, outcome.get("experience", {})),
 	}, true)
 	Game.save()
 	return result
+
+
+## A defeated visiting champion joins the lodge, bringing its weapon.
+## Returns the newcomer's name ("" if the animal is unknown).
+static func recruit(opponent: OpponentData) -> String:
+	var animal := Content.animal(opponent.animal_id)
+	if animal == null:
+		return ""
+	var newcomer := Champion.create(animal, opponent.display_name, Game.now())
+	newcomer.palette = opponent.palette.duplicate()
+	newcomer.armor_id = "armor_light"
+	if Content.weapon(opponent.weapon_id) != null:
+		Game.profile.add_item(opponent.weapon_id)
+		newcomer.weapon_id = opponent.weapon_id
+		newcomer.skills.set_rank("weapon:" + Content.weapon(opponent.weapon_id).weapon_type, SkillCatalog.WEAPON_FIRST_RANK)
+	Game.add_champion(newcomer)
+	Game.say("%s the %s joins your lodge!" % [newcomer.name, animal.display_name.to_lower()], UiTheme.GOOD)
+	return newcomer.name
 
 
 ## Story §39: after a battle, point at the experience worth building on and a

@@ -49,7 +49,9 @@ func run(state: BattleState, frame: SimFrame) -> void:
 
 ## Whether a melee swing from `attacker` reaches `target` right now.
 static func in_reach(state: BattleState, attacker: CombatantState, target: CombatantState,
-		reach: float, arc_degrees: float) -> bool:
+		reach: float, arc_degrees: float, vertical_extra: float = 0.0) -> bool:
+	if vertical_extra >= 0.0 and not TerrainRules.vertical_reach(attacker, target, vertical_extra):
+		return false  # out of reach above or below
 	var offset := target.position - attacker.position
 	var distance := offset.length()
 	if distance - CombatantState.BODY_RADIUS > reach:
@@ -60,6 +62,10 @@ static func in_reach(state: BattleState, attacker: CombatantState, target: Comba
 		if rad_to_deg(absf(attacker.facing.angle_to(offset))) > arc_degrees * 0.5 + allowance:
 			return false
 	return line_clear(state, attacker.position, target.position)
+
+
+## Extra height a gust of wind reaches into the air.
+const GUST_HEIGHT := 2.5
 
 
 ## True when no obstacle stands between two points.
@@ -92,12 +98,12 @@ func _cast(state: BattleState, caster: CombatantState, contact: Dictionary, fram
 			_loose(state, caster, contact, frame, ability.speed, ability.radius, ability.cast_range, ability.id)
 		E.CONE_PUSH:
 			for target in state.enemies_of(caster):
-				if target.is_alive() and in_reach(state, caster, target, ability.cast_range, ability.cone_degrees):
+				if target.is_alive() and in_reach(state, caster, target, ability.cast_range, ability.cone_degrees, GUST_HEIGHT):
 					_hit(state, caster, target, contact, frame, "area")
 		E.NOVA:
 			for target in state.enemies_of(caster):
 				if target.is_alive() and target.position.distance_to(caster.position) \
-						<= ability.radius + CombatantState.BODY_RADIUS:
+						<= ability.radius + CombatantState.BODY_RADIUS and TerrainRules.vertical_reach(caster, target, 1.0):
 					_hit(state, caster, target, contact, frame, "area")
 		E.DASH:
 			pass  # repositions the caster; Magic Behavior (Stage 15)

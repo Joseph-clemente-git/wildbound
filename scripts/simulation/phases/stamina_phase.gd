@@ -44,13 +44,17 @@ func run(state: BattleState, frame: SimFrame) -> void:
 		var cost := float(spent.get(fighter.index, 0.0))
 		if fighter.action == A.BLOCK:
 			cost += fighter.spec.derived.block_drain * frame.delta
+		var aloft := TerrainRules.flight_cost(fighter, frame.delta)
 		if cost > 0.0:
-			fighter.stamina -= cost
+			fighter.stamina -= cost + aloft
 			fighter.regen_delay = Content.config.stamina_regen_delay
+		elif aloft > 0.0:
+			fighter.stamina -= aloft  # staying aloft costs breath but does not stop recovery
 		elif fighter.regen_delay > 0.0:
 			fighter.regen_delay = maxf(fighter.regen_delay - frame.delta, 0.0)
-		else:
-			var rate := fighter.spec.derived.stamina_regen * (GUARD_REGEN_FACTOR if fighter.action == A.BLOCK else 1.0)
+		if cost <= 0.0 and fighter.regen_delay <= 0.0:
+			var rate := fighter.spec.derived.stamina_regen * (GUARD_REGEN_FACTOR if fighter.action == A.BLOCK else 1.0) \
+					* TerrainRules.regen_factor(state, fighter)
 			fighter.stamina = minf(fighter.stamina + rate * frame.delta, fighter.max_stamina)
 		if fighter.stamina <= 0.0:
 			fighter.stamina = 0.0

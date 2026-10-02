@@ -45,7 +45,8 @@ func run(state: BattleState, frame: SimFrame) -> void:
 		var target := state.combatants[hit["target"]]
 		if not target.is_alive():
 			continue
-		var raw := raw_damage(attacker, hit) * WeaponRules.damage_factor(state, attacker, target, hit)
+		var raw := raw_damage(attacker, hit) * WeaponRules.damage_factor(state, attacker, target, hit) \
+				* TerrainRules.damage_factor(state, attacker)
 		var opening := is_open(target)
 		if opening and outcome == "hit":
 			raw *= 1.0 + OPENING_BONUS + OPENING_BONUS_PER_RANK * mastery(attacker, hit)

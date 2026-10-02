@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="TrialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trial_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "lakeshore_challenge"
+display_name = "Lakeshore Challenge"
+description = "Finn, a visiting shark champion, waits in the lake shallows. In water it is fast and fierce; on dry land, much less so."
+reason = "Finn is looking for a lodge worth joining. Beat it on its own shore and it may train with you — a champion who rules the water."
+region_id = "home_valley"
+challenge_type = 5
+opponent_id = "finn"
+arena_id = "valley_lakeshore"
+energy_cost = 25
+coins = 110
+owner_xp = 70
+animal_xp = 65
+first_clear_coins = 80
+first_clear_owner_xp = 60
+requires_flags = PackedStringArray("first_trial_done")
+recruit_on_first_win = true
+tutorial = false
+sort_order = 4

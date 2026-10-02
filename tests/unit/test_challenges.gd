@@ -34,7 +34,7 @@ func test_regions_list_open_ones_first() -> void:
 	check_eq(regions[0].id, "home_valley")
 	check(ChallengeBoard.is_region_open(regions[0]))
 	check(not ChallengeBoard.is_region_open(Content.region("greenwood")), "later chapters stay closed")
-	check_eq(ChallengeBoard.fights("home_valley").size(), 4)
+	check_eq(ChallengeBoard.fights("home_valley").size(), 6)
 	check_eq(ChallengeBoard.fights("home_valley")[0].id, "first_steps", "board order")
 	check(ChallengeBoard.fights("greenwood").is_empty())
 
@@ -54,7 +54,7 @@ func test_status_follows_the_story() -> void:
 	Game.set_flag("first_trial_done")
 	check_eq(ChallengeBoard.status(first), ChallengeBoard.Status.CLEARED)
 	check(ChallengeBoard.can_select(first), "repeatable fights can be fought again")
-	check_eq(ChallengeBoard.open_count("home_valley"), 2, "both valley bouts open")
+	check_eq(ChallengeBoard.open_count("home_valley"), 4, "both valley bouts and the visiting champions")
 	var regional := Content.trial("valley_regional")
 	check(ChallengeBoard.requirements(regional).has("win the Stonewall Bout"))
 
@@ -88,7 +88,7 @@ func test_journey_screen_lists_fights() -> void:
 	root.add_child(screen)
 	check_eq(screen.selected_region, "home_valley")
 	var cards: Array = screen._fights.get_children()
-	check_eq(cards.size(), 4, "one card per fight")
+	check_eq(cards.size(), 6, "one card per fight")
 	check(screen._fights.find_child("Fight_stonewall_bout", true, false).find_child("Select", true, false) != null,
 			"an open fight can be selected")
 	check(screen._fights.find_child("Fight_valley_regional", true, false).find_child("Select", true, false) == null,

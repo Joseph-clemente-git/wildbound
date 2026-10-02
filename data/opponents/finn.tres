@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="OpponentData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/opponent_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "finn"
+display_name = "Finn"
+title = "Lakeward Brawler"
+bio = "A shark champion from Lakeward, travelling the valley's lakes for worthy bouts. Finn swings an ironwood hammer and fights best waist-deep in water."
+animal_id = "humanoid_shark"
+palette = {
+"fur": Color(0.3725, 0.4549, 0.502, 1.0),
+"fur_light": Color(0.9098, 0.9294, 0.9412, 1.0),
+"fur_dark": Color(0.2039, 0.2588, 0.298, 1.0),
+"scarf": Color(0.1647, 0.4157, 0.5804, 1.0),
+"cloth": Color(0.1647, 0.2275, 0.2667, 1.0)
+}
+level = 3
+stats = {
+"health": 56.0,
+"attack": 50.0,
+"strength": 56.0,
+"attack_speed": 40.0,
+"defense": 48.0,
+"agility": 44.0,
+"evasion": 36.0,
+"endurance": 54.0
+}
+skills = {
+"weapon:hammer": 3,
+"skill:swimming": 4,
+"skill:block": 2,
+"skill:attack": 2
+}
+battles_fought = 18
+weapon_id = "hammer_iron"
+armor_id = "armor_medium"
+magic_ability_id = ""
+aggression = 0.6
+caution = 0.3
+mobility = 0.35
+heavy_chance = 0.45
+magic_chance = 0.0
+preferred_range = 1.9
+intro_line = "Finn wades into the shallows and grins. \"Come in, the water's lovely.\""
+win_line = "Finn laughs and shakes the water off. \"You kept your feet dry and your head clear. I'd like to train at a lodge like yours.\""
+lose_line = "Finn floats on its back, unbothered. \"Next time, mind where you stand.\""
+sort_order = 4

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ArenaData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/arena_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "valley_lakeshore"
+display_name = "Lakeshore Shallows"
+description = "A ring on the shore of the valley lake. Half of it is waist-deep water — wonderful for swimmers, heavy going for everyone else."
+region_id = "home_valley"
+format = 0
+radius = 12.0
+mood = "day"
+player_spawns = Array[Vector3]([Vector3(0.0, 0.0, 6.5)])
+opponent_spawns = Array[Vector3]([Vector3(0.0, 0.0, -6.0)])
+obstacles = Array[Vector4]([Vector4(6.5, 2.5, 0.7, 1.1), Vector4(-6.5, 4.0, 0.6, 0.9)])
+water_zones = Array[Vector3]([Vector3(0.0, -5.5, 6.0), Vector3(-5.5, -1.0, 3.2)])
+air_ceiling = 6.0
+ground_color_a = Color(0.7216, 0.6588, 0.4706, 1.0)
+ground_color_b = Color(0.5569, 0.6039, 0.3608, 1.0)
+banner_color = Color(0.1843, 0.4353, 0.6039, 1.0)
+camera_limit = 16.0
+sort_order = 1
