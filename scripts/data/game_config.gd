@@ -126,3 +126,12 @@ extends Resource
 @export var block_damage_factor: float = 0.25
 @export var defense_mitigation_per_point: float = 0.0045
 @export var perfect_window_seconds: float = 0.18
+
+@export_group("Simulation")
+## Fixed simulation steps per simulated second. Battles are computed in these
+## discrete ticks, independent of the display frame rate.
+@export var simulation_tick_rate: int = 30
+## A battle that has not ended by knockout stops here (Stage 17 decides how).
+@export var simulation_max_seconds: float = 180.0
+## A full state snapshot is kept every this many ticks for replays.
+@export var simulation_keyframe_ticks: int = 6

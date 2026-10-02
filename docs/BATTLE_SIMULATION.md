@@ -24,7 +24,7 @@ until the simulation replaces it.
 | 4 | Champion Selection | Done | `systems/champion_selection.gd`, `ui/screens/champion_select.gd`, `tests/unit/test_champion_select.gd` |
 | 5 | Battle Preparation | Done | `model/matchup_analysis.gd`, `ui/screens/battle_prep.gd`, `tests/unit/test_battle_prep.gd` |
 | 6 | Combat State Model | Done | `simulation/combatant_spec.gd`, `combatant_state.gd`, `arena_layout.gd`, `battle_state.gd`, `tests/unit/test_battle_state.gd` |
-| 7 | Simulation Tick System | — | |
+| 7 | Simulation Tick System | Done | `simulation/battle_simulator.gd`, `simulation_phase.gd`, `sim_frame.gd`, `battle_log.gd`, `phases/`, `tests/unit/test_simulation_tick.gd` |
 | 8 | Action System | — | |
 | 9 | Attack Resolution | — | |
 | 10 | Damage / Defense | — | |
@@ -234,3 +234,42 @@ the champion's record (a new bout varies slightly; the same bout replays exactly
 of each other. `snapshot()` is plain data — two states built from the same inputs and
 seed produce identical snapshots, the basis for deterministic replays. A test checks
 that nothing in `scripts/simulation/` refers to a species.
+
+## Stage 7 — Simulation Tick System
+
+`BattleSimulator.create(state)` runs a battle in fixed ticks
+(`GameConfig.simulation_tick_rate`, 30 per simulated second), independent of the display
+frame rate. Every tick passes through the same pipeline, in this order:
+
+| Step | Pipeline name | Built in |
+| --- | --- | --- |
+| Combat Decision | `decision` | Stage 16 |
+| Action Resolution | `action` | Stage 8 |
+| Hit / Dodge / Block | `contact` | Stages 9, 11 |
+| Damage | `damage` | Stage 10 |
+| Stagger / Knockback | `force` | Stage 13 |
+| Position Update | `movement` | Stage 8 |
+| Stamina Update | `stamina` | Stage 12 |
+| Cooldown / Recovery | `recovery` | Stage 7 — `CooldownPhase` |
+| Knockout | `knockout` | Stage 7 — `KnockoutPhase` (Stage 17 adds the other end conditions) |
+
+Each step is a `SimulationPhase` with `run(state, frame)`; a step not built yet is the
+base class and does nothing. `use_phase()` swaps one in by name, so later stages (and
+tests) plug in without touching the loop.
+
+- **`SimFrame`** — one tick's scratch data passed along the pipeline: intents from the
+  decision step, contacts from action resolution, and the tick's events
+  (`emit(type, actor, target, data)`).
+- **`CooldownPhase`** counts down cooldowns, exhaustion and lasting effects.
+- **`KnockoutPhase`** knocks out anyone at zero health and ends the battle when only one
+  team has anyone standing.
+- **Time limit** — at `simulation_max_seconds` (180 s) the battle stops with no winner and a
+  `battle_end` event of reason `time`; Stage 17 decides what that means.
+- **`BattleLog`** — header (arena, seed, every combatant's spec), every event in order,
+  a full snapshot every `simulation_keyframe_ticks` (6) ticks plus the first and final
+  states. The replay (Stage 18), results (Stage 19) and experience (Stage 20) read it.
+
+The simulator never picks a winner: with no combat phases a battle runs to the time
+limit undecided. Time is derived from the tick count, so it never drifts. The same state
+and seed produce an identical log; a full-length battle simulates headless well inside a
+second.
