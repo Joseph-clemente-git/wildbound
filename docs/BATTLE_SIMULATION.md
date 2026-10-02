@@ -36,7 +36,7 @@ until the simulation replaces it.
 | 16 | Combat AI Decision System | Done | `simulation/phases/decision_phase.gd`, `simulation/combat_style.gd`, `tests/unit/test_combat_ai.gd` |
 | 17 | Victory / Defeat Conditions | Done | `simulation/victory_rules.gd`, `simulation/battle_outcome.gd`, `tools/balance_sim.gd`, `tests/unit/test_victory.gd` |
 | — | Terrain, movement types, Shark and Eagle | Done | `simulation/terrain_rules.gd`, `data/animals/humanoid_shark.tres`, `humanoid_eagle.tres`, `tests/unit/test_terrain.gd` |
-| 18 | Battle Replay | — | |
+| 18 | Battle Replay | Done | `simulation/battle_session.gd`, `presentation/replay/replay_timeline.gd`, `ui/screens/battle_replay.gd`, `tests/unit/test_replay.gd` |
 | 19 | Battle Result | — | |
 | 20 | Experience Event Tracking | — | |
 | 21 | Natural Growth | — | |
@@ -187,8 +187,8 @@ per band moved ("Defense ↑↑ · Mobility ↓↓").
 5. The arena's features and the rewards.
 
 The power-score "Difficulty" line, the old style notes based on legacy AI knobs and the
-"Change build" detour to the lodge are gone. *ENTER TRIAL* still starts the real-time
-arena until the simulation exists (Stages 6–18).
+"Change build" detour to the lodge are gone. *START SIMULATION* runs the battle and opens its replay
+(Stage 18).
 
 ## Stage 6 — Combat State Model
 
@@ -606,3 +606,34 @@ and the terrain that makes their movement types matter. Everything is keyed by
 Outcomes (Bruno, Apprentice sword, 10 seeds): vs Finn on its shore 2/10, on the same
 arena drained 9/10, on the meadow 8/10 — swimming is a home advantage, not an automatic
 win. Vs Aquila on the ridge 3/10, with no room to fly 9/10.
+
+## Stage 18 — Battle Replay
+
+**START SIMULATION** (Battle Preparation) pays the entry, then `BattleSession.start`
+simulates the whole battle headless (~0.1 s), **applies its result at once**
+(`TrialSystem.apply_result`: rewards, knockout, records, story, recruitment) and keeps the
+log. The replay only *shows* what happened — skipping it, closing the app or watching it
+again can never change the outcome.
+
+**`ReplayTimeline`** reads a `BattleLog` for playback: `sample(t)` interpolates every
+combatant (position, height, facing, health, stamina) between keyframes (now every 3
+ticks, 0.1 s), `projectiles(t)` the shots in flight, `events_between(t0, t1)` the events
+of a window (each plays exactly once), and **action spans** — each action with its real
+start and end — so every clip plays exactly as long as the simulation did.
+
+**The replay screen** (`route "replay"`, params `{"session"}`) builds the arena in 3D
+(water included), gives each combatant its body in its own gear and Aether aura, and
+plays the battle:
+
+- attacks, heavies, guards, dodges, casts, flinches, staggers, knockdowns and knockouts
+  as animation clips; walking and running from the movement; an eagle's wings spread
+  with its height;
+- damage numbers (red for punished openings), hit flashes, guard flashes, technique and
+  parry call-outs, Art effects and bolts in flight, camera shake on heavy blows, sound
+  hooks, and a short commentary ticker;
+- health and stamina bars for both sides;
+- **❚❚ / ▶**, **1× 2× 4×**, **⟲ Replay**, **Skip ▶▶**; at the end a Victory / Defeat /
+  Draw banner (by knockout, on decision, too close to call) with *Watch again* and *See the
+  result*. The Android back button skips to the result.
+
+The legacy real-time arena scene is no longer on the player's path.

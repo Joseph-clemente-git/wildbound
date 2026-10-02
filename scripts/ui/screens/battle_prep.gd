@@ -3,7 +3,8 @@ extends Node3D
 ## opponent. A tactical summary answers "how should I prepare?", the build
 ## can be changed here with each option's effect on the matchup, and the
 ## champion's relevant skills and condition sit beside the opponent's read.
-## Never a win chance. Params: {"trial": id, "champion": uid}
+## Never a win chance. START SIMULATION runs the battle and opens its
+## replay. Params: {"trial": id, "champion": uid}
 
 const SKILLS_SHOWN: Array[String] = ["skill:dodge", "skill:block", "skill:stamina", "skill:timing"]
 
@@ -104,13 +105,22 @@ func equip_magic(ability_id: String) -> void:
 	Game.save()
 
 
+## Pays the entry, simulates the whole battle (the result is decided and
+## applied here) and goes to watch it.
 func _enter() -> void:
+	var session := start_simulation()
+	if session == null:
+		return
+	Sfx.play("ui_confirm")
+	Router.go("replay", {"session": session})
+
+
+func start_simulation() -> BattleSession:
 	var error := TrialSystem.enter(Game.champion(), trial)
 	if not error.is_empty():
 		UiKit.toast(_root, error, UiTheme.BAD)
-		return
-	Sfx.play("ui_confirm")
-	Router.go("arena", {"trial": trial.id, "entered": true})
+		return null
+	return BattleSession.start(trial, Game.champion())
 
 
 # --- Layout -----------------------------------------------------------------------
@@ -156,7 +166,7 @@ func _build_ui() -> void:
 	var row := UiKit.hbox(12)
 	row.add_child(UiKit.button("Back", _back, "", 150))
 	row.add_child(UiKit.spacer(false))
-	var enter := UiKit.primary_button("ENTER TRIAL", _enter, 240)
+	var enter := UiKit.primary_button("START SIMULATION", _enter, 280)
 	enter.name = "Enter"
 	enter.disabled = not blocker.is_empty()
 	row.add_child(enter)

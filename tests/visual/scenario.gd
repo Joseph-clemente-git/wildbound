@@ -162,6 +162,23 @@ func _scenario_champions() -> void:
 			_at(2.5, func() -> void: get_tree().current_scene.rest_chosen())
 
 
+## Simulates a fight and opens its replay. --trial=<id>, --speed=<1|2|4>.
+func _scenario_replay() -> void:
+	_prepare_mid()
+	_progress(["cleared_first_steps", "cleared_stonewall_bout", "cleared_meadow_sprint"])
+	Game.champion().skills.set_rank("weapon:sword", GameEnums.Rank.APPRENTICE)
+	var trial := "stonewall_bout"
+	var speed := 1.0
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--trial="):
+			trial = arg.trim_prefix("--trial=")
+		if arg.begins_with("--speed="):
+			speed = float(arg.trim_prefix("--speed="))
+	TrialSystem.enter(Game.champion(), Content.trial(trial))
+	Router.go("replay", {"session": BattleSession.start(Content.trial(trial), Game.champion(), 31)})
+	_at(0.8, func() -> void: get_tree().current_scene.set_speed(speed))
+
+
 func _scenario_map() -> void:
 	_prepare_mid()
 	Router.go("world_map")

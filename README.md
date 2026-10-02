@@ -75,7 +75,7 @@ godot --path . --write-movie out.png --fixed-fps 10 --quit-after 60 \
 ```
 
 Scenarios: `story`, `lodge`, `lodge_context`, `lodge_mid`, `panel --panel=<id>`, `arena`,
-`result`, `prep --trial=<id>`, `journey`, `preview --trial=<id>`, `champions`, `map`; `tests/visual/dog_preview.tscn` renders every animation clip.
+`result`, `prep --trial=<id>`, `journey`, `preview --trial=<id>`, `champions`, `replay --trial=<id> --speed=<n>`, `map`; `tests/visual/dog_preview.tscn` renders every animation clip.
 
 ## Art
 

@@ -126,7 +126,7 @@ func refresh() -> void:
 ## Plain data for logs, replays and determinism checks.
 func to_dict() -> Dictionary:
 	return {
-		"id": id, "name": display_name, "source": source,
+		"id": id, "name": display_name, "source": source, "palette": palette.duplicate(),
 		"animal": animal.id if animal != null else "", "movement": movement_type,
 		"stats": stats.duplicate(), "skills": skills.duplicate(), "techniques": Array(techniques),
 		"battle_experience": battle_experience,

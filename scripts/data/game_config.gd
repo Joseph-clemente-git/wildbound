@@ -134,7 +134,7 @@ extends Resource
 ## A battle that has not ended by knockout stops here (Stage 17 decides how).
 @export var simulation_max_seconds: float = 180.0
 ## A full state snapshot is kept every this many ticks for replays.
-@export var simulation_keyframe_ticks: int = 6
+@export var simulation_keyframe_ticks: int = 3
 ## Movement responsiveness: acceleration (m/s²) at 0 Agility and per point.
 @export var simulation_accel_base: float = 9.0
 @export var simulation_accel_per_agility: float = 0.14
