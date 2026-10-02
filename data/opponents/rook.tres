@@ -17,14 +17,14 @@ palette = {
 }
 level = 2
 stats = {
-"health": 52.0,
-"attack": 44.0,
-"strength": 54.0,
-"attack_speed": 34.0,
-"defense": 52.0,
-"agility": 34.0,
+"health": 62.0,
+"attack": 50.0,
+"strength": 58.0,
+"attack_speed": 36.0,
+"defense": 54.0,
+"agility": 36.0,
 "evasion": 30.0,
-"endurance": 52.0
+"endurance": 56.0
 }
 skills = {
 "weapon:hammer": 3,
@@ -38,10 +38,10 @@ intro_line = "Rook plants the hammer in the dirt. \"Come on, then. Hit the wall.
 win_line = "Rook grunts approvingly. \"You found the cracks.\""
 lose_line = "Rook nods. \"Walls do not move. Remember that.\""
 sort_order = 1
-aggression = 0.35
+aggression = 0.5
 block_skill = 0.7
 dodge_skill = 0.0
 heavy_chance = 0.45
-reaction_time = 0.45
-telegraph = 1.25
+reaction_time = 0.35
+telegraph = 1.1
 preferred_range = 1.9

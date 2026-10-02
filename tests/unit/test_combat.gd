@@ -247,3 +247,17 @@ func test_ai_battle_reaches_a_result() -> void:
 	check(battle.finished, "battle ends")
 	check(_has_event(foe, "attack_result") and _has_event(hero, "attack_result"), "both fought")
 	after()
+
+
+func test_heavy_weapon_hyper_armor() -> void:
+	Game.profile.add_item("hammer_iron")
+	foe.weapon = Content.weapon("hammer_iron")
+	foe.stats = CombatStats.for_opponent(Content.opponent("rook"))
+	foe.request("heavy")
+	battle.step(DT)
+	check_eq(foe.state, Combatant.State.HEAVY)
+	hero.request("attack")
+	_run(0.35)
+	check_eq(foe.state, Combatant.State.HEAVY, "light blow does not interrupt a hammer wind-up")
+	check(foe.health < foe.stats.max_health, "but it still hurts")
+	after()

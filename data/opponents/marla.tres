@@ -17,14 +17,14 @@ palette = {
 }
 level = 5
 stats = {
-"health": 58.0,
-"attack": 54.0,
-"strength": 48.0,
-"attack_speed": 54.0,
-"defense": 50.0,
-"agility": 56.0,
-"evasion": 54.0,
-"endurance": 62.0
+"health": 54.0,
+"attack": 50.0,
+"strength": 46.0,
+"attack_speed": 52.0,
+"defense": 48.0,
+"agility": 54.0,
+"evasion": 52.0,
+"endurance": 56.0
 }
 skills = {
 "weapon:sword": 4,

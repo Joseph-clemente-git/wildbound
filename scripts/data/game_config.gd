@@ -105,7 +105,7 @@ extends Resource
 @export var happiness_training_range: Vector2 = Vector2(0.85, 1.1)
 
 @export_group("Combat")
-@export var base_health: float = 260.0
+@export var base_health: float = 340.0
 @export var health_per_point: float = 6.0
 @export var base_stamina: float = 60.0
 @export var stamina_per_endurance: float = 0.9

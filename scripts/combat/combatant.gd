@@ -152,6 +152,12 @@ func stamina_ratio() -> float:
 	return stamina / stats.max_stamina
 
 
+## Heavy weapons commit to their heavy swings: light blows cannot flinch
+## them out of the wind-up (poise still builds toward a stagger).
+func has_hyper_armor() -> bool:
+	return state == State.HEAVY and phase == "windup" and weapon != null and weapon.weight >= 5.0
+
+
 func knows(technique_id: String) -> bool:
 	return techniques.has(technique_id)
 
@@ -526,6 +532,10 @@ func receive_attack(attacker: Combatant, info: Dictionary) -> String:
 		if interrupted:
 			_emit("interrupted")
 		return "stagger"
+	if has_hyper_armor():
+		Sfx.play("block")
+		_emit("armored", {})
+		return "hit"
 	_enter_stun(State.HIT, stats.hit_recovery, "hit")
 	Sfx.play("hit")
 	if interrupted:
