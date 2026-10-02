@@ -72,8 +72,10 @@ func _accelerate(state: BattleState, fighter: CombatantState, intent: Dictionary
 	var derived := fighter.spec.derived
 	if fighter.action == A.DODGE:
 		if fighter.phase == P.ACTIVE:
-			var dodge_time := maxf(derived.dodge_iframes, 0.05)
-			fighter.velocity = fighter.dodge_direction * (derived.dodge_distance * WeaponRules.dodge_factor(fighter) / dodge_time)
+			var dodge_time := maxf(fighter.phase_length, 0.05)
+			var distance := fighter.dash_distance if fighter.dash_distance > 0.0 \
+					else derived.dodge_distance * WeaponRules.dodge_factor(fighter)
+			fighter.velocity = fighter.dodge_direction * (distance / dodge_time)
 		else:
 			fighter.velocity = Vector2.ZERO
 		return
@@ -85,6 +87,7 @@ func _accelerate(state: BattleState, fighter: CombatantState, intent: Dictionary
 	var desired := wanted.limit_length(1.0) * derived.move_speed * speed_factor(fighter) * terrain_speed(state, fighter)
 	if fighter.is_exhausted():
 		desired *= Content.config.exhausted_speed_factor
+	desired *= EffectRules.speed_factor(fighter)
 	fighter.velocity = fighter.velocity.move_toward(desired, accel * delta)
 
 

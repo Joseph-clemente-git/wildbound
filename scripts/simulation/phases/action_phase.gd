@@ -24,6 +24,8 @@ const P := CombatantState.Phase
 ## Actions other steps put a combatant into (stagger, knockdown...) and that
 ## simply run out their RECOVERY timer here.
 const HELD_STATES := [A.STAGGER, A.KNOCKDOWN, A.RECOVER, A.FLINCH]
+## Cast time saved per magic mastery rank above an Art's requirement.
+const MASTERY_CAST_SPEED := 0.08
 
 
 func _init() -> void:
@@ -56,7 +58,9 @@ static func timings(fighter: CombatantState, action: CombatantState.Action) -> A
 			var ability := fighter.spec.ability
 			if ability == null:
 				return [0.0, 0.0, 0.0]
-			return [ability.cast_time * d.magic_cast_factor, 0.0, ability.recovery]
+			# Mastery above the Art's requirement casts it faster.
+			var practised := clampf(1.0 - MASTERY_CAST_SPEED * maxi(fighter.spec.magic_mastery - ability.required_rank, 0), 0.6, 1.0)
+			return [ability.cast_time * d.magic_cast_factor * practised, 0.0, ability.recovery]
 		A.BLOCK:
 			return [Content.config.simulation_block_raise_seconds, INF, 0.0]
 	return [0.0, 0.0, 0.0]
@@ -104,6 +108,9 @@ func _start(state: BattleState, fighter: CombatantState, intent: Dictionary, fra
 					snappedf(direction.normalized().y, 0.001)]})
 		"cast":
 			if fighter.spec.ability != null and fighter.cooldown("magic") <= 0.0:
+				# A dashing Art goes where the combatant wants to move, else sideways.
+				var dash: Vector2 = intent.get("dodge_dir", intent.get("move", Vector2.ZERO))
+				fighter.dodge_direction = dash.normalized() if dash.length() > 0.1 else _default_dodge(state, fighter)
 				_begin(fighter, A.CAST, frame, 0, {"ability": fighter.spec.ability.id})
 
 
@@ -165,6 +172,15 @@ func _on_active(fighter: CombatantState, frame: SimFrame) -> void:
 		A.CAST:
 			var ability := fighter.spec.ability
 			fighter.cooldowns["magic"] = ability.cooldown
+			EffectRules.on_release(ability, fighter)
+			if ability.effect == MagicAbilityData.Effect.DASH:
+				# The gust carries the caster: a protected dash of the Art's length.
+				frame.emit("cast_release", fighter.index, fighter.target_index, {"ability": ability.id})
+				fighter.action = A.DODGE
+				fighter.dash_distance = ability.speed
+				_enter(fighter, P.ACTIVE, fighter.spec.derived.dodge_iframes + 0.1)
+				frame.emit("dodge", fighter.index, -1, {"ability": ability.id})
+				return
 			frame.contacts.append({"attacker": fighter.index, "kind": "cast", "ability": ability.id,
 					"target": fighter.target_index, "swing": fighter.swing, "first": true})
 			frame.emit("cast_release", fighter.index, fighter.target_index, {"ability": ability.id})
@@ -194,6 +210,7 @@ func _finish(fighter: CombatantState, frame: SimFrame) -> void:
 	fighter.phase = P.NONE
 	fighter.phase_time = 0.0
 	fighter.combo_step = 0
+	fighter.dash_distance = 0.0
 	frame.emit("action_end", fighter.index, -1, {"action": CombatantState.ACTION_NAMES[ended]})
 
 

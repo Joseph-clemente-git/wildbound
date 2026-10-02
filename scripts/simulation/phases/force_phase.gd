@@ -99,6 +99,8 @@ static func stagger_seconds(fighter: CombatantState, base: float) -> float:
 static func stagger(fighter: CombatantState, base_seconds: float, frame: SimFrame, reason: String,
 		by: int, action: CombatantState.Action = CombatantState.Action.STAGGER, keep_meter: bool = false) -> void:
 	var seconds := stagger_seconds(fighter, base_seconds)
+	if fighter.action in [A.ATTACK, A.HEAVY, A.CAST] and fighter.phase == P.WINDUP:
+		frame.emit("interrupted", fighter.index, by, {"action": CombatantState.ACTION_NAMES[fighter.action]})
 	fighter.action = action
 	fighter.phase = P.RECOVERY
 	fighter.phase_time = 0.0
@@ -125,6 +127,8 @@ func _struck(attacker: CombatantState, target: CombatantState, hit: Dictionary, 
 	elif stagger_share >= 1.0 and target.action not in [A.STAGGER, A.KNOCKDOWN, A.RECOVER]:
 		# A clean blow flinches — unless a heavy weapon's committed swing shrugs off a lighter one.
 		if WeaponRules.has_hyper_armor(target) and hit["kind"] != "heavy":
+			frame.emit("armored", target.index, attacker.index)
+		elif target.action == A.CAST and target.spec.ability != null and not target.spec.ability.interruptible:
 			frame.emit("armored", target.index, attacker.index)
 		else:
 			stagger(target, FLINCH_SECONDS, frame, "flinch", attacker.index, A.FLINCH, true)

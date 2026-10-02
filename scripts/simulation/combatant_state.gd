@@ -29,6 +29,8 @@ var velocity := Vector2.ZERO
 var push_velocity := Vector2.ZERO
 ## Direction of the dodge under way.
 var dodge_direction := Vector2.ZERO
+## Distance of a dash Art under way (0 = an ordinary dodge).
+var dash_distance := 0.0
 
 var health := 0.0
 var max_health := 0.0

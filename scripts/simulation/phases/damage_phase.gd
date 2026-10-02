@@ -11,6 +11,8 @@ extends SimulationPhase
 ##   × a small controlled variation (seeded); mastery narrows it
 ##   × (1 − target's mitigation from Defense, armor and defense skill)
 ##   × the guard's factor when the hit was blocked (Stage 11)
+##   × any ward on the target (Stage 15)
+## Clean Art hits leave their effects (burn, slow); burns tick here too.
 ##
 ## Attack, Strength, the weapon and mastery live in the derived numbers the
 ## previews read, so the battle and the tactical read never disagree.
@@ -34,6 +36,7 @@ func _init() -> void:
 
 
 func run(state: BattleState, frame: SimFrame) -> void:
+	EffectRules.tick_burns(state, frame)
 	for hit in frame.hits:
 		var outcome: String = hit.get("outcome", "hit")
 		if outcome == "evaded" or outcome == "parried":
@@ -48,11 +51,16 @@ func run(state: BattleState, frame: SimFrame) -> void:
 			raw *= 1.0 + OPENING_BONUS + OPENING_BONUS_PER_RANK * mastery(attacker, hit)
 		var spread := variation(attacker, hit)
 		raw *= 1.0 + state.rng.randf_range(-spread, spread)
-		var dealt := raw * (1.0 - target.spec.derived.mitigation)
+		var dealt := raw * (1.0 - target.spec.derived.mitigation) * EffectRules.ward_factor(target)
 		if outcome == "blocked":
 			dealt *= target.spec.derived.block_factor * WeaponRules.guard_factor(target)
 		elif _burns(hit):
-			_set_burning(target, attacker)
+			var slash := WeaponRules.FLAME_SLASH_BURN
+			EffectRules.burn(target, slash["dps"], slash["time"], attacker.index)
+		elif hit["kind"] == "cast":
+			var ability := Content.ability(hit.get("ability", ""))
+			if ability != null:
+				EffectRules.on_art_hit(ability, attacker, target)
 		dealt = maxf(dealt, 0.0)
 		target.health = maxf(target.health - dealt, 0.0)
 		hit["damage"] = dealt
@@ -64,17 +72,6 @@ func run(state: BattleState, frame: SimFrame) -> void:
 static func _burns(hit: Dictionary) -> bool:
 	var used := Content.technique(hit.get("technique", ""))
 	return used != null and used.trigger == TechniqueData.Trigger.HEAVY_WITH_MAGIC
-
-
-## Lasting burn from a fiery technique (ticked by Magic Behavior).
-static func _set_burning(target: CombatantState, source: CombatantState) -> void:
-	var burn := WeaponRules.FLAME_SLASH_BURN.duplicate()
-	burn["source"] = source.index
-	for effect in target.effects:
-		if effect.get("kind", "") == "burn":
-			effect.merge(burn, true)
-			return
-	target.effects.append(burn)
 
 
 ## Damage before the target's defences.

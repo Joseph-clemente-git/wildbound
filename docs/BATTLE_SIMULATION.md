@@ -32,7 +32,7 @@ until the simulation replaces it.
 | 12 | Stamina | Done | `simulation/phases/stamina_phase.gd`, `tests/unit/test_stamina.gd` |
 | 13 | Stagger / Knockback | Done | `simulation/phases/force_phase.gd`, `tests/unit/test_force.gd` |
 | 14 | Weapon Behavior | Done | `simulation/weapon_rules.gd`, `WeaponData` Behavior group, `tests/unit/test_weapon_behavior.gd` |
-| 15 | Magic Behavior | — | |
+| 15 | Magic Behavior | Done | `simulation/effect_rules.gd`, `phases/action_phase.gd`, `tests/unit/test_magic_behavior.gd` |
 | 16 | Combat AI Decision System | — | |
 | 17 | Victory / Defeat Conditions | — | |
 | 18 | Battle Replay | — | |
@@ -458,3 +458,31 @@ learned, triggered by context (no extra button), paying their stamina cost:
 In an 8-second exchange the sword lands ~6× as many blows, flinching its target over and
 over; each hammer blow floors the target and drives it back more than 3× as far, so the
 hammer has to close in again — the build visibly changes the fight.
+
+## Stage 15 — Magic Behavior
+
+Every Art has a cost, a cast time, a recovery, a cooldown, a shape (Stage 9) and now
+lasting behavior, all from `MagicAbilityData`:
+
+| School | MVP Art | Role in the simulation | Counterplay |
+| --- | --- | --- | --- |
+| Fire | Ember Bolt | slow projectile; damage and a **burn** (damage over time) | sidestep or dodge it; interrupt the wind-up |
+| Fire | Flame Burst | burst around the caster; pushes and burns | back off; punish its long recovery |
+| Wind | Gale Push | cone that **shoves** the target away | stay out of the cone; it does little damage |
+| Wind | Wind Step | a long **protected dash** (the Art's `speed` in metres) | wait for the predictable landing |
+
+`EffectRules` keeps effects as plain data in `CombatantState.effects`:
+
+- **burn** — ticks every quarter second; armor blunts only half of it; wards reduce it.
+- **slow** — movement × (1 − factor) (new `slow_factor`/`slow_seconds`; Frost Shard 0.45,
+  Thornbind 0.6).
+- **ward** — the caster turns aside a share of damage (new `ward_factor`/`ward_seconds`;
+  Stone Ward 0.5 for 3 s).
+
+A newer effect of the same kind refreshes the old one (stronger value, longer time) —
+effects never stack into something unanswerable.
+
+**Magic mastery** raises Art damage (Stage 10) and casts faster: −8% cast time per rank
+above the Art's requirement (to 60%). **Interruption** is the core counterplay: a clean
+hit during a cast's wind-up cancels it — the stamina is spent, nothing is released and no
+cooldown starts (`interrupted` event); uninterruptible Arts shrug off flinches.
