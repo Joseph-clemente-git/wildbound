@@ -20,7 +20,7 @@ until the simulation replaces it.
 | --- | --- | --- | --- |
 | 1 | Opponent Data Model | Done | `data/opponent_data.gd`, `model/scouting_report.gd`, `tests/unit/test_opponents.gd` |
 | 2 | Battle Selection / Challenge Scene | Done | `systems/challenge_board.gd`, `ui/screens/journey.gd`, `tests/unit/test_challenges.gd` |
-| 3 | Opponent Preview | — | |
+| 3 | Opponent Preview | Done | `ui/screens/fight_preview.gd`, `presentation/world/fight_stage.gd`, `tests/unit/test_fight_preview.gd` |
 | 4 | Champion Selection | — | |
 | 5 | Battle Preparation | — | |
 | 6 | Combat State Model | — | |
@@ -98,5 +98,28 @@ regions on the left, the selected region's fights on the right. Each card shows 
 challenge type, status, who you would face, why the fight matters, the arena, energy
 cost and rewards — no power comparison or difficulty label. The lodge Map Board, the
 title shortcut and the World Map ("Choose a fight") all lead here, and Battle
-Preparation's Back returns here. Until Stage 3, *Select Fight* goes straight to the
-existing Battle Preparation.
+Preparation's Back returns here.
+
+## Stage 3 — Opponent Preview
+
+*Select Fight* opens the **Opponent Preview** (`route "fight_preview"`, params
+`{"trial": id}`): the opponent stands in the arena in its own gear (weapon, armor
+weight, Aether aura) while a sheet answers *who*, *why* and *where*:
+
+- the challenge type, fight name and its reason;
+- the opponent's name, title, bio and intro line, and its `ScoutingReport` fields —
+  Animal, Movement, Capability, Weapon, Armor, Magic, and Strength / Defense / Mobility /
+  Range as bands with a five-step meter;
+- *What to watch for*: threats and openings;
+- the arena with `ArenaData.features()` (ring size and cover, derived from its radius and
+  obstacles, so new arenas describe themselves);
+- energy cost and rewards.
+
+No level, health, evasion, endurance, attack speed, skill rank, win chance or difficulty
+label is shown; tests check that the scouting sections contain no digits. *Choose
+Champion* continues (to Battle Preparation until Stage 4); Back returns to the Journey,
+and Battle Preparation's Back returns to the preview. A fight that can no longer be
+chosen sends the player back to the Journey once the scene transition finishes.
+
+`FightStage` builds the shared 3D set (arena mood, meadow, posed and dressed
+combatants) for the preview and Battle Preparation.

@@ -14,7 +14,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _back() -> void:
-	Router.go("journey", {"region": trial.region_id})
+	Router.go("fight_preview", {"trial": trial.id})
 
 
 func _ready() -> void:
@@ -30,30 +30,14 @@ func _ready() -> void:
 
 
 func _backdrop() -> void:
-	var arena := Content.arena(trial.arena_id)
-	WorldBuilder.environment(self, arena.mood)
-	WorldBuilder.ground(self, 80.0, {"ring_center": Vector2.ZERO, "ring_radius": 6.0})
-	WorldBuilder.grass(self, Rect2(-14, -14, 28, 28), 1600, [Vector3(0, 0, 6.3)], 8)
-	WorldBuilder.forest_ring(self, 10.0, 22.0, 30, 6, false)
-	var champion := Game.champion()
-	var dog := CharacterFactory.for_champion(champion)
+	FightStage.backdrop(self, Content.arena(trial.arena_id))
+	var dog := FightStage.champion_figure(Game.champion())
 	dog.position = Vector3(0.0, 0, 0.0)
 	dog.rotation.y = deg_to_rad(25)
-	var weapon := Content.weapon(champion.weapon_id)
-	dog.set_weapon(weapon.weapon_type if weapon else "")
-	var armor := Content.armor(champion.armor_id)
-	dog.set_armor(armor.weight_class if armor else -1)
-	var ability := Content.ability(champion.equipped_ability)
-	dog.set_aura(ability.school if ability else "")
-	dog.play("combat_idle", -1.0, false)
 	add_child(dog)
-	var rival := CharacterFactory.for_opponent(opponent)
+	var rival := FightStage.opponent_figure(opponent)
 	rival.position = Vector3(1.7, 0, -1.6)
 	rival.rotation.y = deg_to_rad(-20)
-	var rival_weapon := Content.weapon(opponent.weapon_id)
-	rival.set_weapon(rival_weapon.weapon_type if rival_weapon else "")
-	rival.set_armor(Content.armor(opponent.armor_id).weight_class)
-	rival.play("combat_idle", -1.0, false)
 	add_child(rival)
 	var camera := Camera3D.new()
 	camera.position = Vector3(0.0, 1.5, 5.0)

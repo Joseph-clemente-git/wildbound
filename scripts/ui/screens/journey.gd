@@ -190,7 +190,7 @@ func select_fight(trial_id: String) -> void:
 	var trial := Content.trial(trial_id)
 	if trial == null or not ChallengeBoard.can_select(trial):
 		return
-	Router.go("battle_prep", {"trial": trial_id})
+	Router.go("fight_preview", {"trial": trial_id})
 
 
 static func _status_text(status: ChallengeBoard.Status) -> String:

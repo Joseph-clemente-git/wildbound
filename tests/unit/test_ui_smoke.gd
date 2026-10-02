@@ -63,7 +63,7 @@ func test_scenes_instantiate_in_mid_game() -> void:
 	for objective: Dictionary in QuestLog.CHAPTER_ONE.slice(0, 7):
 		Game.set_flag(objective["flag"])
 	Game.set_flag("world_map_unlocked")
-	for route: String in ["journey", "battle_prep", "world_map", "lodge"]:
+	for route: String in ["journey", "fight_preview", "battle_prep", "world_map", "lodge"]:
 		Router.params = {"trial": "first_steps"}
 		var scene: Node = load(Router.ROUTES[route]).instantiate()
 		root.add_child(scene)

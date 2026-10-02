@@ -34,7 +34,7 @@ In the lodge, tap the champion or a station; drag to pan; pinch or wheel to zoom
 ## The loop
 
 `Title → New Journey → Opening story → Lodge (inspect, Skill Matrix, meet a mentor, train,
-equip, Aether) → Journey (region → fight) → Battle Preparation → Arena → Battle Result → Rest → develop
+equip, Aether) → Journey (region → fight) → Opponent Preview → Battle Preparation → Arena → Battle Result → Rest → develop
 again → … → Home Valley Regional Trial → World Map`.
 
 ## Project layout
@@ -74,7 +74,7 @@ godot --path . --write-movie out.png --fixed-fps 10 --quit-after 60 \
 ```
 
 Scenarios: `story`, `lodge`, `lodge_context`, `lodge_mid`, `panel --panel=<id>`, `arena`,
-`result`, `prep`, `journey`, `map`; `tests/visual/dog_preview.tscn` renders every animation clip.
+`result`, `prep`, `journey`, `preview --trial=<id>`, `map`; `tests/visual/dog_preview.tscn` renders every animation clip.
 
 ## Art
 

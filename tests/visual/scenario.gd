@@ -116,6 +116,16 @@ func _scenario_journey() -> void:
 	Router.go("journey")
 
 
+func _scenario_preview() -> void:
+	_prepare_mid()
+	_progress(["cleared_first_steps", "cleared_stonewall_bout", "cleared_meadow_sprint"])
+	var trial := "stonewall_bout"
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--trial="):
+			trial = arg.trim_prefix("--trial=")
+	Router.go("fight_preview", {"trial": trial})
+
+
 func _scenario_map() -> void:
 	_prepare_mid()
 	Router.go("world_map")
