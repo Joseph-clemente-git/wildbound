@@ -43,6 +43,8 @@ static func default_phase(phase_name: String) -> SimulationPhase:
 	match phase_name:
 		"action":
 			return ActionPhase.new()
+		"contact":
+			return ContactPhase.new()
 		"movement":
 			return MovementPhase.new()
 		"recovery":

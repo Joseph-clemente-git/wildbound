@@ -32,6 +32,13 @@ extends EquipmentData
 ## Stamina drained from a blocking opponent per point of damage blocked.
 @export var guard_pressure: float = 1.0
 
+@export_group("Ranged")
+## Speed of the shot in m/s. 0 = a melee weapon that strikes its arc;
+## above 0 each attack looses a projectile toward the target.
+@export var projectile_speed: float = 0.0
+## Radius of the shot.
+@export var projectile_radius: float = 0.2
+
 @export_group("Mastery")
 ## Techniques this weapon type participates in (for UI hints).
 @export var techniques: PackedStringArray = []

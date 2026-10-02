@@ -12,6 +12,10 @@ var intents: Dictionary = {}
 ## Attacks whose active window reached someone this tick, filled by Action
 ## Resolution and resolved by Hit / Dodge / Block and Damage.
 var contacts: Array[Dictionary] = []
+## Contacts that reached someone, filled by Hit / Dodge / Block and read by
+## Damage: {"attacker", "target", "kind", "combo", "swing", "ability",
+## "direction": Vector2, "via": "melee" | "projectile" | "area"}.
+var hits: Array[Dictionary] = []
 ## Everything that happened this tick, in order.
 var events: Array[Dictionary] = []
 

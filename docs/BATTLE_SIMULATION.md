@@ -26,7 +26,7 @@ until the simulation replaces it.
 | 6 | Combat State Model | Done | `simulation/combatant_spec.gd`, `combatant_state.gd`, `arena_layout.gd`, `battle_state.gd`, `tests/unit/test_battle_state.gd` |
 | 7 | Simulation Tick System | Done | `simulation/battle_simulator.gd`, `simulation_phase.gd`, `sim_frame.gd`, `battle_log.gd`, `phases/`, `tests/unit/test_simulation_tick.gd` |
 | 8 | Action System | Done | `simulation/phases/action_phase.gd`, `movement_phase.gd`, `scripted_decision_phase.gd`, `tests/unit/test_action_system.gd` |
-| 9 | Attack Resolution | — | |
+| 9 | Attack Resolution | Done | `simulation/phases/contact_phase.gd`, `tests/unit/test_attack_resolution.gd` |
 | 10 | Damage / Defense | — | |
 | 11 | Dodge / Block | — | |
 | 12 | Stamina | — | |
@@ -245,7 +245,7 @@ frame rate. Every tick passes through the same pipeline, in this order:
 | --- | --- | --- |
 | Combat Decision | `decision` | Stage 16 |
 | Action Resolution | `action` | Stage 8 — `ActionPhase` |
-| Hit / Dodge / Block | `contact` | Stages 9, 11 |
+| Hit / Dodge / Block | `contact` | Stage 9 — `ContactPhase` (reach); Stage 11 adds dodge / block |
 | Damage | `damage` | Stage 10 |
 | Stagger / Knockback | `force` | Stage 13 |
 | Position Update | `movement` | Stage 8 — `MovementPhase` |
@@ -318,3 +318,29 @@ them through WINDUP → ACTIVE → RECOVERY. Lengths come from the spec's derive
 Tuning lives in `GameConfig` (Simulation group). In a scripted exchange Bruno's sword
 strikes every ~0.33 s in three-hit chains while Rook's heavy hammer takes ~1.1 s to land
 and ~2.4 s per cycle.
+
+## Stage 9 — Attack Resolution
+
+`ContactPhase` (the `contact` step) decides whether an attack reaches anyone. It is
+geometry, never a roll.
+
+- **Melee.** `ActionPhase` now hands over a contact on *every* tick of an attack's active
+  window, tagged with the swing's id. A swing reaches an enemy whose body is within the
+  weapon's reach, inside the weapon's arc around the attacker's facing (the body widens
+  the angle a little), with no obstacle on the line between them. Each swing strikes each
+  target at most once (`CombatantState.struck`), and a wide arc can catch two enemies. A
+  swing that strikes no one emits `whiff` as it ends. Reach and arc differ per weapon
+  (dagger 1.3 m, sword 1.9 m / 100°, hammer 2.0 m / 80°, spear 2.9 m / 40°…).
+- **Shots.** Projectile Arts (Ember Bolt) and ranged weapons (`WeaponData.projectile_speed`
+  > 0; the bow is 24 m/s) loose a shot toward where the target is at release — no leading,
+  so stepping aside is real counterplay. Shots live in `BattleState.projectiles`, fly at
+  their speed, sweep their path for bodies, stop on obstacles (`projectile_blocked`) and
+  fade at their range or the ring edge (`projectile_faded`).
+- **Areas.** Cone Arts (Gale Push) strike enemies within range inside the cone; bursts
+  (Flame Burst) strike everyone within their radius, facing or not. Movement Arts (Wind
+  Step) strike no one — their movement is Magic Behavior (Stage 15).
+- Teammates are never struck.
+
+Every connection becomes a **hit** in `SimFrame.hits` — `{attacker, target, kind,
+combo, swing, ability, direction, via: melee | projectile | area}` — plus a `hit` event.
+Dodging and blocking it (Stage 11) and its damage (Stage 10) come next.

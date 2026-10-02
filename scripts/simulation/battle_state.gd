@@ -15,6 +15,10 @@ var trial_id := ""
 var arena: ArenaData
 var layout: ArenaLayout
 var combatants: Array[CombatantState] = []
+## Shots in flight: {"id", "owner", "team", "kind", "ability", "position": Vector2,
+## "direction": Vector2, "speed", "radius", "range_left"}.
+var projectiles: Array[Dictionary] = []
+var next_projectile_id := 1
 var tick := 0
 var time := 0.0
 ## Seed for every bit of controlled variation, kept so a battle can be
@@ -129,8 +133,15 @@ func snapshot() -> Dictionary:
 	var fighters: Array = []
 	for fighter in combatants:
 		fighters.append(fighter.to_dict())
+	var shots: Array = []
+	for shot in projectiles:
+		var plain := shot.duplicate()
+		plain["position"] = [snappedf(shot["position"].x, 0.001), snappedf(shot["position"].y, 0.001)]
+		plain["direction"] = [snappedf(shot["direction"].x, 0.001), snappedf(shot["direction"].y, 0.001)]
+		plain["range_left"] = snappedf(shot["range_left"], 0.001)
+		shots.append(plain)
 	return {
-		"trial": trial_id, "arena": layout.id, "tick": tick, "time": snappedf(time, 0.0001),
+		"trial": trial_id, "projectiles": shots, "arena": layout.id, "tick": tick, "time": snappedf(time, 0.0001),
 		"seed": battle_seed, "rng_state": rng.state, "finished": finished, "winner_team": winner_team,
 		"combatants": fighters,
 	}

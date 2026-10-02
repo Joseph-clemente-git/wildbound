@@ -40,6 +40,10 @@ var phase_time := 0.0
 var phase_length := 0.0
 ## Position in the current light-attack chain.
 var combo_step := 0
+## Counts every action begun, so each swing can be told apart.
+var swing := 0
+## Combatant indexes the current swing has already struck.
+var struck: Array[int] = []
 var target_index := -1
 
 ## Built-up stagger; staggers when it passes the spec's poise.

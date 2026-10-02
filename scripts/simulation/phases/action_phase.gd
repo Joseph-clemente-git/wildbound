@@ -14,8 +14,9 @@ extends SimulationPhase
 ## cast time shapes casts. Once committed, an action plays out: that
 ## commitment is what makes timing, openings and punishment possible.
 ##
-## When an attack's ACTIVE window opens, a contact is handed to the
-## Hit / Dodge / Block step; when a cast releases, so is the Art.
+## On every tick of an attack's ACTIVE window a contact is handed to the
+## Hit / Dodge / Block step (which lets each swing strike each target once);
+## when a cast releases, so is the Art. A swing that struck no one is a whiff.
 
 const A := CombatantState.Action
 const P := CombatantState.Phase
@@ -36,6 +37,9 @@ func run(state: BattleState, frame: SimFrame) -> void:
 		var intent: Dictionary = frame.intents.get(fighter.index, {})
 		_advance(fighter, intent, frame)
 		_start(state, fighter, intent, frame)
+		# A swing can connect on every tick of its active window.
+		if fighter.action in [A.ATTACK, A.HEAVY] and fighter.phase == P.ACTIVE and not _contacted(frame, fighter):
+			_add_contact(fighter, frame, false)
 
 
 ## Phase lengths [windup, active, recovery] for an action.
@@ -104,6 +108,8 @@ func _begin(fighter: CombatantState, action: CombatantState.Action, frame: SimFr
 		data: Dictionary = {}) -> void:
 	fighter.action = action
 	fighter.combo_step = combo
+	fighter.swing += 1
+	fighter.struck.clear()
 	var lengths := timings(fighter, action)
 	_enter(fighter, P.WINDUP, lengths[0])
 	var details := {"action": CombatantState.ACTION_NAMES[action], "combo": combo}
@@ -138,6 +144,9 @@ func _settle(fighter: CombatantState, frame: SimFrame, delta: float) -> void:
 				_on_active(fighter, frame)
 			P.ACTIVE:
 				_enter(fighter, P.RECOVERY, lengths[2])
+				if fighter.action in [A.ATTACK, A.HEAVY] and fighter.struck.is_empty():
+					frame.emit("whiff", fighter.index, fighter.target_index,
+							{"kind": "heavy" if fighter.action == A.HEAVY else "light"})
 			P.RECOVERY:
 				_finish(fighter, frame)
 				return
@@ -147,20 +156,33 @@ func _settle(fighter: CombatantState, frame: SimFrame, delta: float) -> void:
 func _on_active(fighter: CombatantState, frame: SimFrame) -> void:
 	match fighter.action:
 		A.ATTACK, A.HEAVY:
-			var kind := "heavy" if fighter.action == A.HEAVY else "light"
-			frame.contacts.append({"attacker": fighter.index, "kind": kind, "combo": fighter.combo_step,
-					"target": fighter.target_index})
-			frame.emit("strike", fighter.index, fighter.target_index, {"kind": kind, "combo": fighter.combo_step})
+			_add_contact(fighter, frame, true)
+			frame.emit("strike", fighter.index, fighter.target_index,
+					{"kind": "heavy" if fighter.action == A.HEAVY else "light", "combo": fighter.combo_step})
 		A.CAST:
 			var ability := fighter.spec.ability
 			fighter.cooldowns["magic"] = ability.cooldown
 			frame.contacts.append({"attacker": fighter.index, "kind": "cast", "ability": ability.id,
-					"target": fighter.target_index})
+					"target": fighter.target_index, "swing": fighter.swing, "first": true})
 			frame.emit("cast_release", fighter.index, fighter.target_index, {"ability": ability.id})
 		A.BLOCK:
 			frame.emit("block_up", fighter.index)
 		A.DODGE:
 			frame.emit("dodge", fighter.index)
+
+
+## `first` marks the tick the active window opens (a ranged weapon looses
+## its shot then).
+func _add_contact(fighter: CombatantState, frame: SimFrame, first: bool) -> void:
+	frame.contacts.append({"attacker": fighter.index, "kind": "heavy" if fighter.action == A.HEAVY else "light",
+			"combo": fighter.combo_step, "target": fighter.target_index, "swing": fighter.swing, "first": first})
+
+
+static func _contacted(frame: SimFrame, fighter: CombatantState) -> bool:
+	for contact in frame.contacts:
+		if contact["attacker"] == fighter.index:
+			return true
+	return false
 
 
 func _finish(fighter: CombatantState, frame: SimFrame) -> void:

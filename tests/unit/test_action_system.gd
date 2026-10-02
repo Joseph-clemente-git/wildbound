@@ -77,9 +77,13 @@ func test_strike_is_handed_to_contact_resolution() -> void:
 		var frame := sim.step()
 		plan.erase(0)
 		contacts.append_array(frame.contacts)
-	check_eq(contacts.size(), 1, "one swing, one contact")
-	check_eq(contacts[0]["attacker"], 0)
-	check_eq(contacts[0]["target"], 1)
+	var active_ticks := ceili(_hero().spec.derived.active * sim.tick_rate)
+	check(absi(contacts.size() - active_ticks) <= 1, "a contact on each tick of the active window (%d)" % contacts.size())
+	check_eq(contacts[0]["first"], true, "the first marks the window opening")
+	for contact in contacts:
+		check_eq(contact["attacker"], 0)
+		check_eq(contact["target"], 1)
+		check_eq(contact["swing"], contacts[0]["swing"], "all from the same swing")
 
 
 func test_weapons_have_different_rhythms() -> void:
