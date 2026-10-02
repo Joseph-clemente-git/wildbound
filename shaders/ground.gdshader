@@ -3,8 +3,8 @@ render_mode specular_disabled;
 
 // Ground with low-frequency colour variation and an optional dirt path/ring.
 
-uniform vec4 grass_a : source_color = vec4(0.27, 0.43, 0.2, 1.0);
-uniform vec4 grass_b : source_color = vec4(0.36, 0.5, 0.24, 1.0);
+uniform vec4 grass_a : source_color = vec4(0.22, 0.36, 0.16, 1.0);
+uniform vec4 grass_b : source_color = vec4(0.3, 0.43, 0.2, 1.0);
 uniform vec4 dirt : source_color = vec4(0.5, 0.4, 0.27, 1.0);
 // Path: a straight strip along Z at x = path_x (width 0 disables it).
 uniform float path_width = 0.0;

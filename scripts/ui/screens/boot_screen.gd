@@ -11,10 +11,10 @@ func _ready() -> void:
 	theme = UiTheme.get_theme()
 	var background := ColorRect.new()
 	background.color = UiTheme.BG
-	background.set_anchors_preset(Control.PRESET_FULL_RECT)
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
 	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(center)
 	var column := UiKit.vbox(10)
 	column.alignment = BoxContainer.ALIGNMENT_CENTER

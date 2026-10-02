@@ -7,6 +7,8 @@ var failures: Array[String] = []
 var current_test := ""
 ## Set in a test that deliberately triggers engine errors (e.g. corrupt saves).
 var allow_errors := false
+## Node tests may attach temporary children to (the test runner).
+var root: Node
 
 
 func before_each() -> void:

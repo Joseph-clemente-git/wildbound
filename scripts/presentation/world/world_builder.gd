@@ -109,7 +109,7 @@ static func environment(parent: Node3D, mood: String = "day") -> DirectionalLigh
 			sky_material.sky_horizon_color = Color("d9e6e4")
 			sky_material.ground_horizon_color = Color("a9b8a0")
 			sun.light_color = Color("fff1d6")
-			sun.light_energy = 1.15
+			sun.light_energy = 0.95
 			sun.rotation_degrees = Vector3(-42, 30, 0)
 	sky_material.ground_bottom_color = Color("3e4a36")
 	var sky := Sky.new()
@@ -118,7 +118,7 @@ static func environment(parent: Node3D, mood: String = "day") -> DirectionalLigh
 	env.background_mode = Environment.BG_SKY
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	env.ambient_light_energy = 0.8
+	env.ambient_light_energy = 0.45 if mood != "dusk" else 0.7
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.fog_enabled = true
 	env.fog_light_color = sky_material.sky_horizon_color

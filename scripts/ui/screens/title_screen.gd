@@ -86,7 +86,7 @@ func _build_ui() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	_ui_root = Control.new()
-	_ui_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_ui_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_ui_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_ui_root.theme = UiTheme.get_theme()
 	layer.add_child(_ui_root)
@@ -100,7 +100,7 @@ func _build_ui() -> void:
 	texture.fill_to = Vector2(1, 0)
 	shade.texture = texture
 	shade.stretch_mode = TextureRect.STRETCH_SCALE
-	shade.set_anchors_preset(Control.PRESET_LEFT_WIDE)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_LEFT_WIDE)
 	shade.custom_minimum_size.x = 640
 	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_ui_root.add_child(shade)

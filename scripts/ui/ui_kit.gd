@@ -142,11 +142,11 @@ static func clear(node: Node) -> void:
 static func modal(parent: Node, title: String, width: float = 640.0) -> VBoxContainer:
 	var dim := ColorRect.new()
 	dim.color = Color(0, 0, 0, 0.55)
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	dim.mouse_filter = Control.MOUSE_FILTER_STOP
 	parent.add_child(dim)
 	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	dim.add_child(center)
 	var box := panel()
 	box.custom_minimum_size = Vector2(width, 0)
@@ -190,7 +190,7 @@ static func toast(parent: Node, text: String, color: Color = UiTheme.TEXT, secon
 	text_label.add_theme_color_override("font_color", color)
 	text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	holder.add_child(text_label)
-	holder.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	holder.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	holder.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	holder.position.y = 24
 	parent.add_child(holder)
@@ -206,7 +206,7 @@ static func toast(parent: Node, text: String, color: Color = UiTheme.TEXT, secon
 ## corners) on top of a comfortable base margin.
 static func safe_area(base_margin: int = 24) -> MarginContainer:
 	var node := MarginContainer.new()
-	node.set_anchors_preset(Control.PRESET_FULL_RECT)
+	node.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	node.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var insets := safe_insets()
 	node.add_theme_constant_override("margin_left", base_margin + int(insets.x))

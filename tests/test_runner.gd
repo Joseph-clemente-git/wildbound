@@ -57,6 +57,7 @@ func _ready() -> void:
 				continue
 			var case: TestCase = script.new()
 			case.current_test = "%s::%s" % [file_name.get_basename(), method_name]
+			case.root = self
 			catcher.take()
 			case.before_each()
 			case.call(method_name)
