@@ -30,15 +30,21 @@ static func build(parent: Node3D, arena: ArenaData) -> Node3D:
 		WorldBuilder.cylinder(root, 0.06, 4.0, WorldBuilder.WOOD_DARK, spot + Vector3(0, 2.0, 0))
 		var cloth := WorldBuilder.box(root, Vector3(0.9, 1.6, 0.04), arena.banner_color, spot + Vector3(0, 3.0, 0))
 		cloth.rotation.y = -angle + PI * 0.5
-	# Obstacles inside the ring.
+	# Obstacles inside the ring (kept so the camera can fade them when they block the view).
+	var obstacle_nodes: Array[GeometryInstance3D] = []
 	for obstacle: Vector4 in arena.obstacles:
 		var spot := Vector3(obstacle.x, 0, obstacle.y)
 		if obstacle.w > 1.5:
 			var pillar := WorldBuilder.cylinder(root, obstacle.z, obstacle.w, WorldBuilder.STONE_DARK,
 					spot + Vector3(0, obstacle.w * 0.5, 0), obstacle.z * 0.8, 7)
 			pillar.rotation.y = obstacle.x
+			obstacle_nodes.append(pillar)
 		else:
-			WorldBuilder.rock(root, spot + Vector3(0, obstacle.w * 0.3, 0), obstacle.z * 1.1, int(obstacle.x * 10))
+			obstacle_nodes.append(WorldBuilder.rock(root, spot + Vector3(0, obstacle.w * 0.3, 0), obstacle.z * 1.1, int(obstacle.x * 10)))
+	for node in obstacle_nodes:
+		# Own material per obstacle so it can fade without affecting others.
+		node.material_override = (node.material_override as StandardMaterial3D).duplicate()
+	root.set_meta("obstacles", obstacle_nodes)
 	_onlookers(root, arena)
 	return root
 

@@ -30,6 +30,10 @@ func _ready() -> void:
 	add_child(joystick)
 	pad = ActionPad.new()
 	add_child(pad)
+	_apply_opacity()
+	Settings.changed.connect(func(key: String, _v: Variant) -> void:
+		if key == "hud_opacity":
+			_apply_opacity())
 	var safe := UiKit.safe_area(14)
 	add_child(safe)
 	var column := UiKit.vbox(8)
@@ -76,16 +80,59 @@ func _fighter_block(bars: Dictionary, mirrored: bool) -> Control:
 	name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT if mirrored else HORIZONTAL_ALIGNMENT_LEFT
 	block.add_child(name_label)
-	var health := UiKit.bar(1, 1, UiTheme.HEALTH, 18)
-	health.fill_mode = ProgressBar.FILL_END_TO_BEGIN if mirrored else ProgressBar.FILL_BEGIN_TO_END
-	block.add_child(health)
-	var stamina := UiKit.bar(1, 1, UiTheme.STAMINA, 10)
-	stamina.fill_mode = health.fill_mode
-	block.add_child(stamina)
+	var fill := ProgressBar.FILL_END_TO_BEGIN if mirrored else ProgressBar.FILL_BEGIN_TO_END
+	# Health with a trailing "damage" bar so every hit reads instantly.
+	var health_stack := Control.new()
+	health_stack.custom_minimum_size.y = 20
+	health_stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	health_stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var trail := UiKit.bar(1, 1, Color(1.0, 0.92, 0.75, 0.85), 20)
+	trail.fill_mode = fill
+	trail.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	health_stack.add_child(trail)
+	var health := UiKit.bar(1, 1, UiTheme.HEALTH, 20)
+	health.fill_mode = fill
+	health.add_theme_stylebox_override("background", UiTheme.box(Color(0, 0, 0, 0), 8, Color.TRANSPARENT, 0, 0))
+	health.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	health_stack.add_child(health)
+	var health_text := _bar_label("HP", mirrored)
+	health_stack.add_child(health_text)
+	block.add_child(health_stack)
+	var stamina_stack := Control.new()
+	stamina_stack.custom_minimum_size.y = 14
+	stamina_stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stamina_stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var stamina := UiKit.bar(1, 1, UiTheme.STAMINA, 14)
+	stamina.fill_mode = fill
+	stamina.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	stamina_stack.add_child(stamina)
+	var stamina_text := _bar_label("STA", mirrored)
+	stamina_text.add_theme_font_size_override("font_size", UiTheme.fs(12))
+	stamina_stack.add_child(stamina_text)
+	block.add_child(stamina_stack)
 	bars["name"] = name_label
 	bars["health"] = health
+	bars["trail"] = trail
+	bars["health_text"] = health_text
 	bars["stamina"] = stamina
+	bars["stamina_text"] = stamina_text
 	return block
+
+
+## Bars carry text labels so state never relies on colour alone.
+func _bar_label(prefix: String, mirrored: bool) -> Label:
+	var label := Label.new()
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	label.offset_left = 8
+	label.offset_right = -8
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT if mirrored else HORIZONTAL_ALIGNMENT_LEFT
+	label.add_theme_font_size_override("font_size", UiTheme.fs(14))
+	label.add_theme_constant_override("outline_size", 5)
+	label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	label.set_meta("prefix", prefix)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return label
 
 
 func bind(player: Combatant, opponent: Combatant, subtitle: String) -> void:
@@ -116,12 +163,20 @@ func _process(_delta: float) -> void:
 
 func _update_bars(bars: Dictionary, fighter: Combatant) -> void:
 	var health: ProgressBar = bars["health"]
+	var trail: ProgressBar = bars["trail"]
 	health.max_value = fighter.stats.max_health
-	health.value = lerpf(health.value, fighter.health, 0.35)
+	trail.max_value = fighter.stats.max_health
+	health.value = fighter.health
+	# The trail lingers, then drains toward the real value.
+	trail.value = maxf(fighter.health, move_toward(trail.value, fighter.health, fighter.stats.max_health * 0.006))
+	(bars["health_text"] as Label).text = "HP %d" % ceili(fighter.health)
 	var stamina: ProgressBar = bars["stamina"]
 	stamina.max_value = fighter.stats.max_stamina
 	stamina.value = fighter.stamina
-	stamina.modulate = Color(1, 0.6, 0.6) if fighter.is_exhausted() else Color.WHITE
+	var low := fighter.stamina_ratio() < 0.25 or fighter.is_exhausted()
+	var pulse := 0.65 + 0.35 * sin(Time.get_ticks_msec() / 90.0) if low and not Settings.get_value("reduce_motion") else 1.0
+	stamina.modulate = Color(1, 0.6, 0.6, pulse) if fighter.is_exhausted() else Color(1, 1, 1, pulse)
+	(bars["stamina_text"] as Label).text = "EXHAUSTED" if fighter.is_exhausted() else "STA %d" % roundi(fighter.stamina)
 
 
 func show_hint(text: String, seconds: float = 5.0) -> void:
@@ -141,6 +196,12 @@ func show_banner(text: String, color: Color = UiTheme.TEXT, seconds: float = 1.2
 	tween.tween_property(_banner, "modulate:a", 1.0, 0.2)
 	tween.tween_interval(seconds)
 	tween.tween_property(_banner, "modulate:a", 0.0, 0.3)
+
+
+func _apply_opacity() -> void:
+	var alpha: float = Settings.get_value("hud_opacity")
+	joystick.modulate.a = alpha
+	pad.modulate.a = alpha
 
 
 func set_controls_visible(on: bool) -> void:

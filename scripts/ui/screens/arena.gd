@@ -17,6 +17,8 @@ var controller: PlayerController
 var recorder: BattleRecorder
 
 var _paused_modal: Control
+var _telegraph: Label3D
+var _obstacles: Array[GeometryInstance3D] = []
 var _hit_stop := 0.0
 
 
@@ -29,7 +31,7 @@ func _ready() -> void:
 	if not Router.params.get("entered", false):
 		TrialSystem.enter(Game.champion(), trial)  # direct entry (debug/scenarios)
 	var arena_data := Content.arena(trial.arena_id)
-	ArenaBuilder.build(self, arena_data)
+	_obstacles.assign(ArenaBuilder.build(self, arena_data).get_meta("obstacles", []))
 	Sfx.stop_ambient()
 
 	battle = BattleManager.new()
@@ -109,6 +111,75 @@ func _process(delta: float) -> void:
 		_hit_stop -= delta / maxf(Engine.time_scale, 0.01)
 		if _hit_stop <= 0.0:
 			Engine.time_scale = 1.0
+	_update_telegraph()
+	_teach_by_doing()
+	_fade_obstructions(delta)
+
+
+## Limited obstruction (mechanics §69): rocks between the camera and the
+## fighters turn see-through.
+func _fade_obstructions(delta: float) -> void:
+	if camera == null or hero == null:
+		return
+	var from := Vector2(camera.global_position.x, camera.global_position.z)
+	var focus := hero.planar_position().lerp(foe.planar_position(), 0.3)
+	var to := Vector2(focus.x, focus.z)
+	for node in _obstacles:
+		var spot := Vector2(node.global_position.x, node.global_position.z)
+		var closest := Geometry2D.get_closest_point_to_segment(spot, from, to)
+		var blocking := closest.distance_to(spot) < 1.4 and closest.distance_to(to) > 0.6
+		# Per-material alpha (GeometryInstance3D.transparency is not available
+		# in the Compatibility renderer).
+		var material := node.material_override as StandardMaterial3D
+		var alpha := move_toward(material.albedo_color.a, 0.3 if blocking else 1.0, delta * 3.0)
+		material.albedo_color.a = alpha
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if alpha < 0.99 else BaseMaterial3D.TRANSPARENCY_DISABLED
+		node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if alpha > 0.6 else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+
+## In-world warning while the opponent winds up: shape and colour differ by
+## threat (! light, !! heavy, ◆ Aether) so it never relies on colour alone.
+func _update_telegraph() -> void:
+	if _telegraph == null:
+		_telegraph = Label3D.new()
+		_telegraph.font_size = 96
+		_telegraph.outline_size = 18
+		_telegraph.pixel_size = 0.006
+		_telegraph.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		_telegraph.no_depth_test = true
+		add_child(_telegraph)
+	var active := foe != null and foe.is_alive() and foe.is_winding_up()
+	_telegraph.visible = active
+	if not active:
+		return
+	match foe.state:
+		Combatant.State.HEAVY:
+			_telegraph.text = "!!"
+			_telegraph.modulate = UiTheme.BAD
+		Combatant.State.CAST:
+			_telegraph.text = "◆"
+			_telegraph.modulate = UiTheme.AETHER
+		_:
+			_telegraph.text = "!"
+			_telegraph.modulate = UiTheme.WARN
+	var progress := clampf(foe.phase_time / maxf(float(foe.current_attack.get("windup", 0.3)), 0.01), 0.0, 1.0)
+	_telegraph.global_position = foe.global_position + Vector3(0, 2.25 + 0.15 * progress, 0)
+	_telegraph.scale = Vector3.ONE * (0.8 + 0.4 * progress)
+
+
+## Teach by doing (ui-ux-game onboarding): in the tutorial trial, or with
+## hints on, the button that fits the moment pulses — no text needed.
+func _teach_by_doing() -> void:
+	if not battle.running or not (trial.tutorial or Settings.get_value("combat_assist")) \
+			or not Settings.get_value("show_hints"):
+		return
+	var distance := hero.planar_position().distance_to(foe.planar_position())
+	if foe.is_winding_up() and distance < foe.stats.attack_range + 1.5:
+		hud.pad.pulse("dodge")
+	elif foe.is_recovering() and distance < hero.stats.attack_range + 0.8:
+		hud.pad.pulse("attack")
+	elif foe.is_blocking() and foe.state_time > 0.6 and distance < hero.stats.attack_range + 0.8:
+		hud.pad.pulse("heavy")
 
 
 func _unhandled_input(event: InputEvent) -> void:

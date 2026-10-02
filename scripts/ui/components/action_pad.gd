@@ -68,6 +68,21 @@ func _layout() -> void:
 		button.position = corner + offset - Vector2(radius, radius)
 
 
+## Teach by doing: briefly pulse the button that fits the moment.
+func pulse(action: String) -> void:
+	var button: TouchScreenButton = _buttons.get(action)
+	if button == null or button.has_meta("pulsing") or Settings.get_value("reduce_motion"):
+		return
+	button.set_meta("pulsing", true)
+	var base := button.scale
+	var tween := create_tween()
+	tween.tween_property(button, "scale", base * 1.18, 0.16)
+	tween.tween_property(button, "scale", base, 0.2)
+	tween.tween_property(button, "scale", base * 1.12, 0.14)
+	tween.tween_property(button, "scale", base, 0.18)
+	tween.tween_callback(func() -> void: button.remove_meta("pulsing"))
+
+
 func set_magic(label: String, color: Color, enabled: bool) -> void:
 	magic_label = label
 	magic_color = color
