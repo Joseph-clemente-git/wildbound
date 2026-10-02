@@ -276,6 +276,11 @@ func _champion_card(body: VBoxContainer, champion: Champion) -> void:
 			champion.energy / champion.max_energy(), UiTheme.ENERGY))
 	card.add_child(UiKit.stat_row("Mood", champion.mood_name(), champion.happiness / champion.max_happiness(),
 			UiTheme.HAPPINESS))
+	# The fight is fought with the energy left after entering.
+	for note in ConditionEffects.notes(maxf(champion.energy - trial.energy_cost, 0.0), champion.happiness):
+		var line := UiKit.label(note, "DimLabel", true)
+		line.name = "ConditionNote"
+		card.add_child(line)
 
 
 func _comparison_card(body: VBoxContainer) -> void:

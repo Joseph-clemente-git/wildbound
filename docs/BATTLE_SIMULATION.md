@@ -40,8 +40,8 @@ until the simulation replaces it.
 | 19 | Battle Result | Done | `simulation/battle_moments.gd`, `ui/screens/battle_result.gd`, `tests/unit/test_battle_result.gd` |
 | 20 | Experience Event Tracking | Done | `simulation/simulation_experience.gd`, `simulation/battle_session.gd`, `tests/unit/test_experience_sim.gd` |
 | 21 | Natural Growth | Done | `SimulationExperience._terrain_growth`, `GrowthSystem`, `tests/unit/test_experience_sim.gd`, `tests/unit/test_playthrough.gd` |
-| 22 | Trainer Development Integration | — | |
-| 23 | Energy / Happiness Integration | — | |
+| 22 | Trainer Development Integration | Done | `systems/battle_review.gd`, `TrialSystem.apply_result`, `ui/screens/battle_result.gd`, `tests/unit/test_development_condition.gd` |
+| 23 | Energy / Happiness Integration | Done | `simulation/condition_effects.gd`, `CombatantSpec.refresh`, `DecisionPhase.reaction_time`, `tests/unit/test_development_condition.gd` |
 | 24 | Save/Load Integration | — | |
 | 25 | Mobile UX Polish | — | |
 
@@ -703,4 +703,45 @@ lakeshore slowly learns to swim; one that stays on the shore learns nothing of i
 The Chapter 1 playthrough test now fights every battle in the simulation
 (`BattleSession.start`) and still completes the chapter — about 25 battles in the reference run,
 with losses still teaching Bruno enough to break through.
+
+## Stage 22 — Trainer Development Integration
+
+`BattleReview.review(champion, profile, simulation, gains)` is the mentors' read of the
+fight, from its tallies only:
+
+- **Strengths** — dodged ≥3 times, guard held ≥3 times, heavy blows / staggers caused,
+  openings punished, combinations, flank hits.
+- **Weaknesses** — ran out of breath, blows taken with little answer (dodges + blocks +
+  parries under half the blows taken), attacks mostly dodged/blocked/missed, knocked off
+  balance ≥3 times, opponent barely hurt in a defeat.
+
+Each lesson lists development targets, best first. The **suggestion** goes to the first
+trainer the Keeper owns (active ones first) whose coverage includes a target: weaknesses
+first after a defeat, strengths first after a victory. It names the reason, the trainer,
+the target, its conversion track and how much banked experience training would convert
+(`TrainingSystem` already turns banked experience into development).
+
+`TrialSystem.apply_result` attaches `review` to simulated results and uses its suggestion
+when it has one (`suggest_training` remains the fallback). The result screen shows
+**Mentor's notes** (✓ two strengths, △ two weaknesses) and the suggestion with a
+*Train …* button when the trainer is active.
+
+## Stage 23 — Energy / Happiness Integration
+
+`ConditionEffects` — light, never decisive, the same for champions and opponents:
+
+- **Energy** (what is left after paying the fight's entry): from 50 up, nothing; below it the
+  stamina pool and its recovery shrink, to 85% at 0 energy. Damage and speed are unchanged.
+- **Happiness is composure**: inside 50–80 nothing; below 50 reaction time and timing error
+  grow, up to +12% at 0; above 80 they shrink, up to −5% at 100.
+- **After the battle**: a long or breathless fight costs extra energy
+  (`2 per full minute + 2 per exhaustion`, max 8). Mood moves with the win/loss as before,
+  plus how it went: +2 for a hard-fought loss (≥60% damage dealt) or a clean win (≥60%
+  health left), −2 for a one-sided loss (<15% dealt).
+- **Before the battle**: battle preparation lists the condition notes ("Tired: about 9%
+  less stamina…", "Low mood: slower to react…"); champion selection warns "Will fight
+  tired".
+
+Tests check that tired and low-mood champions never do better, and over 8 seeds win at most
+4 fewer fights than rested and content ones.
 

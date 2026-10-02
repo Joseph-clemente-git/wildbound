@@ -70,6 +70,12 @@ static func apply_result(outcome: Dictionary) -> Dictionary:
 		champion.losses += 1
 		champion.loss_streak += 1
 	var happiness := ConditionSystem.happiness_after_battle(champion, won)
+	# How the fight went (simulated battles): long, breathless fights tire,
+	# and a hard-fought loss stings less than a one-sided one.
+	if float(outcome.get("spirit", 0.0)) != 0.0:
+		happiness += champion.change_happiness(float(outcome["spirit"]))
+	if float(outcome.get("fatigue", 0.0)) > 0.0:
+		champion.consume_energy(minf(float(outcome["fatigue"]), champion.energy))
 	if not won and not outcome.get("forfeited", false):
 		ConditionSystem.knock_out(champion, Game.now())
 	champion.record_battle({
@@ -98,6 +104,11 @@ static func apply_result(outcome: Dictionary) -> Dictionary:
 		"knocked_out": champion.knocked_out, "story": story, "recruited": recruited,
 		"suggestion": suggest_training(champion, outcome.get("experience", {})),
 	}, true)
+	if outcome.has("simulation"):
+		var review := BattleReview.review(champion, profile, outcome["simulation"], outcome.get("experience", {}))
+		result["review"] = review
+		if not (review["suggestion"] as Dictionary).is_empty():
+			result["suggestion"] = review["suggestion"]
 	Game.save()
 	return result
 

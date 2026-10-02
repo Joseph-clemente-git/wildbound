@@ -39,6 +39,7 @@ static func start(fight: TrialData, champion: Champion, seed_value: int = 0) -> 
 ## The battle summarised for TrialSystem and the result screen.
 func trial_outcome() -> Dictionary:
 	var me := outcome.side(BattleState.PLAYER_TEAM)
+	var foe := outcome.side(1 - BattleState.PLAYER_TEAM)
 	return {
 		"trial_id": trial.id, "opponent_id": trial.opponent_id, "won": outcome.player_won(),
 		"forfeited": false, "duration": outcome.duration, "reason": outcome.reason,
@@ -54,6 +55,9 @@ func trial_outcome() -> Dictionary:
 		"difficulty_multiplier": learned.get("difficulty_multiplier", 1.0),
 		"defeat_factor": learned.get("defeat_factor", 1.0), "loss_streak_before": loss_streak_before,
 		"simulation": outcome.to_dict(),
+		"fatigue": ConditionEffects.battle_fatigue(outcome.duration, int(me.get("exhaustions", 0))),
+		"spirit": ConditionEffects.spirit(outcome.player_won(), 1.0 - float(foe.get("health_ratio", 1.0)),
+				float(me.get("health_ratio", 0.0))),
 		"how": BattleMoments.how_it_ended(outcome),
 		"moments": Array(BattleMoments.tell(battle_log, outcome)),
 	}

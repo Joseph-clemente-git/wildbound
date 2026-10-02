@@ -121,6 +121,7 @@ func refresh() -> void:
 	weapon_mastery = rank_of("weapon:" + weapon.weapon_type) if weapon != null else GameEnums.Rank.NONE
 	magic_mastery = rank_of("magic:" + ability.school) if ability != null else GameEnums.Rank.NONE
 	derived = CombatStats.build(stats, rank_of, weapon, armor, animal)
+	ConditionEffects.apply(derived, energy)
 
 
 ## Plain data for logs, replays and determinism checks.

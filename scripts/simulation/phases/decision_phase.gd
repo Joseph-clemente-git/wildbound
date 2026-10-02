@@ -92,17 +92,19 @@ func mind_of(state: BattleState, fighter: CombatantState) -> Mind:
 	return mind
 
 
-## Seconds to notice a threat: Timing skill, Agility and lived experience.
+## Seconds to notice a threat: Timing skill, Agility, lived experience and
+## composure (happiness).
 static func reaction_time(spec: CombatantSpec) -> float:
 	var experience := minf(spec.battle_experience, 80.0)
 	return clampf(0.3 - spec.rank_of("skill:timing") * 0.03 - spec.get_stat("agility") * 0.001 - experience * 0.0015,
-			0.08, 0.4)
+			0.08, 0.4) * ConditionEffects.focus_factor(spec.happiness)
 
 
 ## Half-width of the timing error on a defensive answer.
 static func timing_error(spec: CombatantSpec) -> float:
 	var experience := minf(spec.battle_experience, 80.0)
-	return maxf(0.2 - spec.rank_of("skill:timing") * 0.022 - experience * 0.0012, 0.03)
+	return maxf(0.2 - spec.rank_of("skill:timing") * 0.022 - experience * 0.0012, 0.03) \
+			* ConditionEffects.focus_factor(spec.happiness)
 
 
 # --- Decision ---------------------------------------------------------------------

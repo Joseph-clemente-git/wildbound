@@ -94,6 +94,7 @@ func _build_ui() -> void:
 	column.add_child(UiKit.scroll(_content))
 	_fight_report()
 	_learned()
+	_mentor_notes()
 	_rewards()
 	_condition()
 	_next_steps(column)
@@ -118,7 +119,7 @@ func _fight_report() -> void:
 		return
 	var fighters: Array = simulation["fighters"]
 	var section := _section("The fight")
-	section.get_parent().get_parent().name = "Report"
+	section.get_parent().name = "Report"
 	var grid := UiKit.grid(3, 10)
 	for text in ["", fighters[0]["name"], fighters[1]["name"]]:
 		var header := UiKit.label(text, "DimLabel")
@@ -171,6 +172,25 @@ func _learned() -> void:
 		Sfx.play("growth")
 
 
+## The mentors' read of the fight (BattleReview): what worked and what to fix.
+func _mentor_notes() -> void:
+	var review: Dictionary = outcome.get("review", {})
+	var strengths: Array = review.get("strengths", [])
+	var weaknesses: Array = review.get("weaknesses", [])
+	if strengths.is_empty() and weaknesses.is_empty():
+		return
+	var section := _section("Mentor's notes")
+	section.get_parent().name = "MentorNotes"
+	for lesson: Dictionary in strengths.slice(0, 2):
+		var line := UiKit.label("✓ " + str(lesson["text"]), "", true)
+		line.add_theme_color_override("font_color", UiTheme.GOOD)
+		section.add_child(line)
+	for lesson: Dictionary in weaknesses.slice(0, 2):
+		var line := UiKit.label("△ " + str(lesson["text"]), "", true)
+		line.add_theme_color_override("font_color", UiTheme.WARN)
+		section.add_child(line)
+
+
 func _rewards() -> void:
 	var section := _section("Rewards")
 	section.add_child(UiKit.stat_row("Coins", "◉ +%d%s" % [outcome.get("coins", 0), "  (first victory bonus)" if outcome.get("first_win") else ""]))
@@ -201,10 +221,18 @@ func _next_steps(column: VBoxContainer) -> void:
 	var row := UiKit.hbox(12)
 	if not suggestion.is_empty():
 		var trainer := Content.trainer(suggestion.get("trainer", ""))
-		var text := "%s gained significant %s Experience." % [Game.champion().name, ExperienceTracks.track_name(suggestion["track"])]
-		if trainer != null:
-			text += " %s (%s) can build on it%s." % [trainer.display_name, trainer.title,
-					"" if suggestion.get("active", false) else " once active"]
+		var text := ""
+		if suggestion.has("reason") and trainer != null:
+			text = "%s %s (%s) can develop %s%s." % [suggestion["reason"], trainer.display_name, trainer.title,
+					SkillCatalog.target_name(suggestion["target"]), "" if suggestion.get("active", false) else " once active"]
+			if float(suggestion.get("banked", 0.0)) >= 1.0:
+				text += " %d banked %s Experience is ready to convert." % [roundi(float(suggestion["banked"])),
+						ExperienceTracks.track_name(suggestion["track"])]
+		else:
+			text = "%s gained significant %s Experience." % [Game.champion().name, ExperienceTracks.track_name(suggestion["track"])]
+			if trainer != null:
+				text += " %s (%s) can build on it%s." % [trainer.display_name, trainer.title,
+						"" if suggestion.get("active", false) else " once active"]
 		column.add_child(UiKit.label(text, "", true))
 		if trainer != null and suggestion.get("active", false):
 			row.add_child(UiKit.button("Train %s" % SkillCatalog.target_name(suggestion["target"]), _continue.bind(

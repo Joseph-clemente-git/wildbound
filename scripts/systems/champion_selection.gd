@@ -41,6 +41,9 @@ static func notes(champion: Champion, trial: TrialData) -> PackedStringArray:
 		result.append("Feeling %s — spend time together at the lodge" % champion.mood_name().to_lower())
 	if is_ready(champion, trial):
 		result.append("Energy after entering: %d" % roundi(champion.energy - trial.energy_cost))
+		var after := champion.energy - trial.energy_cost
+		if ConditionEffects.stamina_factor(after) < 0.97:
+			result.append("Will fight tired — less stamina")
 	return result
 
 
