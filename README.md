@@ -86,5 +86,6 @@ Blender master character can replace it without touching gameplay — see
 [`docs/ASSET_PIPELINE.md`](docs/ASSET_PIPELINE.md). Sounds are synthesized placeholders
 behind named hooks (`Sfx.play("heavy_hit")`).
 
-See [`docs/IMPLEMENTATION_MAP.md`](docs/IMPLEMENTATION_MAP.md) for how each part of the
+See [`docs/UX_REVIEW.md`](docs/UX_REVIEW.md) for the UI/UX and accessibility review, and
+[`docs/IMPLEMENTATION_MAP.md`](docs/IMPLEMENTATION_MAP.md) for how each part of the
 design maps to code, and what is deliberately left for Phase 2.

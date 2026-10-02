@@ -2,6 +2,14 @@ extends TestCase
 ## Accessibility settings change the live theme and combat assists.
 
 
+const KEYS := ["text_scale", "colorblind", "high_contrast", "combat_assist"]
+
+
+## Start from defaults regardless of the player's saved settings.
+func before_each() -> void:
+	_restore(KEYS)
+
+
 func _restore(keys: Array) -> void:
 	for key: String in keys:
 		Settings.set_value(key, Settings.DEFAULTS[key])

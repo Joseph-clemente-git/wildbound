@@ -257,9 +257,14 @@ func _build_nav() -> void:
 			tag.add_theme_color_override("font_color", Color("1d1609") if badge == "NEW" else UiTheme.ACCENT)
 			if badge == "NEW":
 				tag.add_theme_stylebox_override("normal", UiTheme.box(UiTheme.ACCENT, 8, Color.TRANSPARENT, 0, 3))
-			tag.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-			tag.position = Vector2(-6, -8)
-			tag.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+			# Straddles the top edge, inside the button's width so neighbours never cover it.
+			tag.anchor_left = 1.0
+			tag.anchor_right = 1.0
+			tag.offset_left = -46 if badge == "NEW" else -22
+			tag.offset_right = -4
+			tag.offset_top = -11
+			tag.offset_bottom = 8
+			tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 			tag.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			button.add_child(tag)
 		_nav_row.add_child(button)
