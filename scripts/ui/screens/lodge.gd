@@ -36,6 +36,8 @@ var _dragged := false
 var _dialogue: DialogueBox
 var _context: Control
 var _markers: Dictionary = {}  # station -> Label3D
+var _station_labels: Dictionary = {}  # station -> Label3D
+var _station_rings: Dictionary = {}  # station -> MeshInstance3D
 var _dog_target := Vector3.ZERO
 var _dog_wait := 2.0
 var _rng := RandomNumberGenerator.new()
@@ -68,9 +70,14 @@ func _process(delta: float) -> void:
 	_update_camera(delta)
 	_update_dog(delta)
 	var t := Time.get_ticks_msec() / 1000.0
+	var bob := 0.0 if Settings.get_value("reduce_motion") else sin(t * 3.0) * 0.15
 	for station: String in _markers:
 		var marker: Label3D = _markers[station]
-		marker.position.y = 3.0 + sin(t * 3.0) * 0.15
+		marker.position.y = (2.35 if station == "champion" else 3.0) + bob
+	var objective_station: String = QuestLog.current().get("station", "")
+	if _station_rings.has(objective_station):
+		var ring: MeshInstance3D = _station_rings[objective_station]
+		ring.scale = Vector3.ONE * (1.0 + (0.0 if Settings.get_value("reduce_motion") else 0.06 * sin(t * 4.0)))
 
 
 # --- Input: tap to select, drag to pan ---------------------------------------------
@@ -228,6 +235,8 @@ func open_panel(panel_id: String, panel_options: Dictionary = {}) -> void:
 		return
 	if panel_id == "champion":
 		Game.set_flag("inspected_champion")
+	if LodgeHud.is_new(panel_id):
+		Game.set_flag("seen_" + panel_id)
 	panels.open(panel_id, panel_options)
 
 
@@ -308,6 +317,23 @@ func _build_station_areas() -> void:
 		label.position = WorldBuilder.STATIONS[station] + Vector3(0, 2.5, 0)
 		label.pixel_size = 0.009
 		add_child(label)
+		_station_labels[station] = label
+		# Ground ring: shows where something can be done (visual cue for interactables).
+		var ring_mesh := TorusMesh.new()
+		ring_mesh.inner_radius = 1.45
+		ring_mesh.outer_radius = 1.6
+		ring_mesh.rings = 32
+		var ring := MeshInstance3D.new()
+		ring.mesh = ring_mesh
+		var material := StandardMaterial3D.new()
+		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		ring.material_override = material
+		ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		ring.position = WorldBuilder.STATIONS[station] + Vector3(0, 0.04, 0)
+		add_child(ring)
+		ring.scale = Vector3(1.0, 1.0, 1.0)
+		_station_rings[station] = ring
 
 
 func _make_area(radius: float, station: String) -> Area3D:
@@ -369,6 +395,22 @@ func _refresh() -> void:
 	hud.refresh()
 	_apply_champion_look()
 	_update_markers()
+	_update_stations()
+
+
+## Less is more: only stations the story has introduced are labelled; the
+## current objective's station glows amber, others softly.
+func _update_stations() -> void:
+	var objective_station: String = QuestLog.current().get("station", "")
+	for station: String in _station_labels:
+		var unlocked := LodgeHud.is_panel_unlocked(station) or station == objective_station
+		var label: Label3D = _station_labels[station]
+		label.visible = unlocked
+		label.modulate = UiTheme.ACCENT if station == objective_station else UiTheme.TEXT
+		var ring: MeshInstance3D = _station_rings[station]
+		ring.visible = unlocked
+		var material := ring.material_override as StandardMaterial3D
+		material.albedo_color = Color(UiTheme.ACCENT, 0.85) if station == objective_station else Color(UiTheme.TEXT, 0.25)
 
 
 func _update_markers() -> void:
@@ -378,7 +420,7 @@ func _update_markers() -> void:
 		if key != station:
 			(_markers[key] as Node).queue_free()
 			_markers.erase(key)
-	if station.is_empty() or _markers.has(station) or station == "champion":
+	if station.is_empty() or _markers.has(station):
 		return
 	var marker := Label3D.new()
 	marker.text = "!"
@@ -388,6 +430,11 @@ func _update_markers() -> void:
 	marker.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	marker.no_depth_test = true
 	marker.pixel_size = 0.006
-	marker.position = WorldBuilder.STATIONS[station] + Vector3(0, 3.0, 0)
-	add_child(marker)
+	if station == "champion":
+		# The first objective points at the champion itself (onboarding step 1).
+		champion_visual.add_child(marker)
+		marker.position = Vector3(0, 2.35, 0)
+	else:
+		marker.position = WorldBuilder.STATIONS[station] + Vector3(0, 3.0, 0)
+		add_child(marker)
 	_markers[station] = marker
