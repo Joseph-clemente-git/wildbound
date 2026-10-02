@@ -26,6 +26,7 @@ Game="*res://scripts/core/game_state.gd"
 Saves="*res://scripts/core/save_manager.gd"
 Router="*res://scripts/core/scene_router.gd"
 Sfx="*res://scripts/core/sfx.gd"
+Notify="*res://scripts/core/notification_center.gd"
 
 [display]
 

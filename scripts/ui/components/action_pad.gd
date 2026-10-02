@@ -40,7 +40,7 @@ func _ready() -> void:
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		label.size = Vector2(radius * 2.0, radius * 2.0)
-		label.add_theme_font_size_override("font_size", 22 if radius > 60 else 18)
+		label.add_theme_font_size_override("font_size", UiTheme.fs(22 if radius > 60 else 18))
 		label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 		label.add_theme_constant_override("outline_size", 6)
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -66,6 +66,21 @@ func _layout() -> void:
 			corner.x = insets.x + 20.0
 		button.scale = Vector2.ONE * scale_factor
 		button.position = corner + offset - Vector2(radius, radius)
+
+
+## Teach by doing: briefly pulse the button that fits the moment.
+func pulse(action: String) -> void:
+	var button: TouchScreenButton = _buttons.get(action)
+	if button == null or button.has_meta("pulsing") or Settings.get_value("reduce_motion"):
+		return
+	button.set_meta("pulsing", true)
+	var base := button.scale
+	var tween := create_tween()
+	tween.tween_property(button, "scale", base * 1.18, 0.16)
+	tween.tween_property(button, "scale", base, 0.2)
+	tween.tween_property(button, "scale", base * 1.12, 0.14)
+	tween.tween_property(button, "scale", base, 0.18)
+	tween.tween_callback(func() -> void: button.remove_meta("pulsing"))
 
 
 func set_magic(label: String, color: Color, enabled: bool) -> void:

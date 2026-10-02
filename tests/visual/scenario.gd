@@ -113,3 +113,44 @@ func _scenario_prep() -> void:
 func _scenario_map() -> void:
 	_prepare_mid()
 	Router.go("world_map")
+
+
+func _scenario_story_porch() -> void:
+	Router.go("story", {"event": "opening"})
+	_at(1.0, func() -> void:
+		var box: DialogueBox = get_tree().current_scene._dialogue
+		for i in 4:
+			box._finish_reveal()
+			box._advance())
+
+
+func _scenario_settings() -> void:
+	Router.go("title")
+	_at(1.5, func() -> void:
+		SettingsPanel.open(get_tree().current_scene._ui_root, true, "access"))
+
+
+func _scenario_comfort() -> void:
+	Settings.set_value("comfort_setup_done", false)
+	Router.go("title")
+	_at(1.5, func() -> void: get_tree().current_scene._on_new_journey())
+
+
+## Large text + colour-blind palette + high contrast on the mid-game lodge.
+func _scenario_lodge_access() -> void:
+	Settings.set_value("text_scale", 1.25)
+	Settings.set_value("colorblind", "deuteranopia")
+	Settings.set_value("high_contrast", true)
+	_prepare_mid()
+	Router.go("lodge")
+	_restore_settings = true
+
+
+var _restore_settings := false
+
+
+## Scenarios must not leave the player's settings changed.
+func _exit_tree() -> void:
+	if _restore_settings:
+		for key: String in ["text_scale", "colorblind", "high_contrast"]:
+			Settings.set_value(key, Settings.DEFAULTS[key])

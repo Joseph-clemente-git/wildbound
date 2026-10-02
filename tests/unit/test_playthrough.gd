@@ -109,7 +109,7 @@ func test_chapter_one_can_be_completed() -> void:
 	check(TrialSystem.is_unlocked(Content.trial("first_steps")))
 	_fight("first_steps", 101)
 	check(Game.is_flag_set("first_trial_done"))
-	check(Game.is_flag_set("world_map_unlocked"), "Maren hands over the map")
+	check(Game.is_flag_set("world_map_unlocked"), "Marten hands over the map")
 	# Rest at the Rest Area.
 	var rest := _panel("recovery")
 	_pass_time(1.0)

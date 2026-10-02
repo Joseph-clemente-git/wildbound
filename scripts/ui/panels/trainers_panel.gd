@@ -47,7 +47,7 @@ func _trainer_card(trainer: TrainerData, mode: String) -> void:
 	var column := card("")
 	var top := UiKit.hbox(10)
 	var name_label := UiKit.label("%s — %s" % [trainer.display_name, trainer.title])
-	name_label.add_theme_font_size_override("font_size", 24)
+	name_label.add_theme_font_size_override("font_size", UiTheme.fs(24))
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(name_label)
 	var rarity := UiKit.label(GameEnums.rarity_name(trainer.rarity))

@@ -99,6 +99,8 @@ func missing_clips() -> PackedStringArray:
 
 ## Brief emissive flash used for hit feedback.
 func flash(color: Color, seconds: float = 0.16) -> void:
+	if Settings.get_value("reduce_flashes"):
+		return
 	if _flash_tween != null and _flash_tween.is_valid():
 		_flash_tween.kill()
 	for material in _flash_materials:

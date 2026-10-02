@@ -2,13 +2,24 @@ class_name CodexSystem
 extends RefCounted
 ## The Codex unlocks gradually as the journey reveals the world (story §32).
 
+## Replayable how-to entries (cognitive accessibility: tutorials can be
+## revisited at any time, without replaying the story).
+const GUIDE := [
+	{"title": "Moving and fighting", "text": "Left side: drag anywhere to move; push to the rim to sprint. Right side: Attack, Heavy, Dodge, Block and your Aether Art. Tap Attack again during a swing to combo."},
+	{"title": "Read the warning", "text": "A ! over your opponent means a light attack is coming, !! a heavy blow, ◆ an Aether Art. Dodge through it at the last moment for a Perfect dodge, or Block just as it lands to parry."},
+	{"title": "Stamina", "text": "Every action spends stamina. At zero your champion is Exhausted: slower, no dodging, and the guard breaks. Back off for a moment — stamina returns quickly when you stop spending it."},
+	{"title": "How champions grow", "text": "Battles leave experience behind: dodging builds evasion, blocking builds defense, heavy blows build strength. Fill a track and your champion grows naturally — no points to assign."},
+	{"title": "Mentors", "text": "Mentors turn that experience into deliberate development. Your lodge keeps a few active mentors; more slots open as its reputation (Keeper level) grows."},
+	{"title": "Rest", "text": "Trials and training cost energy. A defeat means a knockout, never worse — rest at the Rest Area and try again. Energy also returns by itself over time."},
+]
+
 const LORE := {
 	"aether": {"title": "Aether", "category": "Aether",
 			"text": "The ancient energy that flows along the old paths. Champions channel it to strengthen body and spirit. Aether is a learnable discipline, not a species gift: any animal can study any school."},
 	"grand_trials": {"title": "The Grand Trials", "category": "Stories",
 			"text": "Organized contests where champions prove their skill. Defeat means a knockout, never worse — the Trials began as peaceful festivals between communities."},
 	"lodge": {"title": "The Training Lodge", "category": "Stories",
-			"text": "Old Maren's lodge has trained valley champions for three generations. A lodge can keep only a small circle of active mentors; as its reputation grows, so does that circle."},
+			"text": "Old Marten's lodge has trained valley champions for three generations. A lodge can keep only a small circle of active mentors; as its reputation grows, so does that circle."},
 	"wildbound": {"title": "The Age of the Wildbound", "category": "Stories",
 			"text": "Long ago, animals who first channelled Aether were called the Wildbound. Their paths still connect the regions — and lately, those paths have grown quiet."},
 }
@@ -24,6 +35,8 @@ static func unlock(entry_id: String) -> void:
 static func entries() -> Dictionary:
 	var result := {}
 	var profile := Game.profile
+	for entry: Dictionary in GUIDE:
+		_add(result, "Guide", entry["title"], entry["text"])
 	for entry_id: String in LORE:
 		if profile.codex.has(entry_id) or entry_id in ["grand_trials", "lodge", "wildbound"]:
 			_add(result, LORE[entry_id]["category"], LORE[entry_id]["title"], LORE[entry_id]["text"])

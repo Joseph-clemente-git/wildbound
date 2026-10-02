@@ -10,8 +10,10 @@ func build(container: VBoxContainer) -> void:
 	var entries := CodexSystem.entries()
 	var categories := entries.keys()
 	categories.sort()
+	categories.erase("Guide")
+	categories.push_front("Guide")
 	if _category.is_empty() or not entries.has(_category):
-		_category = categories[0] if not categories.is_empty() else ""
+		_category = "Guide"
 	var tabs: Array = []
 	for category: String in categories:
 		tabs.append([category, category])
@@ -20,3 +22,7 @@ func build(container: VBoxContainer) -> void:
 		rebuild())
 	for entry: Dictionary in entries.get(_category, []):
 		card(entry["title"], entry["text"])
+	if _category == "Guide":
+		var replay := card("Replay the opening", "Watch Old Marten's welcome again.")
+		replay.add_child(UiKit.button("Replay", func() -> void:
+			Router.go("story", {"event": "opening", "next": "lodge"})))

@@ -43,7 +43,23 @@ static func button(text: String, on_pressed: Callable = Callable(), variation: S
 	node.pressed.connect(func() -> void: Sfx.play("ui_click", 0.02))
 	if on_pressed.is_valid():
 		node.pressed.connect(on_pressed)
+	add_press_feedback(node)
 	return node
+
+
+## Instant visual response: the button dips when touched (ui-ux-game:
+## feedback is instant). Skipped with Reduce motion.
+static func add_press_feedback(control: Control) -> void:
+	control.resized.connect(func() -> void: control.pivot_offset = control.size * 0.5)
+	control.gui_input.connect(func(event: InputEvent) -> void:
+		if Settings.get_value("reduce_motion"):
+			return
+		var down: bool = (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT) \
+				or event is InputEventScreenTouch
+		if not down:
+			return
+		var tween := control.create_tween()
+		tween.tween_property(control, "scale", Vector2.ONE * (0.95 if event.pressed else 1.0), 0.07))
 
 
 static func primary_button(text: String, on_pressed: Callable = Callable(), min_width: float = 0.0) -> Button:
@@ -181,25 +197,10 @@ static func confirm(parent: Node, title: String, message: String, confirm_text: 
 	content.add_child(row)
 
 
-## Brief floating message near the top of the screen.
-static func toast(parent: Node, text: String, color: Color = UiTheme.TEXT, seconds: float = 2.4) -> void:
-	var holder := PanelContainer.new()
-	holder.add_theme_stylebox_override("panel", UiTheme.box(Color(UiTheme.PANEL, 0.95), 14, UiTheme.BORDER, 2, 14))
-	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var text_label := label(text)
-	text_label.add_theme_color_override("font_color", color)
-	text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	holder.add_child(text_label)
-	holder.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	holder.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	holder.position.y = 24
-	parent.add_child(holder)
-	holder.modulate.a = 0.0
-	var tween := holder.create_tween()
-	tween.tween_property(holder, "modulate:a", 1.0, 0.2)
-	tween.tween_interval(seconds)
-	tween.tween_property(holder, "modulate:a", 0.0, 0.35)
-	tween.tween_callback(holder.queue_free)
+## Brief message at the top of the screen. Routed through the global
+## notification queue so messages stack, group and are kept in history.
+static func toast(_parent: Node, text: String, color: Color = UiTheme.TEXT, seconds: float = 2.4) -> void:
+	Notify.push(text, color, seconds)
 
 
 ## Full-rect margin container that respects device safe areas (notches, rounded

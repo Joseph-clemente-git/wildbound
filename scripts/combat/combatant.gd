@@ -87,6 +87,8 @@ func setup_from_champion(champion: Champion) -> void:
 		if ability_rank < ability.required_rank:
 			ability = null
 	techniques = champion.techniques.duplicate()
+	if Settings.get_value("combat_assist"):
+		stats.perfect_window += 0.06  # accessibility: wider timing windows
 	_reset_pools()
 
 
@@ -98,7 +100,7 @@ func setup_from_opponent(opponent: OpponentData) -> void:
 	ability = Content.ability(opponent.magic_ability_id)
 	if ability != null:
 		ability_rank = int(opponent.skills.get("magic:" + ability.school, ability.required_rank))
-	telegraph = opponent.telegraph
+	telegraph = opponent.telegraph * (1.3 if Settings.get_value("combat_assist") else 1.0)
 	_reset_pools()
 
 

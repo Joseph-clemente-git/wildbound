@@ -37,6 +37,10 @@ static func build(weapon_type: String) -> Node3D:
 		"shield":
 			_part(root, _cylinder(0.3, 0.05, WOOD, 0.3), Vector3(0.08, 0, -0.05), Vector3(0, 0, PI * 0.5))
 			_part(root, _cylinder(0.08, 0.06, STEEL, 0.08), Vector3(0.12, 0, -0.05), Vector3(0, 0, PI * 0.5))
+		"staff":
+			# Walking stick / mage staff: held upright, resting on the ground.
+			_part(root, _cylinder(0.024, 1.45, WOOD), Vector3(0, -0.12, -0.04))
+			_part(root, _sphere(0.045, WOOD.darkened(0.2)), Vector3(0, 0.62, -0.04))
 		"bow":
 			var torus := TorusMesh.new()
 			torus.inner_radius = 0.5

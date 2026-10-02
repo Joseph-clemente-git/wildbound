@@ -54,11 +54,12 @@ func _ready() -> void:
 	_scroll = UiKit.scroll(body)
 	column.add_child(_scroll)
 	Game.changed.connect(queue_rebuild)
-	sheet.position.x += 60
-	sheet.modulate.a = 0.0
-	var tween := create_tween().set_parallel()
-	tween.tween_property(sheet, "modulate:a", 1.0, 0.16)
-	tween.tween_property(sheet, "position:x", sheet.position.x - 60, 0.18).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	if not Settings.get_value("reduce_motion"):
+		sheet.position.x += 60
+		sheet.modulate.a = 0.0
+		var tween := create_tween().set_parallel()
+		tween.tween_property(sheet, "modulate:a", 1.0, 0.16)
+		tween.tween_property(sheet, "position:x", sheet.position.x - 60, 0.18).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	rebuild()
 
 
@@ -73,7 +74,7 @@ func set_tabs(tabs: Array, current: String, on_select: Callable) -> void:
 	UiKit.clear(_tabs_row)
 	_tabs_row.visible = not tabs.is_empty()
 	for tab: Array in tabs:
-		var button := UiKit.button(tab[0], on_select.bind(tab[1]), "PrimaryButton" if tab[1] == current else "")
+		var button := UiKit.button(tab[0], on_select.bind(tab[1]), "TabButtonSelected" if tab[1] == current else "TabButton")
 		button.custom_minimum_size.y = 52
 		_tabs_row.add_child(button)
 
@@ -111,7 +112,7 @@ func card(heading_text: String, subtitle: String = "") -> VBoxContainer:
 	panel.add_child(column)
 	if not heading_text.is_empty():
 		var heading := UiKit.label(heading_text)
-		heading.add_theme_font_size_override("font_size", 24)
+		heading.add_theme_font_size_override("font_size", UiTheme.fs(24))
 		heading.add_theme_color_override("font_color", UiTheme.ACCENT)
 		column.add_child(heading)
 	if not subtitle.is_empty():

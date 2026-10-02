@@ -1,5 +1,5 @@
 extends Control
-## World Map (story §23): Maren's parchment map of the Home Valley and the
+## World Map (story §23): Marten's parchment map of the Home Valley and the
 ## regions beyond. Regions open with story progress; locked regions show
 ## what their chapter will introduce.
 

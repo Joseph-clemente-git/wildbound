@@ -16,9 +16,21 @@ const DEFAULTS := {
 	"show_hints": true,
 	"controls_scale": 1.0,
 	"left_handed": false,
-	"camera_shake": true,
 	"vibration": true,
+	# Accessibility (ui-ux-game checklist)
+	"text_scale": 1.0,
+	"colorblind": "off",
+	"high_contrast": false,
+	"shake_strength": 0.7,
+	"reduce_motion": false,
+	"reduce_flashes": false,
+	"hud_opacity": 1.0,
+	"toggle_block": false,
+	"combat_assist": false,
+	"comfort_setup_done": false,
 }
+
+const COLORBLIND_MODES: Array[String] = ["off", "deuteranopia", "protanopia", "tritanopia"]
 
 ## action -> physical keys and joypad buttons.
 const ACTIONS := {
@@ -91,6 +103,8 @@ func _apply(key: String) -> void:
 			_set_bus_volume("Music", _values[key])
 		"sfx_volume":
 			_set_bus_volume("SFX", _values[key])
+		"text_scale", "colorblind", "high_contrast":
+			UiTheme.refresh(_values["colorblind"], _values["high_contrast"], _values["text_scale"])
 
 
 func _set_bus_volume(bus_name: String, linear: float) -> void:

@@ -42,7 +42,7 @@ Boot/title (§9-10), New Journey + opening cinematic with naming (§11-12), the 
 hub with contextual actions (§13-15), the first quest (§16, `systems/quest_log.gd`), the
 Swordmaster (§17), progressive Skill Matrix (§18), first weapon (§19), the tutorial trial
 whose phases teach dodge → timing → stamina (§20, `data/opponents/pip.tres`), growth-first
-results (§21, §37), Maren's map (§22), world map (§23), Continue and introduced-only menu
+results (§21, §37), Marten's map (§22), world map (§23), Continue and introduced-only menu
 shortcuts (§25), Champions / Mentors / Equipment Hall / Aether Circle / Codex (§27-32),
 Trials (§33), mentor suggestions after battle (§39), knockouts not deaths (§36).
 

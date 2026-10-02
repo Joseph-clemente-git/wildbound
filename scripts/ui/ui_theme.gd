@@ -5,22 +5,48 @@ extends RefCounted
 ## Tone: "warm, adventurous, mysterious, and respectful" — parchment text on
 ## deep forest panels with amber accents; large touch targets for mobile.
 
-const BG := Color("161c18")
-const PANEL := Color("232c25")
-const PANEL_LIGHT := Color("2f3a31")
-const BORDER := Color("8a6d45")
-const TEXT := Color("f1e8d6")
-const TEXT_DIM := Color("b9b09d")
-const ACCENT := Color("e3a857")
-const ACCENT_DARK := Color("b07b33")
-const GOOD := Color("8cc46f")
-const WARN := Color("e0b04f")
-const BAD := Color("d9674e")
-const AETHER := Color("7fd3d8")
-const HEALTH := Color("d65a4a")
-const STAMINA := Color("e8c35a")
-const ENERGY := Color("7fc46a")
-const HAPPINESS := Color("e88aa8")
+## Base palette. Semantic colours below are static vars so accessibility
+## settings (colour-blind palettes, high contrast) can swap them at runtime;
+## the same colour always means the same thing everywhere.
+static var BG := Color("161c18")
+static var PANEL := Color("232c25")
+static var PANEL_LIGHT := Color("2f3a31")
+static var BORDER := Color("8a6d45")
+static var TEXT := Color("f1e8d6")
+static var TEXT_DIM := Color("b9b09d")
+static var ACCENT := Color("e3a857")
+static var ACCENT_DARK := Color("b07b33")
+static var GOOD := Color("8cc46f")
+static var WARN := Color("e0b04f")
+static var BAD := Color("d9674e")
+static var AETHER := Color("7fd3d8")
+static var HEALTH := Color("d65a4a")
+static var STAMINA := Color("e8c35a")
+static var ENERGY := Color("7fc46a")
+static var HAPPINESS := Color("e88aa8")
+
+## Colour-blind safe replacements for the semantic colours (never colour
+## alone: bars and states also carry labels and icons).
+const PALETTES := {
+	"off": {},
+	"deuteranopia": {"GOOD": "5fa8e8", "BAD": "e8913a", "HEALTH": "e8743a", "ENERGY": "5f9ed8",
+			"WARN": "f0d060", "HAPPINESS": "c890e0"},
+	"protanopia": {"GOOD": "5fa8e8", "BAD": "f0a030", "HEALTH": "f0a030", "ENERGY": "5f9ed8",
+			"WARN": "f0e070", "HAPPINESS": "b0a0f0"},
+	"tritanopia": {"GOOD": "4fc0a0", "BAD": "e05a7a", "STAMINA": "f0a0c0", "AETHER": "f08a8a",
+			"ENERGY": "4fc0a0", "WARN": "e8a0b0"},
+}
+const BASE := {
+	"BG": "161c18", "PANEL": "232c25", "PANEL_LIGHT": "2f3a31", "BORDER": "8a6d45", "TEXT": "f1e8d6",
+	"TEXT_DIM": "b9b09d", "ACCENT": "e3a857", "ACCENT_DARK": "b07b33", "GOOD": "8cc46f", "WARN": "e0b04f",
+	"BAD": "d9674e", "AETHER": "7fd3d8", "HEALTH": "d65a4a", "STAMINA": "e8c35a", "ENERGY": "7fc46a",
+	"HAPPINESS": "e88aa8",
+}
+const HIGH_CONTRAST := {"BG": "000000", "PANEL": "0c0f0d", "PANEL_LIGHT": "1c241e", "BORDER": "f0c070",
+		"TEXT": "ffffff", "TEXT_DIM": "e0dccf"}
+
+## Text size multiplier (accessibility: up to 1.5x).
+static var text_scale := 1.0
 
 const FONT_SIZE := 22
 const FONT_SMALL := 18
@@ -34,8 +60,42 @@ static var _heading_font: Font
 
 static func get_theme() -> Theme:
 	if _theme == null:
-		_theme = _build()
+		_theme = Theme.new()
+		_build_into(_theme)
 	return _theme
+
+
+## Scaled font size: always use this instead of raw numbers.
+static func fs(size: int) -> int:
+	return roundi(size * text_scale)
+
+
+## Re-reads accessibility settings and rebuilds the shared theme in place, so
+## every open screen updates immediately.
+static func refresh(colorblind: String, high_contrast: bool, new_text_scale: float) -> void:
+	text_scale = clampf(new_text_scale, 0.8, 1.6)
+	var colours: Dictionary = BASE.duplicate()
+	if high_contrast:
+		colours.merge(HIGH_CONTRAST, true)
+	colours.merge(PALETTES.get(colorblind, {}), true)
+	BG = Color(colours["BG"])
+	PANEL = Color(colours["PANEL"])
+	PANEL_LIGHT = Color(colours["PANEL_LIGHT"])
+	BORDER = Color(colours["BORDER"])
+	TEXT = Color(colours["TEXT"])
+	TEXT_DIM = Color(colours["TEXT_DIM"])
+	ACCENT = Color(colours["ACCENT"])
+	ACCENT_DARK = Color(colours["ACCENT_DARK"])
+	GOOD = Color(colours["GOOD"])
+	WARN = Color(colours["WARN"])
+	BAD = Color(colours["BAD"])
+	AETHER = Color(colours["AETHER"])
+	HEALTH = Color(colours["HEALTH"])
+	STAMINA = Color(colours["STAMINA"])
+	ENERGY = Color(colours["ENERGY"])
+	HAPPINESS = Color(colours["HAPPINESS"])
+	if _theme != null:
+		_build_into(_theme)
 
 
 static func heading_font() -> Font:
@@ -60,9 +120,9 @@ static func box(color: Color, radius: int = 14, border: Color = Color.TRANSPAREN
 	return style
 
 
-static func _build() -> Theme:
-	var theme := Theme.new()
-	theme.default_font_size = FONT_SIZE
+static func _build_into(theme: Theme) -> void:
+	theme.clear()
+	theme.default_font_size = fs(FONT_SIZE)
 
 	# Labels
 	theme.set_color("font_color", "Label", TEXT)
@@ -70,20 +130,20 @@ static func _build() -> Theme:
 	theme.set_constant("shadow_offset_y", "Label", 1)
 	theme.set_type_variation("HeadingLabel", "Label")
 	theme.set_font("font", "HeadingLabel", heading_font())
-	theme.set_font_size("font_size", "HeadingLabel", FONT_HEADING)
+	theme.set_font_size("font_size", "HeadingLabel", fs(FONT_HEADING))
 	theme.set_color("font_color", "HeadingLabel", ACCENT)
 	theme.set_type_variation("TitleLabel", "Label")
 	theme.set_font("font", "TitleLabel", heading_font())
-	theme.set_font_size("font_size", "TitleLabel", FONT_TITLE)
+	theme.set_font_size("font_size", "TitleLabel", fs(FONT_TITLE))
 	theme.set_color("font_color", "TitleLabel", TEXT)
 	theme.set_type_variation("DimLabel", "Label")
 	theme.set_color("font_color", "DimLabel", TEXT_DIM)
-	theme.set_font_size("font_size", "DimLabel", FONT_SMALL)
+	theme.set_font_size("font_size", "DimLabel", fs(FONT_SMALL))
 
 	# Rich text
 	theme.set_color("default_color", "RichTextLabel", TEXT)
-	theme.set_font_size("normal_font_size", "RichTextLabel", FONT_SIZE)
-	theme.set_font_size("bold_font_size", "RichTextLabel", FONT_SIZE)
+	theme.set_font_size("normal_font_size", "RichTextLabel", fs(FONT_SIZE))
+	theme.set_font_size("bold_font_size", "RichTextLabel", fs(FONT_SIZE))
 
 	# Buttons
 	var normal := box(PANEL_LIGHT, 14, BORDER, 2, 16)
@@ -130,7 +190,7 @@ static func _build() -> Theme:
 	theme.set_stylebox("background", "ProgressBar", box(Color(0, 0, 0, 0.45), 8, Color.TRANSPARENT, 0, 0))
 	theme.set_stylebox("fill", "ProgressBar", box(ACCENT, 8, Color.TRANSPARENT, 0, 0))
 	theme.set_color("font_color", "ProgressBar", TEXT)
-	theme.set_font_size("font_size", "ProgressBar", FONT_SMALL - 2)
+	theme.set_font_size("font_size", "ProgressBar", fs(FONT_SMALL - 2))
 
 	# Sliders / checkboxes
 	theme.set_stylebox("slider", "HSlider", box(Color(0, 0, 0, 0.45), 6, Color.TRANSPARENT, 0, 4))
@@ -144,7 +204,7 @@ static func _build() -> Theme:
 	theme.set_stylebox("normal", "LineEdit", box(Color(0, 0, 0, 0.35), 12, BORDER, 2, 14))
 	theme.set_stylebox("focus", "LineEdit", box(Color(0, 0, 0, 0.35), 12, ACCENT, 2, 14))
 	theme.set_color("font_color", "LineEdit", TEXT)
-	theme.set_font_size("font_size", "LineEdit", FONT_HEADING - 4)
+	theme.set_font_size("font_size", "LineEdit", fs(FONT_HEADING - 4))
 
 	# Scroll bars: wide enough to grab on touch screens.
 	theme.set_stylebox("scroll", "VScrollBar", box(Color(0, 0, 0, 0.2), 6, Color.TRANSPARENT, 0, 4))
@@ -155,4 +215,28 @@ static func _build() -> Theme:
 	# Tooltips
 	theme.set_stylebox("panel", "TooltipPanel", box(PANEL, 10, BORDER, 1, 10))
 	theme.set_color("font_color", "TooltipLabel", TEXT)
-	return theme
+
+	# Tabs: a selected tab is a place, not an action — so it never borrows the
+	# amber primary-action style (consistency principle).
+	theme.set_type_variation("TabButton", "Button")
+	theme.set_stylebox("normal", "TabButton", _tab_box(false))
+	theme.set_stylebox("hover", "TabButton", _tab_box(false, true))
+	theme.set_stylebox("pressed", "TabButton", _tab_box(true))
+	theme.set_stylebox("hover_pressed", "TabButton", _tab_box(true))
+	theme.set_type_variation("TabButtonSelected", "Button")
+	for state: String in ["normal", "hover", "pressed", "hover_pressed"]:
+		theme.set_stylebox(state, "TabButtonSelected", _tab_box(true))
+	theme.set_color("font_color", "TabButtonSelected", ACCENT)
+	theme.set_color("font_hover_color", "TabButtonSelected", ACCENT)
+	theme.set_color("font_color", "TabButton", TEXT_DIM)
+
+	# Chips: compact always-visible state (coins, reputation, condition).
+	theme.set_type_variation("ChipPanel", "PanelContainer")
+	theme.set_stylebox("panel", "ChipPanel", box(Color(PANEL, 0.86), 22, BORDER, 1, 10))
+
+
+static func _tab_box(selected: bool, hover: bool = false) -> StyleBoxFlat:
+	var style := box(Color(PANEL_LIGHT, 0.6 if not selected else 0.95), 10, Color.TRANSPARENT, 0, 12)
+	style.border_color = ACCENT if selected else (BORDER if hover else Color.TRANSPARENT)
+	style.border_width_bottom = 4 if selected else 2
+	return style
