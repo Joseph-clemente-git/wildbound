@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="TrainerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trainer_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "lightning_mage_zephyr"
+display_name = "Zephyr Stormcall"
+title = "Lightning Mage"
+category = 2
+rarity = 3
+description = "A lightning mage known in High Cliffs."
+greeting = "We will meet when your journey reaches my home."
+primary_discipline = PackedStringArray("magic:lightning")
+secondary_discipline = PackedStringArray("stat:attack_speed")
+traits = PackedStringArray("aether_focus", "experience_reader")
+personal_efficiency = 1.0
+teachable_techniques = PackedStringArray()
+region_id = "high_cliffs"
+recruit_cost = 900
+story_recruit = false
+palette = {}
+sort_order = 21

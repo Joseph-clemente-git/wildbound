@@ -1,0 +1,70 @@
+[gd_resource type="Resource" script_class="OpponentData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/opponent_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "pip"
+display_name = "Pip"
+title = "Sparring Partner"
+animal_id = "humanoid_dog"
+palette = {
+"fur": Color(0.8471, 0.7843, 0.6588, 1.0),
+"fur_light": Color(1.0, 0.9725, 0.9176, 1.0),
+"fur_dark": Color(0.5412, 0.4549, 0.3451, 1.0),
+"scarf": Color(0.3098, 0.4784, 0.7216, 1.0),
+"cloth": Color(0.3529, 0.4157, 0.5412, 1.0)
+}
+level = 1
+stats = {
+"health": 36.0,
+"attack": 34.0,
+"strength": 32.0,
+"attack_speed": 40.0,
+"defense": 32.0,
+"agility": 46.0,
+"evasion": 44.0,
+"endurance": 44.0
+}
+skills = {
+"weapon:sword": 2
+}
+weapon_id = "sword_training"
+armor_id = "armor_light"
+magic_ability_id = ""
+phases = Array[Dictionary]([{
+"below": 1.01,
+"hint": "Pip winds up slowly before each swing. Watch for it — then DODGE!",
+"aggression": 0.55,
+"block_skill": 0.0,
+"dodge_skill": 0.0,
+"telegraph": 1.9,
+"heavy_chance": 0.0
+}, {
+"below": 0.7,
+"hint": "Pip is guarding now. Wait for its attack to finish, then strike the opening — or press with a HEAVY attack.",
+"aggression": 0.25,
+"block_skill": 0.85,
+"dodge_skill": 0.0,
+"telegraph": 1.5,
+"heavy_chance": 0.1
+}, {
+"below": 0.35,
+"hint": "Pip is pressing hard! Don't spend all your stamina — block, back off and breathe.",
+"aggression": 0.95,
+"block_skill": 0.2,
+"dodge_skill": 0.1,
+"telegraph": 1.15,
+"heavy_chance": 0.3
+}])
+intro_line = "Pip bounces on its toes. \"First trial for both of us! Let's make it a good one!\""
+win_line = "Pip wags its tail. \"You got me fair and square!\""
+lose_line = "Pip offers a paw to help you up. \"Again sometime?\""
+sort_order = 0
+aggression = 0.55
+block_skill = 0.0
+dodge_skill = 0.0
+heavy_chance = 0.0
+reaction_time = 0.5
+telegraph = 1.9
+preferred_range = 1.7

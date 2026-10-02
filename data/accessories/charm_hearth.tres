@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AccessoryData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/accessory_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "charm_hearth"
+display_name = "Hearthstone Charm"
+description = "A warm stone from the lodge hearth."
+price = 160
+sort_order = 2
+region_id = "home_valley"
+stat_modifiers = {
+"health": 4.0
+}

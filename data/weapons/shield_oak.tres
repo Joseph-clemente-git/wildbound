@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "shield_oak"
+display_name = "Oaken Shield"
+description = "Strong defensive control: superior blocks and shield bashes."
+price = 200
+available = false
+region_id = "lakeward"
+sort_order = 5
+weapon_type = "shield"
+damage = 12.0
+attack_speed = 0.9
+attack_range = 1.4
+arc_degrees = 90.0
+stamina_cost = 8.0
+windup = 0.25
+active = 0.1
+recovery = 0.35
+combo_max = 2
+heavy_multiplier = 1.6
+heavy_stamina_cost = 16.0
+heavy_windup = 0.45
+heavy_recovery = 0.5
+weight = 4.0
+strength_scaling = 0.4
+stagger = 24.0
+knockback = 2.0
+guard_pressure = 1.2
+stat_modifiers = {
+"defense": 6.0,
+"agility": -2.0
+}

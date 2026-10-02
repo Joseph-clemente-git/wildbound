@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="MagicSchoolData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/magic_school_data.gd" id="1_s"]
+[ext_resource type="Script" path="res://scripts/data/magic_ability_data.gd" id="2_s"]
+
+[sub_resource type="Resource" id="Resource_1"]
+script = ExtResource("2_s")
+id = "spark_lance"
+display_name = "Spark Lance"
+description = "A near-instant bolt with a long recovery."
+school = "lightning"
+required_rank = 1
+effect = 0
+counterplay = "Long recovery: punish it."
+stamina_cost = 26.0
+cast_time = 0.25
+recovery = 0.8
+damage = 24.0
+speed = 30.0
+
+[resource]
+script = ExtResource("1_s")
+id = "lightning"
+display_name = "Lightning"
+description = "Aether of sudden speed."
+lore = "Storms over the High Cliffs leave champions with crackling fur."
+color = Color(0.9608, 0.902, 0.4196, 1.0)
+region_id = "high_cliffs"
+available = false
+sort_order = 4
+abilities = Array[ExtResource("2_s")]([SubResource("Resource_1")])

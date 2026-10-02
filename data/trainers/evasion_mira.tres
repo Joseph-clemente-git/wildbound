@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="TrainerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trainer_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "evasion_mira"
+display_name = "Mira Mistpaw"
+title = "Evasion Trainer"
+category = 0
+rarity = 1
+description = "A evasion trainer known in Greenwood."
+greeting = "We will meet when your journey reaches my home."
+primary_discipline = PackedStringArray("stat:evasion", "skill:dodge")
+secondary_discipline = PackedStringArray("skill:dodge_control")
+traits = PackedStringArray("light_feet")
+personal_efficiency = 1.0
+teachable_techniques = PackedStringArray()
+region_id = "greenwood"
+recruit_cost = 300
+story_recruit = false
+palette = {}
+sort_order = 13

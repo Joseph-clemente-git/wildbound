@@ -1,0 +1,55 @@
+[gd_resource type="Resource" script_class="OpponentData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/opponent_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "marla"
+display_name = "Marla Brightcoat"
+title = "Home Valley Champion"
+animal_id = "humanoid_dog"
+palette = {
+"fur": Color(0.9098, 0.8471, 0.7216, 1.0),
+"fur_light": Color(1.0, 1.0, 1.0, 1.0),
+"fur_dark": Color(0.6275, 0.502, 0.3137, 1.0),
+"scarf": Color(0.7529, 0.1882, 0.1882, 1.0),
+"cloth": Color(0.5412, 0.1647, 0.1647, 1.0)
+}
+level = 5
+stats = {
+"health": 58.0,
+"attack": 54.0,
+"strength": 48.0,
+"attack_speed": 54.0,
+"defense": 50.0,
+"agility": 56.0,
+"evasion": 54.0,
+"endurance": 62.0
+}
+skills = {
+"weapon:sword": 4,
+"magic:fire": 3,
+"skill:block": 3,
+"skill:dodge": 3
+}
+weapon_id = "sword_training"
+armor_id = "armor_medium"
+magic_ability_id = "ember_bolt"
+phases = Array[Dictionary]([{
+"below": 0.5,
+"hint": "Marla is calling on Fire Aether! Ember Bolts are slow — sidestep or dodge through them.",
+"magic_chance": 0.35,
+"aggression": 0.7
+}])
+intro_line = "Marla raises her blade in salute. \"The valley is watching, Keeper. Show me what you have built.\""
+win_line = "Marla sheathes her sword with a smile. \"The valley has a new champion. The road beyond is yours.\""
+lose_line = "Marla helps your champion to its feet. \"Strong heart. Come back when it has learned a little more.\""
+sort_order = 3
+aggression = 0.6
+block_skill = 0.45
+dodge_skill = 0.35
+heavy_chance = 0.3
+magic_chance = 0.15
+reaction_time = 0.3
+telegraph = 1.0
+preferred_range = 2.2

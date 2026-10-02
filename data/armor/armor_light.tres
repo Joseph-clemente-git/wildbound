@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ArmorData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/armor_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "armor_light"
+display_name = "Traveler's Garb"
+description = "Soft cloth and a lodge scarf. Freedom of movement, long dodges and efficient stamina, but little protection."
+price = 0
+sort_order = 0
+region_id = ""
+weight_class = 0
+defense_bonus = 2.0
+move_speed_factor = 1.05
+dodge_distance_factor = 1.1
+stamina_cost_factor = 0.92
+stagger_resist = 0.0
+knockback_resist = 0.0

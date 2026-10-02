@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="AnimalData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/animal_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "humanoid_dog"
+display_name = "Humanoid Dog"
+description = "An upright, keen-nosed champion with quick feet and a big heart. Dogs learn fastest by doing, and tend to grow into whatever their battles ask of them."
+movement_type = 0
+visual_id = "procedural_dog"
+palette = {
+"fur": Color(0.6588, 0.4392, 0.2353, 1.0),
+"fur_light": Color(0.9412, 0.8627, 0.7216, 1.0),
+"fur_dark": Color(0.2902, 0.1882, 0.1255, 1.0),
+"scarf": Color(0.7216, 0.2627, 0.2275, 1.0),
+"cloth": Color(0.3647, 0.2902, 0.2078, 1.0)
+}
+base_stats = {
+"health": 44.0,
+"attack": 42.0,
+"strength": 40.0,
+"attack_speed": 46.0,
+"defense": 38.0,
+"agility": 58.0,
+"evasion": 58.0,
+"endurance": 56.0
+}
+potential = {
+"health": 85.0,
+"attack": 82.0,
+"strength": 76.0,
+"attack_speed": 90.0,
+"defense": 74.0,
+"agility": 100.0,
+"evasion": 100.0,
+"endurance": 95.0,
+"magic": 75.0
+}
+starting_skills = {
+"skill:movement": 2,
+"skill:dodge": 2,
+"skill:attack": 1,
+"skill:stamina": 1,
+"skill:defense": 1,
+"skill:recovery": 1
+}
+strengths = PackedStringArray("Quick, responsive footwork", "Long, efficient dodges", "Stamina for long fights")
+weaknesses = PackedStringArray("Light frame: knocked back and staggered more easily", "Modest natural strength", "Lower natural defense")
+counterplay = PackedStringArray("Heavy, wide swings punish dodges made too early", "Strong knockback breaks its rhythm", "Pinning it near the arena edge removes its mobility edge")
+combat_traits = {
+"knockback_taken": 1.15,
+"stagger_taken": 1.1,
+"dodge_efficiency": 1.1,
+"turn_speed": 1.1
+}
+default_names = PackedStringArray("Bruno", "Biscuit", "Scout", "Juno", "Rowan", "Maple")
+personality = "Eager and loyal; restless when idle, proud when praised."
+sort_order = 0

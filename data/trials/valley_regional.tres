@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="TrialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trial_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "valley_regional"
+display_name = "Home Valley Regional Trial"
+description = "The champion of the valley, Marla Brightcoat, defends her title with blade and Fire Aether. Victory opens the road beyond the valley."
+region_id = "home_valley"
+tier = "regional"
+opponent_id = "marla"
+arena_id = "meadow_ring"
+energy_cost = 30
+coins = 180
+owner_xp = 140
+animal_xp = 110
+first_clear_coins = 220
+first_clear_owner_xp = 160
+requires_flags = PackedStringArray("cleared_stonewall_bout", "cleared_meadow_sprint")
+story_after_win = "chapter_one_complete"
+story_after_first = ""
+tutorial = false
+sort_order = 3

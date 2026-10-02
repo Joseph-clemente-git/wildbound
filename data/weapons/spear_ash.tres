@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "spear_ash"
+display_name = "Ashwood Spear"
+description = "Long reach and strong spacing control; narrow strikes."
+price = 240
+available = false
+region_id = "stonepass"
+sort_order = 3
+weapon_type = "spear"
+damage = 18.0
+attack_speed = 0.95
+attack_range = 2.9
+arc_degrees = 40.0
+stamina_cost = 10.0
+windup = 0.28
+active = 0.12
+recovery = 0.35
+combo_max = 2
+heavy_multiplier = 1.8
+heavy_stamina_cost = 22.0
+heavy_windup = 0.55
+heavy_recovery = 0.6
+weight = 3.0
+strength_scaling = 0.3
+stagger = 16.0
+knockback = 1.6
+guard_pressure = 0.9

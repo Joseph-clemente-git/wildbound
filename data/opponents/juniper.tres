@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="OpponentData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/opponent_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "juniper"
+display_name = "Juniper"
+title = "Meadow Runner"
+animal_id = "humanoid_dog"
+palette = {
+"fur": Color(0.7882, 0.4157, 0.1804, 1.0),
+"fur_light": Color(0.9725, 0.8784, 0.7843, 1.0),
+"fur_dark": Color(0.1647, 0.102, 0.0627, 1.0),
+"scarf": Color(0.8784, 0.7529, 0.251, 1.0),
+"cloth": Color(0.4784, 0.2902, 0.1647, 1.0)
+}
+level = 3
+stats = {
+"health": 42.0,
+"attack": 46.0,
+"strength": 36.0,
+"attack_speed": 56.0,
+"defense": 36.0,
+"agility": 62.0,
+"evasion": 64.0,
+"endurance": 54.0
+}
+skills = {
+"weapon:sword": 3,
+"skill:dodge": 3
+}
+weapon_id = "sword_training"
+armor_id = "armor_light"
+magic_ability_id = ""
+phases = Array[Dictionary]([])
+intro_line = "Juniper grins and dances backward. \"Catch me if you can!\""
+win_line = "Juniper laughs, out of breath. \"Okay, okay — you caught me!\""
+lose_line = "Juniper twirls. \"Too slow! But you're getting faster.\""
+sort_order = 2
+aggression = 0.7
+block_skill = 0.15
+dodge_skill = 0.7
+heavy_chance = 0.15
+reaction_time = 0.25
+telegraph = 1.0
+preferred_range = 1.8

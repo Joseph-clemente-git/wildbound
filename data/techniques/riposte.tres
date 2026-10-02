@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="TechniqueData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/technique_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "riposte"
+display_name = "Riposte"
+description = "Attack right after a successful block to counter with a swift, harder strike."
+tier = 1
+prerequisites = {
+"weapon:sword": 3,
+"skill:block": 3
+}
+trigger = 0
+required_school = ""
+stamina_cost = 6.0
+power = 1.6
+coin_cost = 120
+sort_order = 0

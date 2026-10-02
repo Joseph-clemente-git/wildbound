@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="TrainerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trainer_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "wind_mage_lio"
+display_name = "Lio Driftwind"
+title = "Wind Mage"
+category = 2
+rarity = 1
+description = "A wandering mage who teaches movement and positioning through the Aether of the open sky."
+greeting = "Wind does not push. It invites. Let me show your champion where to stand."
+primary_discipline = PackedStringArray("magic:wind", "skill:positioning")
+secondary_discipline = PackedStringArray("stat:agility")
+traits = PackedStringArray("wandering_teacher")
+personal_efficiency = 1.0
+teachable_techniques = PackedStringArray()
+region_id = "home_valley"
+recruit_cost = 300
+story_recruit = false
+palette = {
+"fur": Color(0.7882, 0.7608, 0.6902, 1.0),
+"fur_light": Color(1.0, 1.0, 1.0, 1.0),
+"fur_dark": Color(0.4157, 0.4157, 0.4157, 1.0),
+"scarf": Color(0.498, 0.8275, 0.8471, 1.0),
+"cloth": Color(0.3529, 0.4157, 0.4784, 1.0)
+}
+sort_order = 4

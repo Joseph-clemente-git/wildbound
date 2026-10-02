@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RegionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/region_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "home_valley"
+display_name = "Home Valley"
+description = "Rolling meadows around the old training lodge. Local trials are held at the ring of standing stones."
+chapter = 1
+unlock_flag = ""
+map_position = Vector2(0.24, 0.62)
+difficulty = "Gentle"
+color = Color(0.4353, 0.6039, 0.3216, 1.0)
+features = PackedStringArray("Local and regional trials", "Six mentors", "Sword, Hammer, Fire and Wind")
+sort_order = 0

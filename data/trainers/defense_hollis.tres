@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="TrainerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trainer_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "defense_hollis"
+display_name = "Hollis Bramblewall"
+title = "Defense Trainer"
+category = 0
+rarity = 2
+description = "A defense trainer known in Stonepass."
+greeting = "We will meet when your journey reaches my home."
+primary_discipline = PackedStringArray("stat:defense", "skill:defense", "skill:block")
+secondary_discipline = PackedStringArray("skill:defense_control")
+traits = PackedStringArray("defensive_doctrine")
+personal_efficiency = 1.0
+teachable_techniques = PackedStringArray()
+region_id = "stonepass"
+recruit_cost = 550
+story_recruit = false
+palette = {}
+sort_order = 12

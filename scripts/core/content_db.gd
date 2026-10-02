@@ -59,6 +59,68 @@ func ids(category: String) -> Array:
 	return list(category).map(func(item: Resource) -> String: return item.id)
 
 
+# --- Typed shortcuts -------------------------------------------------------------
+
+func animal(id: String) -> AnimalData:
+	return get_item("animals", id) as AnimalData
+
+
+func weapon(id: String) -> WeaponData:
+	return get_item("weapons", id) as WeaponData
+
+
+func armor(id: String) -> ArmorData:
+	return get_item("armor", id) as ArmorData
+
+
+func accessory(id: String) -> AccessoryData:
+	return get_item("accessories", id) as AccessoryData
+
+
+## Any equippable item, whichever table it lives in.
+func equipment(id: String) -> EquipmentData:
+	for category: String in ["weapons", "armor", "accessories"]:
+		if has_item(category, id):
+			return get_item(category, id) as EquipmentData
+	return null
+
+
+func school(id: String) -> MagicSchoolData:
+	return get_item("magic", id) as MagicSchoolData
+
+
+func ability(id: String) -> MagicAbilityData:
+	for school_data: MagicSchoolData in list("magic"):
+		var found := school_data.get_ability(id)
+		if found != null:
+			return found
+	return null
+
+
+func trainer(id: String) -> TrainerData:
+	return get_item("trainers", id) as TrainerData
+
+
+func technique(id: String) -> TechniqueData:
+	return get_item("techniques", id) as TechniqueData
+
+
+func opponent(id: String) -> OpponentData:
+	return get_item("opponents", id) as OpponentData
+
+
+func arena(id: String) -> ArenaData:
+	return get_item("arenas", id) as ArenaData
+
+
+func trial(id: String) -> TrialData:
+	return get_item("trials", id) as TrialData
+
+
+func region(id: String) -> RegionData:
+	return get_item("regions", id) as RegionData
+
+
 func _load_directory(path: String) -> Dictionary:
 	var result := {}
 	if not DirAccess.dir_exists_absolute(path):

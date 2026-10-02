@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ArmorData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/armor_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "armor_heavy"
+display_name = "Ironbound Plate"
+description = "Riveted plates that shrug off blows and hold the line. Slower feet, shorter dodges and heavier breathing."
+price = 380
+sort_order = 2
+region_id = "home_valley"
+weight_class = 2
+defense_bonus = 18.0
+move_speed_factor = 0.86
+dodge_distance_factor = 0.78
+stamina_cost_factor = 1.2
+stagger_resist = 0.32
+knockback_resist = 0.38

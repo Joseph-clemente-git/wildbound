@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="TrialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trial_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "stonewall_bout"
+display_name = "Stonewall Bout"
+description = "Rook the hammer-wielder guards like a wall and hits like a landslide. Teaches patience and punishing slow recoveries."
+region_id = "home_valley"
+tier = "local"
+opponent_id = "rook"
+arena_id = "meadow_ring"
+energy_cost = 25
+coins = 95
+owner_xp = 65
+animal_xp = 60
+first_clear_coins = 70
+first_clear_owner_xp = 50
+requires_flags = PackedStringArray("first_trial_done")
+story_after_win = ""
+story_after_first = ""
+tutorial = false
+sort_order = 1

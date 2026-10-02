@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="OpponentData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/opponent_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "rook"
+display_name = "Rook"
+title = "Stonewall of the Valley"
+animal_id = "humanoid_dog"
+palette = {
+"fur": Color(0.2275, 0.2, 0.1882, 1.0),
+"fur_light": Color(0.5412, 0.4784, 0.4157, 1.0),
+"fur_dark": Color(0.102, 0.0863, 0.0784, 1.0),
+"scarf": Color(0.4157, 0.3529, 0.1647, 1.0),
+"cloth": Color(0.2902, 0.2902, 0.2902, 1.0)
+}
+level = 2
+stats = {
+"health": 52.0,
+"attack": 44.0,
+"strength": 54.0,
+"attack_speed": 34.0,
+"defense": 52.0,
+"agility": 34.0,
+"evasion": 30.0,
+"endurance": 52.0
+}
+skills = {
+"weapon:hammer": 3,
+"skill:block": 3
+}
+weapon_id = "hammer_iron"
+armor_id = "armor_heavy"
+magic_ability_id = ""
+phases = Array[Dictionary]([])
+intro_line = "Rook plants the hammer in the dirt. \"Come on, then. Hit the wall.\""
+win_line = "Rook grunts approvingly. \"You found the cracks.\""
+lose_line = "Rook nods. \"Walls do not move. Remember that.\""
+sort_order = 1
+aggression = 0.35
+block_skill = 0.7
+dodge_skill = 0.0
+heavy_chance = 0.45
+reaction_time = 0.45
+telegraph = 1.25
+preferred_range = 1.9

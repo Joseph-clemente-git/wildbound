@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "dagger_wolf"
+display_name = "Wolf-fang Dagger"
+description = "Fast, short-ranged and light on stamina, with little stagger."
+price = 180
+available = false
+region_id = "greenwood"
+sort_order = 2
+weapon_type = "dagger"
+damage = 11.0
+attack_speed = 1.5
+attack_range = 1.3
+arc_degrees = 90.0
+stamina_cost = 5.0
+windup = 0.12
+active = 0.08
+recovery = 0.18
+combo_max = 4
+heavy_multiplier = 1.7
+heavy_stamina_cost = 12.0
+heavy_windup = 0.35
+heavy_recovery = 0.35
+weight = 1.0
+strength_scaling = 0.15
+stagger = 7.0
+knockback = 0.5
+guard_pressure = 0.6
+techniques = PackedStringArray("wind_dash")

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="TrialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trial_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "first_steps"
+display_name = "First Steps Trial"
+description = "The local trial for new champions. Pip, another first-timer, waits in the ring. A gentle start — and a lesson in dodging, timing and stamina."
+region_id = "home_valley"
+tier = "local"
+opponent_id = "pip"
+arena_id = "meadow_ring"
+energy_cost = 20
+coins = 70
+owner_xp = 50
+animal_xp = 50
+first_clear_coins = 50
+first_clear_owner_xp = 35
+requires_flags = PackedStringArray("equipped_weapon", "trained_once")
+story_after_win = ""
+story_after_first = "after_first_trial"
+tutorial = true
+sort_order = 0

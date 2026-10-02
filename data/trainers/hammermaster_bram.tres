@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="TrainerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trainer_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "hammermaster_bram"
+display_name = "Bram Holloway"
+title = "Hammermaster"
+category = 1
+rarity = 2
+description = "A powerful but patient trainer specializing in force and control. Speaks slowly; never wastes a swing."
+greeting = "Strength is not damage. Strength is the moment your opponent stops being sure of their footing."
+primary_discipline = PackedStringArray("weapon:hammer", "stat:strength", "skill:defense")
+secondary_discipline = PackedStringArray("skill:block", "skill:defense_control")
+traits = PackedStringArray("heavy_drills")
+personal_efficiency = 1.0
+teachable_techniques = PackedStringArray("guard_break")
+region_id = "home_valley"
+recruit_cost = 520
+story_recruit = false
+palette = {
+"fur": Color(0.3529, 0.2392, 0.1686, 1.0),
+"fur_light": Color(0.6588, 0.5176, 0.4078, 1.0),
+"fur_dark": Color(0.1647, 0.1098, 0.0784, 1.0),
+"scarf": Color(0.4196, 0.3529, 0.1647, 1.0),
+"cloth": Color(0.2902, 0.2275, 0.1647, 1.0)
+}
+sort_order = 1

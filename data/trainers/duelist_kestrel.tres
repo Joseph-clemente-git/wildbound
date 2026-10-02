@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="TrainerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trainer_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = "duelist_kestrel"
+display_name = "Kestrel Vane"
+title = "Duelist"
+category = 1
+rarity = 3
+description = "A duelist known in Greenwood."
+greeting = "We will meet when your journey reaches my home."
+primary_discipline = PackedStringArray("weapon:dagger", "weapon:sword")
+secondary_discipline = PackedStringArray("skill:dodge", "skill:timing")
+traits = PackedStringArray("counter_training", "experience_reader")
+personal_efficiency = 1.0
+teachable_techniques = PackedStringArray("wind_dash", "riposte", "flame_slash")
+region_id = "greenwood"
+recruit_cost = 900
+story_recruit = false
+palette = {}
+sort_order = 16
