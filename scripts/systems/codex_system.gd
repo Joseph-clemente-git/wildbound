@@ -19,7 +19,7 @@ const LORE := {
 	"grand_trials": {"title": "The Grand Trials", "category": "Stories",
 			"text": "Organized contests where champions prove their skill. Defeat means a knockout, never worse — the Trials began as peaceful festivals between communities."},
 	"lodge": {"title": "The Training Lodge", "category": "Stories",
-			"text": "Old Jose's lodge has trained valley champions for three generations. A lodge can keep only a small circle of active mentors; as its reputation grows, so does that circle."},
+			"text": "Old Magnus's lodge has trained valley champions for three generations. A lodge can keep only a small circle of active mentors; as its reputation grows, so does that circle."},
 	"wildbound": {"title": "The Age of the Wildbound", "category": "Stories",
 			"text": "Long ago, animals who first channelled Aether were called the Wildbound. Their paths still connect the regions — and lately, those paths have grown quiet."},
 }

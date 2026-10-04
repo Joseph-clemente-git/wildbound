@@ -23,6 +23,6 @@ func build(container: VBoxContainer) -> void:
 	for entry: Dictionary in entries.get(_category, []):
 		card(entry["title"], entry["text"])
 	if _category == "Guide":
-		var replay := card("Replay the opening", "Watch Old Jose's welcome again.")
+		var replay := card("Replay the opening", "Watch Old Magnus's welcome again.")
 		replay.add_child(UiKit.button("Replay", func() -> void:
 			Router.go("story", {"event": "opening", "next": "lodge"})))
