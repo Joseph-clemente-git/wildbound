@@ -100,6 +100,30 @@ func _scenario_panel() -> void:
 	_at(1.0, func() -> void: _lodge().open_panel(panel))
 
 
+## The Skill Network mid-journey: a few ranks, two mentors, a technique within
+## reach. --select=<node id> picks the node shown in the side card; --fit
+## shows the whole weave.
+func _scenario_network() -> void:
+	_prepare_mid()
+	var champion := Game.champion()
+	Game.profile.coins = 999
+	TrainerManager.recruit(Game.profile, "hammermaster_bram", true)
+	for entry: Array in [["skill:attack", GameEnums.Rank.APPRENTICE], ["skill:movement", GameEnums.Rank.NOVICE],
+			["skill:dodge", GameEnums.Rank.NOVICE], ["skill:block", GameEnums.Rank.APPRENTICE],
+			["skill:timing", GameEnums.Rank.NOVICE], ["weapon:sword", GameEnums.Rank.APPRENTICE],
+			["magic:fire", GameEnums.Rank.FOUNDATION]]:
+		champion.skills.set_rank(entry[0], entry[1])
+	champion.skills.add_progress("weapon:sword", 40.0)
+	var select := ""
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--select="):
+			select = arg.trim_prefix("--select=")
+	Router.go("lodge")
+	_at(1.0, func() -> void: _lodge().open_panel("skill_network", {"select": select} if not select.is_empty() else {}))
+	if OS.get_cmdline_user_args().has("--fit"):
+		_at(1.6, func() -> void: (_lodge().panels._current.get("view") as SkillNetworkView).fit())
+
+
 func _scenario_result() -> void:
 	_prepare_mid()
 	TrainerManager.recruit(Game.profile, "agility_wren", true)

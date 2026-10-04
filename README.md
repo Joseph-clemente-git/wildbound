@@ -40,6 +40,11 @@ Battles are watched, not piloted:
 | Leave (to the result) | Skip ▶▶, Android back | Esc | Start |
 
 In the lodge, tap the champion or a station; drag to pan; pinch or wheel to zoom.
+The champion's **Skill Network** tab opens the *Aether Weave*: the Skill Matrix as a carved
+disc with the champion's crest at its hub and rings growing outward (Foundation, Discipline,
+Arms & Aether, Techniques), sectors for Offense, Guard, Endurance and Mobility, and veins that
+fill with Aether as requirements are met. Drag to pan, pinch or wheel to zoom, tap a stone to
+see what it needs, what it opens and which mentor can train it.
 
 ## The loop
 
@@ -89,7 +94,7 @@ godot --path . --write-movie out.png --fixed-fps 10 --quit-after 60 \
 
 Scenarios: `story`, `lodge`, `lodge_context`, `lodge_mid`, `panel --panel=<id>`, `result`,
 `prep --trial=<id>`, `journey`, `preview --trial=<id>`, `champions`, `replay --trial=<id>
---speed=<n> [--skip]`, `map`; add `--scroll=<px>` to scroll a screen's list.
+--speed=<n> [--skip]`, `map`, `network [--select=<node id>] [--fit]`; add `--scroll=<px>` to scroll a screen's list.
 `tests/visual/dog_preview.tscn -- --animal=<id>` renders every animation clip for an animal.
 
 ## Art
@@ -106,3 +111,5 @@ behind named hooks (`Sfx.play("heavy_hit")`).
 See [`docs/UX_REVIEW.md`](docs/UX_REVIEW.md) for the UI/UX and accessibility review, and
 [`docs/IMPLEMENTATION_MAP.md`](docs/IMPLEMENTATION_MAP.md) for how each part of the
 design maps to code, and what is deliberately left for Phase 2.
+[`docs/COMBAT_SYSTEM_PLAN.md`](docs/COMBAT_SYSTEM_PLAN.md) plans the next combat stages (26+):
+movement, move sets, defense, weapons, animation, AI, status effects and feedback.

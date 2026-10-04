@@ -15,6 +15,7 @@ Rows below that named the retired real-time arena now point at the simulation.
 | 03 Owner + home | `model/owner_profile.gd`, `ui/screens/lodge.gd`, `ui/components/lodge_hud.gd` |
 | 04 AnimalData | `data/animal_data.gd`, `data/animals/humanoid_dog.tres` |
 | 05 Skill Matrix data | `data/skill_catalog.gd`, `model/skill_matrix.gd` |
+| Skill Network — the Aether Weave (Skill Matrix as a radial graph) | `systems/skill_network.gd` (nodes, links, states, rings and sectors), `ui/components/skill_network_view.gd` (disc, veins, pan/zoom), `skill_orb.gd` (stones), `skill_glyphs.gd` (icons), `ui/panels/skill_network_panel.gd` (full-screen overlays, live portrait), `tests/unit/test_skill_network.gd` |
 | 06 Animal management | `ui/panels/champion_panel.gd` (multiple champions supported by `Game.champions`) |
 | 07 Owner level + slots | `OwnerProfile.slots_for_level`, `GameConfig.trainer_slot_levels` |
 | 08–09 Experience + natural growth | `systems/experience_session.gd`, `systems/growth_system.gd`, `model/experience_tracks.gd` |

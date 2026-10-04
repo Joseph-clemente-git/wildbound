@@ -3,19 +3,22 @@ extends LodgePanel
 ## story §18, §27). The Skill Matrix reveals itself in stages as the story
 ## introduces each part.
 
+## Tabs shared with the Skill Network panel, which opens as its own wide sheet.
+const TABS := [["Overview", "overview"], ["Skill Matrix", "skills"], ["Skill Network", "network"],
+		["Experience", "experience"]]
+
 var _tab := "overview"
 
 
 func _ready() -> void:
-	if panel_id == "skills" or options.get("tab", "") == "skills":
-		_tab = "skills"
+	_tab = "skills" if panel_id == "skills" else str(options.get("tab", _tab))
 	super._ready()
 
 
 func build(container: VBoxContainer) -> void:
 	var champion := Game.champion()
 	set_title(champion.name)
-	set_tabs([["Overview", "overview"], ["Skill Matrix", "skills"], ["Experience", "experience"]], _tab, _select_tab)
+	set_tabs(TABS, _tab, _select_tab)
 	match _tab:
 		"skills":
 			Game.set_flag("viewed_skill_matrix")
@@ -27,6 +30,9 @@ func build(container: VBoxContainer) -> void:
 
 
 func _select_tab(tab: String) -> void:
+	if tab == "network":
+		host.switch_to("skill_network")
+		return
 	_tab = tab
 	rebuild()
 

@@ -9,6 +9,7 @@ signal closed
 const PANELS := {
 	"champion": "res://scripts/ui/panels/champion_panel.gd",
 	"skills": "res://scripts/ui/panels/champion_panel.gd",
+	"skill_network": "res://scripts/ui/panels/skill_network_panel.gd",
 	"training": "res://scripts/ui/panels/training_panel.gd",
 	"trainers": "res://scripts/ui/panels/trainers_panel.gd",
 	"equipment": "res://scripts/ui/panels/equipment_panel.gd",
