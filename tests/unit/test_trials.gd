@@ -70,8 +70,8 @@ func test_regional_victory_completes_chapter_story() -> void:
 
 
 func test_training_suggestion_points_at_a_mentor() -> void:
-	TrainerManager.recruit(Game.profile, "swordmaster_corin", true)
+	TrainerManager.recruit(Game.profile, "swordmaster_yenbi", true)
 	var suggestion := TrialSystem.suggest_training(Game.champion(), {"weapon:sword": 20.0, "evasion": 4.0})
-	check_eq(suggestion["trainer"], "swordmaster_corin")
+	check_eq(suggestion["trainer"], "swordmaster_yenbi")
 	check_eq(suggestion["target"], "weapon:sword")
 	check(TrialSystem.suggest_training(Game.champion(), {"evasion": 2.0}).is_empty(), "nothing significant")

@@ -20,7 +20,7 @@ func _ready() -> void:
 	camera.position = Vector3(-0.25, 1.62, -0.85) if close_up else Vector3(1.9, 1.4, 2.6)
 	add_child(camera)
 	camera.look_at(Vector3(0, 1.5, 0) if close_up else Vector3(0, 0.95, 0))
-	# `-- --human` previews the people rig (mentors, Old Marten) instead.
+	# `-- --human` previews the people rig (mentors, Old Jose) instead.
 	# `-- --animal=<id>` previews another champion body (e.g. humanoid_shark).
 	var animal_id := ""
 	for arg in OS.get_cmdline_user_args():

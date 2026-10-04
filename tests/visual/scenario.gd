@@ -71,7 +71,7 @@ func _scenario_lodge_mid() -> void:
 func _prepare_mid() -> void:
 	_progress(["inspected_champion", "viewed_skill_matrix", "met_first_trainer", "trained_once",
 			"equipped_weapon", "first_trial_done", "world_map_unlocked", "codex_unlocked"])
-	TrainerManager.recruit(Game.profile, "swordmaster_corin", true)
+	TrainerManager.recruit(Game.profile, "swordmaster_yenbi", true)
 	Game.profile.add_item("sword_training")
 	Game.champion().weapon_id = "sword_training"
 

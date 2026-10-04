@@ -122,8 +122,8 @@ func test_save_and_load_round_trip() -> void:
 	champion.techniques.append("riposte")
 	champion.weapon_id = "sword_training"
 	champion.happiness = 55.0
-	Game.profile.owned_trainers.append("swordmaster_corin")
-	Game.profile.active_trainers.append("swordmaster_corin")
+	Game.profile.owned_trainers.append("swordmaster_yenbi")
+	Game.profile.active_trainers.append("swordmaster_yenbi")
 	Game.profile.coins = 777
 	Game.profile.set_flag("trained_once")
 	check(Game.save(), "save succeeded")
@@ -133,7 +133,7 @@ func test_save_and_load_round_trip() -> void:
 	var loaded := Game.champion()
 	check_eq(Game.profile.coins, 777)
 	check(Game.is_flag_set("trained_once"))
-	check_eq(Game.profile.active_trainers, ["swordmaster_corin"])
+	check_eq(Game.profile.active_trainers, ["swordmaster_yenbi"])
 	check_near(loaded.developed_stat("evasion"), champion.developed_stat("evasion"))
 	check_near(loaded.experience.get_xp("evasion"), 42.0)
 	check_eq(loaded.skills.get_rank("weapon:sword"), GameEnums.Rank.NOVICE)

@@ -69,9 +69,9 @@ func test_chapter_one_can_be_completed() -> void:
 	# Meet the Swordmaster at the Trainer Board.
 	_apply_event("meet_swordmaster")
 	Game.set_flag("met_first_trainer")
-	check(TrainerManager.is_active(Game.profile, "swordmaster_corin"))
+	check(TrainerManager.is_active(Game.profile, "swordmaster_yenbi"))
 	# First training session and equipping the sword.
-	_train_session("swordmaster_corin", "weapon:sword")
+	_train_session("swordmaster_yenbi", "weapon:sword")
 	check(Game.is_flag_set("trained_once"))
 	var equipment := _panel("equipment")
 	equipment.call("_equip", "sword_training")
@@ -81,7 +81,7 @@ func test_chapter_one_can_be_completed() -> void:
 	check(TrialSystem.is_unlocked(Content.trial("first_steps")))
 	_fight("first_steps", 101)
 	check(Game.is_flag_set("first_trial_done"))
-	check(Game.is_flag_set("world_map_unlocked"), "Marten hands over the map")
+	check(Game.is_flag_set("world_map_unlocked"), "magnus hands over the map")
 	# Rest at the Rest Area.
 	var rest := _panel("recovery")
 	_pass_time(1.0)
@@ -94,8 +94,8 @@ func test_chapter_one_can_be_completed() -> void:
 	while not Game.is_flag_set("chapter_one_complete") and attempts < 45:
 		attempts += 1
 		for target: String in targets:
-			if TrainingSystem.preview(Content.trainer("swordmaster_corin"), Game.champion(), target, Game.profile)["ok"]:
-				_train_session("swordmaster_corin", target)
+			if TrainingSystem.preview(Content.trainer("swordmaster_yenbi"), Game.champion(), target, Game.profile)["ok"]:
+				_train_session("swordmaster_yenbi", target)
 				break
 		_maybe_hire_and_learn()
 		var trial_id := "valley_regional"

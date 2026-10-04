@@ -26,7 +26,7 @@ func test_swordmaster_meeting_gives_sword_and_mentor() -> void:
 	for beat: Dictionary in StoryEvents.get_event("meet_swordmaster"):
 		StoryDirector.apply(beat.get("action", ""))
 	check(Game.profile.owns_item("sword_training"))
-	check(TrainerManager.is_active(Game.profile, "swordmaster_corin"))
+	check(TrainerManager.is_active(Game.profile, "swordmaster_yenbi"))
 
 
 func test_text_substitution() -> void:
@@ -66,6 +66,6 @@ func test_dialogue_skip_applies_remaining_actions() -> void:
 	box.play(StoryEvents.get_event("meet_swordmaster"))
 	box._skip_all()
 	check(Game.profile.owns_item("sword_training"), "skipping still hands over the sword")
-	check(TrainerManager.is_active(Game.profile, "swordmaster_corin"))
+	check(TrainerManager.is_active(Game.profile, "swordmaster_yenbi"))
 	check(not box.visible)
 	box.queue_free()

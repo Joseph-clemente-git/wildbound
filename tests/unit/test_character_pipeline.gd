@@ -112,4 +112,4 @@ func test_every_mentor_is_a_person() -> void:
 	for trainer: TrainerData in Content.list("trainers"):
 		check(trainer.appearance.get("skin") is Color, trainer.id + " has a human appearance")
 		check(not trainer.appearance.has("fur"), trainer.id + " is not an animal")
-	check(StoryEvents.OWNER_APPEARANCE.get("beard", false), "Old Marten is bearded")
+	check(StoryEvents.OWNER_APPEARANCE.get("beard", false), "Old Magnus is bearded")

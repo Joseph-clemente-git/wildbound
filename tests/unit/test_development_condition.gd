@@ -44,7 +44,7 @@ func test_review_reads_strengths_and_weaknesses_from_the_fight() -> void:
 
 
 func test_a_defeat_points_at_the_fix_with_an_owned_trainer() -> void:
-	TrainerManager.recruit(Game.profile, "swordmaster_corin", true)
+	TrainerManager.recruit(Game.profile, "swordmaster_yenbi", true)
 	TrainerManager.recruit(Game.profile, "endurance_tamsin", true)
 	var review := BattleReview.review(champion, Game.profile, _simulation(false,
 			{"exhaustions": 1, "dodges": 4}), {"endurance": 6.0})
@@ -56,11 +56,11 @@ func test_a_defeat_points_at_the_fix_with_an_owned_trainer() -> void:
 
 
 func test_a_victory_builds_on_what_worked() -> void:
-	TrainerManager.recruit(Game.profile, "swordmaster_corin", true)
+	TrainerManager.recruit(Game.profile, "swordmaster_yenbi", true)
 	TrainerManager.recruit(Game.profile, "endurance_tamsin", true)
 	var review := BattleReview.review(champion, Game.profile, _simulation(true,
 			{"exhaustions": 1, "openings_punished": 3}), {})
-	check_eq(review["suggestion"].get("trainer", ""), "swordmaster_corin")
+	check_eq(review["suggestion"].get("trainer", ""), "swordmaster_yenbi")
 	check_eq(review["suggestion"].get("target", ""), "skill:timing")
 
 
@@ -79,7 +79,7 @@ func test_suggestion_tells_what_banked_experience_training_converts() -> void:
 
 
 func test_simulated_results_carry_the_review() -> void:
-	TrainerManager.recruit(Game.profile, "swordmaster_corin", true)
+	TrainerManager.recruit(Game.profile, "swordmaster_yenbi", true)
 	var trial := Content.trial("stonewall_bout")
 	TrialSystem.enter(champion, trial)
 	var result := BattleSession.start(trial, champion, 17).result

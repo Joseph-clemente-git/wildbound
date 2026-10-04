@@ -31,7 +31,7 @@ func test_panels_late_game() -> void:
 		Game.set_flag(objective["flag"])
 	profile.level = 12
 	profile.coins = 9999
-	for trainer_id in ["swordmaster_corin", "fire_mage_sera", "hammermaster_bram", "agility_wren"]:
+	for trainer_id in ["swordmaster_yenbi", "fire_mage_sera", "hammermaster_bram", "agility_wren"]:
 		TrainerManager.recruit(profile, trainer_id, true)
 	CodexSystem.unlock("aether")
 	var champion := Game.champion()
@@ -48,10 +48,10 @@ func test_panels_late_game() -> void:
 
 
 func test_training_panel_flow() -> void:
-	TrainerManager.recruit(Game.profile, "swordmaster_corin", true)
+	TrainerManager.recruit(Game.profile, "swordmaster_yenbi", true)
 	var host := PanelHost.new()
 	root.add_child(host)
-	host.open("training", {"trainer": "swordmaster_corin", "target": "weapon:sword"})
+	host.open("training", {"trainer": "swordmaster_yenbi", "target": "weapon:sword"})
 	var panel: LodgePanel = host._current
 	panel.call("_train")
 	check_eq(Game.champion().skills.get_rank("weapon:sword"), GameEnums.Rank.NOVICE)

@@ -23,16 +23,16 @@ func _hire(trainer_id: String) -> TrainerData:
 
 
 func test_slots_limit_active_mentors() -> void:
-	check_eq(TrainerManager.recruit(profile, "swordmaster_corin", true), "")
-	check(TrainerManager.is_active(profile, "swordmaster_corin"), "auto-activates in a free slot")
+	check_eq(TrainerManager.recruit(profile, "swordmaster_yenbi", true), "")
+	check(TrainerManager.is_active(profile, "swordmaster_yenbi"), "auto-activates in a free slot")
 	check_eq(TrainerManager.recruit(profile, "agility_wren"), "")
 	check(not TrainerManager.is_active(profile, "agility_wren"), "level 1 keeps one mentor")
 	check(not TrainerManager.activate(profile, "agility_wren").is_empty(), "no free slot")
-	check_eq(TrainerManager.replace(profile, "swordmaster_corin", "agility_wren"), "")
+	check_eq(TrainerManager.replace(profile, "swordmaster_yenbi", "agility_wren"), "")
 	check(TrainerManager.is_active(profile, "agility_wren"))
-	check(not TrainerManager.is_active(profile, "swordmaster_corin"))
+	check(not TrainerManager.is_active(profile, "swordmaster_yenbi"))
 	profile.level = 5
-	check_eq(TrainerManager.activate(profile, "swordmaster_corin"), "", "level 5 opens a second slot")
+	check_eq(TrainerManager.activate(profile, "swordmaster_yenbi"), "", "level 5 opens a second slot")
 	check_eq(profile.active_trainers.size(), 2)
 	check_eq(TrainerManager.deactivate(profile, "agility_wren"), "")
 	check_eq(profile.active_trainers.size(), 1)
@@ -62,7 +62,7 @@ func test_rarity_scales_capability_not_power() -> void:
 
 
 func test_training_costs_and_develops() -> void:
-	var trainer := _hire("swordmaster_corin")
+	var trainer := _hire("swordmaster_yenbi")
 	var coins := profile.coins
 	var energy := champion.energy
 	var result := TrainingSystem.train(trainer, champion, "weapon:sword", profile)
@@ -70,22 +70,22 @@ func test_training_costs_and_develops() -> void:
 	check_eq(champion.skills.get_rank("weapon:sword"), GameEnums.Rank.NOVICE, "first session teaches the sword")
 	check_eq(profile.coins, coins - int(result["coin_cost"]))
 	check_eq(champion.energy, energy - float(result["energy_cost"]))
-	check_eq(int(profile.trainer_sessions["swordmaster_corin"]), 1)
+	check_eq(int(profile.trainer_sessions["swordmaster_yenbi"]), 1)
 
 
 func test_training_requires_energy_and_activity() -> void:
-	var trainer := _hire("swordmaster_corin")
+	var trainer := _hire("swordmaster_yenbi")
 	champion.energy = 5.0
 	var result := TrainingSystem.preview(trainer, champion, "weapon:sword", profile)
 	check(not result["ok"] and str(result["reason"]).contains("tired"))
 	champion.energy = 100.0
-	TrainerManager.deactivate(profile, "swordmaster_corin")
+	TrainerManager.deactivate(profile, "swordmaster_yenbi")
 	result = TrainingSystem.preview(trainer, champion, "weapon:sword", profile)
 	check(not result["ok"], "inactive mentors cannot train")
 
 
 func test_trainer_rank_cap_and_coverage() -> void:
-	var trainer := _hire("swordmaster_corin")  # Uncommon: up to Skilled
+	var trainer := _hire("swordmaster_yenbi")  # Uncommon: up to Skilled
 	for i in 80:
 		champion.energy = 100.0
 		TrainingSystem.train(trainer, champion, "weapon:sword", profile)
@@ -125,7 +125,7 @@ func test_discipline_prerequisites() -> void:
 
 
 func test_overtraining_lowers_happiness() -> void:
-	var trainer := _hire("swordmaster_corin")
+	var trainer := _hire("swordmaster_yenbi")
 	champion.energy = 35.0
 	var happiness := champion.happiness
 	var result := TrainingSystem.train(trainer, champion, "weapon:sword", profile)
@@ -154,7 +154,7 @@ func test_technique_prerequisites_and_teacher() -> void:
 	champion.skills.set_rank("skill:block", GameEnums.Rank.APPRENTICE)
 	check(TechniqueSystem.status(champion, riposte)["met"])
 	check(not TechniqueSystem.learn_blocker(champion, riposte, profile).is_empty(), "needs an active teacher")
-	_hire("swordmaster_corin")
+	_hire("swordmaster_yenbi")
 	check_eq(TechniqueSystem.learn(champion, riposte, profile), "")
 	check(TechniqueSystem.knows(champion, "riposte"))
 

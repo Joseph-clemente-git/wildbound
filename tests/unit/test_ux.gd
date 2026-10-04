@@ -29,7 +29,7 @@ func test_new_and_attention_badges() -> void:
 	Game.set_flag("seen_champion")
 	check(not LodgeHud.is_new("champion"))
 	check(not LodgeHud.needs_attention("training"), "no mentor yet")
-	TrainerManager.recruit(Game.profile, "swordmaster_corin", true)
+	TrainerManager.recruit(Game.profile, "swordmaster_yenbi", true)
 	check(LodgeHud.needs_attention("training"), "a session is possible")
 	ConditionSystem.knock_out(Game.champion(), Game.now())
 	check(LodgeHud.needs_attention("recovery"), "a knocked-out champion needs rest")

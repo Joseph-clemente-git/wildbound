@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1_s")
-id = "swordmaster_corin"
-display_name = "Corin Ashvale"
+id = "swordmaster_yenbi"
+display_name = "Yenbi" 
 title = "Swordmaster"
 category = 1
 rarity = 1

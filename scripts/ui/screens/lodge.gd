@@ -274,16 +274,16 @@ func _apply_champion_look() -> void:
 	champion_visual.set_aura(ability.school if ability != null else "")
 
 
-## Old Marten keeps watch from the porch; active mentors (people, not
+## Old magnus keeps watch from the porch; active mentors (people, not
 ## champions) stand at the stations they teach from.
 func _spawn_mentors() -> void:
 	var spots := [Vector3(-5.4, 0, 1.8), Vector3(-3.0, 0, -3.6), Vector3(6.0, 0, 2.6),
 			Vector3(3.4, 0, -3.0), Vector3(-8.6, 0, 1.6)]
-	var marten := ProceduralHumanVisual.new(StoryEvents.OWNER_APPEARANCE)
-	marten.position = Vector3(-1.2, 0.55, -6.9)
-	marten.rotation.y = PI  # facing the yard
-	add_child(marten)
-	marten.set_weapon("staff")
+	var magnus := ProceduralHumanVisual.new(StoryEvents.OWNER_APPEARANCE)
+	magnus.position = Vector3(-1.2, 0.55, -6.9)
+	magnus.rotation.y = PI  # facing the yard
+	add_child(magnus)
+	magnus.set_weapon("staff")
 	var index := 0
 	for trainer in TrainerManager.active(Game.profile):
 		if index >= spots.size():

@@ -36,11 +36,11 @@ func _ready() -> void:
 
 
 func _spawn_cast() -> void:
-	var marten := ProceduralHumanVisual.new(StoryEvents.OWNER_APPEARANCE)
-	marten.position = Vector3(-0.6, 0.55, -6.9)
-	marten.rotation.y = deg_to_rad(200.0)
-	add_child(marten)
-	marten.set_weapon("staff")
+	var magnus := ProceduralHumanVisual.new(StoryEvents.OWNER_APPEARANCE)
+	magnus.position = Vector3(-0.6, 0.55, -6.9)
+	magnus.rotation.y = deg_to_rad(200.0)
+	add_child(magnus)
+	magnus.set_weapon("staff")
 	var champion := Game.champion()
 	var dog: CharacterVisual = CharacterFactory.for_champion(champion) if champion != null else ProceduralDogVisual.new()
 	dog.position = Vector3(1.5, 0.0, -4.6)
