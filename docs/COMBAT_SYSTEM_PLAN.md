@@ -42,7 +42,7 @@ starting Stage 26.
 | D4 | Blood and bleeding in an animal-fantasy game? | A **"Wounded"** damage-over-time effect with stylised sparks and dust, no gore by default. Blood is a Settings toggle (off). |
 | D5 | Weapon durability? | **Defer.** It is an economy feature (repairs, coins), not combat. If wanted, wear only between battles and never break mid-fight. |
 | D6 | Death animation? | The design says *knockouts, not deaths* (mechanics §74). "Death" becomes a dramatic **knockout collapse**; nothing dies. |
-| D7 | Dual-wield / one-hand / two-hand loadouts? | Yes, but late (Stage 41): it needs an off-hand slot, equipment UI and a save migration. |
+| D7 | Dual-wield / one-hand / two-hand loadouts? | Yes, but late (Stage 42): it needs an off-hand slot, equipment UI and a save migration. |
 | D8 | Friendly fire? | Only with 2v2/3v3, which the design defers. Add the rule as an arena/trial flag, default **off**. |
 
 ## 1. Rules every stage follows
@@ -68,6 +68,9 @@ These come from the existing architecture; breaking them breaks saves, replays o
    Every stage that changes rules bumps `simulation_version`.
 8. **Balance is measured.** Each stage that changes outcomes re-runs
    `tools/balance_sim.tscn` and records the before/after table in the stage notes.
+9. **Learned, not given (Stage 28).** A new movement, attack or defensive move that is not
+   innate ships with its lesson: a `CombatMoveData` resource, the mentors who teach it
+   and its training-yard drill. A champion only uses moves it has learned.
 
 ## 2. Coverage audit
 
@@ -82,22 +85,22 @@ Status key:
 
 | Feature | Status | Today | Plan |
 | --- | --- | --- | --- |
-| Walking | Have | `MovementPhase`; `walk` clip | Gait bands (S28) |
-| Running | Have | `run` clip, speed from Agility | Gait bands (S28) |
-| Sprinting | Extend | `GameConfig.sprint_factor`, `sprint_stamina` exist but are unused | S28: gait chosen by the AI, costs stamina |
-| Strafing | Extend | Circling by `mobility` in `DecisionPhase._movement` | S28: strafe speed factor; S36: strafe clips |
-| Forward / backward movement | Extend | Movement is free in any direction at one speed | S28: backpedal slower than forward |
-| Side stepping | Extend | One generic dodge | S29: `sidestep` dodge kind |
-| Dodging | Have | `DODGE` action, protected window, Evasion distance | S29 variants |
-| Rolling | New | — | S29: `roll` (long, more protection, long recovery, armour-sensitive) |
-| Backstep | New | — | S29: `backstep` (fast, short, breaks reach, no protection) |
-| Dashing | Extend | Wind Step Art, Wind Dash technique | S29: `dash` (forward gap-closer) |
-| Jumping | New | Elevation exists (fliers) | S30: short jump arc for ground animals; avoids low sweeps, enables jump attacks |
-| Crouching | New | — | S30: duck under high horizontal swings |
-| Combat positioning | Have | Preferred range by build, ring edge, obstacles, water | S38 extends to teams |
+| Walking | Have | `MovementPhase`; `walk` clip | Gait bands (S29) |
+| Running | Have | `run` clip, speed from Agility | Gait bands (S29) |
+| Sprinting | Extend | `GameConfig.sprint_factor`, `sprint_stamina` exist but are unused | S29: gait chosen by the AI, costs stamina |
+| Strafing | Extend | Circling by `mobility` in `DecisionPhase._movement` | S29: strafe speed factor; S37: strafe clips |
+| Forward / backward movement | Extend | Movement is free in any direction at one speed | S29: backpedal slower than forward |
+| Side stepping | Extend | One generic dodge | S30: `sidestep` dodge kind |
+| Dodging | Have | `DODGE` action, protected window, Evasion distance | S30 variants |
+| Rolling | New | — | S30: `roll` (long, more protection, long recovery, armour-sensitive) |
+| Backstep | New | — | S30: `backstep` (fast, short, breaks reach, no protection) |
+| Dashing | Extend | Wind Step Art, Wind Dash technique | S30: `dash` (forward gap-closer) |
+| Jumping | New | Elevation exists (fliers) | S31: short jump arc for ground animals; avoids low sweeps, enables jump attacks |
+| Crouching | New | — | S31: duck under high horizontal swings |
+| Combat positioning | Have | Preferred range by build, ring edge, obstacles, water | S39 extends to teams |
 | Circling / orbit | Have | Strafe direction and `strafe_until` in the mind | — |
-| Target lock movement | Adapt | `target_index`, facing turns to target | S38: threat-based retargeting; S43: camera lock framing |
-| Root motion | Adapt | Clips are in place, the simulation moves bodies | S31: moves carry an authored `lunge` curve the simulation applies ("simulation root motion") |
+| Target lock movement | Adapt | `target_index`, facing turns to target | S39: threat-based retargeting; S44: camera lock framing |
+| Root motion | Adapt | Clips are in place, the simulation moves bodies | S32: moves carry an authored `lunge` curve the simulation applies ("simulation root motion") |
 
 ### 2.2 Attack mechanics
 
@@ -105,35 +108,35 @@ Status key:
 | --- | --- | --- | --- |
 | Light attack | Have | `ATTACK` | Becomes the default move in a moveset (S27) |
 | Heavy attack | Have | `HEAVY` | Same (S27) |
-| Quick attack | New | — | S32: fast, low-damage opener (jab) |
-| Charged attack | New | — | S33: heavy held 0–N s, damage and stagger scale with charge |
-| Overhead attack | New | — | S31: high, narrow arc, strong stagger |
-| Horizontal slash | New | — | S31: wide arc at torso height; crouch ducks it |
-| Vertical slash | New | — | S31: narrow arc, beats sidesteps less, good against crouch |
-| Thrust attack | New | — | S31: line hitbox, long reach |
-| Piercing attack | New | — | S31 + S39: thrust/arrow that ignores part of armour |
-| Jump attack | New | Flier swoop exists | S34: from a jump (S30) |
-| Running attack | New | — | S34: from a sprint (S28) |
-| Aerial attack | Extend | Fliers swoop to strike | S34: named aerial move for fliers |
-| Combo attack | Have | Light chain up to `combo_max` | S32: combo graph per weapon |
-| Chain attack | Extend | Chain in recovery | S32: cancel windows into the next move |
-| Counterattack | Have | AI counter, Riposte technique | S35: perfect-dodge counter window |
-| Finishing attack | New | — | S35: punisher on a knocked-down, guard-broken or exhausted foe (a knockout blow, never an execution) |
-| Special attack | Extend | Techniques (Riposte, Guard Break, Flame Slash, Wind Dash) | S35: techniques can own a move |
-| Critical attack | New | — | S39 (decision D2) |
+| Quick attack | New | — | S33: fast, low-damage opener (jab) |
+| Charged attack | New | — | S34: heavy held 0–N s, damage and stagger scale with charge |
+| Overhead attack | New | — | S32: high, narrow arc, strong stagger |
+| Horizontal slash | New | — | S32: wide arc at torso height; crouch ducks it |
+| Vertical slash | New | — | S32: narrow arc, beats sidesteps less, good against crouch |
+| Thrust attack | New | — | S32: line hitbox, long reach |
+| Piercing attack | New | — | S32 + S40: thrust/arrow that ignores part of armour |
+| Jump attack | New | Flier swoop exists | S35: from a jump (S31) |
+| Running attack | New | — | S35: from a sprint (S29) |
+| Aerial attack | Extend | Fliers swoop to strike | S35: named aerial move for fliers |
+| Combo attack | Have | Light chain up to `combo_max` | S33: combo graph per weapon |
+| Chain attack | Extend | Chain in recovery | S33: cancel windows into the next move |
+| Counterattack | Have | AI counter, Riposte technique | S36: perfect-dodge counter window |
+| Finishing attack | New | — | S36: punisher on a knocked-down, guard-broken or exhausted foe (a knockout blow, never an execution) |
+| Special attack | Extend | Techniques (Riposte, Guard Break, Flame Slash, Wind Dash) | S36: techniques can own a move |
+| Critical attack | New | — | S40 (decision D2) |
 
 ### 2.3 Defensive mechanics
 
 | Feature | Status | Today | Plan |
 | --- | --- | --- | --- |
-| Blocking | Have | Guard ±70°, block factor, guard drain | S37: block stun |
-| Perfect blocking | Extend | A guard raised in the perfect window counts as a parry | S37: split *perfect block* (no chip, no drain) from *parry* |
-| Parrying | Extend | As above | S37: `PARRY` as its own active action, punishable on a whiff |
-| Perfect parry | New | — | S37: first half of the parry window: longer stagger, guaranteed riposte |
-| Dodging / Rolling / Evasion | Have / New | Dodge with protected window | S29 |
-| Counter defense | Have | Riposte, guard-into-strike | S35 |
-| Shield defense | Have | Shield `block_bonus` | S41: off-hand shield |
-| Damage reduction | Have | `mitigation` (Defense, armour, skill), wards | S39: damage types |
+| Blocking | Have | Guard ±70°, block factor, guard drain | S38: block stun |
+| Perfect blocking | Extend | A guard raised in the perfect window counts as a parry | S38: split *perfect block* (no chip, no drain) from *parry* |
+| Parrying | Extend | As above | S38: `PARRY` as its own active action, punishable on a whiff |
+| Perfect parry | New | — | S38: first half of the parry window: longer stagger, guaranteed riposte |
+| Dodging / Rolling / Evasion | Have / New | Dodge with protected window | S30 |
+| Counter defense | Have | Riposte, guard-into-strike | S36 |
+| Shield defense | Have | Shield `block_bonus` | S42: off-hand shield |
+| Damage reduction | Have | `mitigation` (Defense, armour, skill), wards | S40: damage types |
 | Guard break | Have | Guard runs dry; Guard Break technique | — |
 | Stamina-based defense | Have | Guard drain, exhaustion | — |
 
@@ -141,17 +144,17 @@ Status key:
 
 | Feature | Status | Today | Plan |
 | --- | --- | --- | --- |
-| Weapon switching | New | One weapon slot | S42: secondary weapon, switch action chosen by the AI on a range mismatch |
-| Weapon drawing / sheathing | New | Weapon always in hand | S42: draw at fight start, sheathe on victory and switch; lodge shows it sheathed |
+| Weapon switching | New | One weapon slot | S43: secondary weapon, switch action chosen by the AI on a range mismatch |
+| Weapon drawing / sheathing | New | Weapon always in hand | S43: draw at fight start, sheathe on victory and switch; lodge shows it sheathed |
 | Weapon handling | Have | `weight` slows movement and actions | — |
-| Weapon reach | Have | `attack_range`, `arc_degrees` | S31: per-move shapes |
-| Weapon collision | Extend | Line-of-sight to obstacles | S40: weapon **clash** when two active swings meet |
+| Weapon reach | Have | `attack_range`, `arc_degrees` | S32: per-move shapes |
+| Weapon collision | Extend | Line-of-sight to obstacles | S41: weapon **clash** when two active swings meet |
 | Weapon durability | Defer | — | D5 |
-| Weapon proficiency | Have | Skill Matrix weapon ranks, mastery | S32: mastery unlocks moves |
-| Weapon-specific combos | New | Same chain for all | S32 |
-| Dual-wielding | New | — | S41 |
-| Two-handed combat | Extend | Hammer and axe behave heavy | S41: `grip` field |
-| One-handed combat | Extend | Sword, dagger | S41 |
+| Weapon proficiency | Have | Skill Matrix weapon ranks, mastery | S33: mastery unlocks moves |
+| Weapon-specific combos | New | Same chain for all | S33 |
+| Dual-wielding | New | — | S42 |
+| Two-handed combat | Extend | Hammer and axe behave heavy | S42: `grip` field |
+| One-handed combat | Extend | Sword, dagger | S42 |
 
 ### 2.5 Combat animations
 
@@ -160,37 +163,37 @@ heavy_attack, dodge, block, hit, stagger, knocked_out, recover, cast, victory, e
 
 | Feature | Status | Plan |
 | --- | --- | --- |
-| Idle, walking, running | Have | S36: locomotion blend space |
-| Sprint | New | S36 |
-| Attack, heavy attack | Have | S36: one clip per move (overhead, horizontal, thrust, charge hold/release…) |
-| Combo | Extend | S36: `attack_1/2/3` per weapon combo step |
-| Blocking | Have | S36: block-hit reaction |
-| Parry | New | S36 |
-| Dodge | Have | S36: roll, sidestep L/R, backstep, dash |
-| Hit reaction | Extend | S36: directional (front/back/left/right) |
+| Idle, walking, running | Have | S37: locomotion blend space |
+| Sprint | New | S37 |
+| Attack, heavy attack | Have | S37: one clip per move (overhead, horizontal, thrust, charge hold/release…) |
+| Combo | Extend | S37: `attack_1/2/3` per weapon combo step |
+| Blocking | Have | S37: block-hit reaction |
+| Parry | New | S37 |
+| Dodge | Have | S37: roll, sidestep L/R, backstep, dash |
+| Hit reaction | Extend | S37: directional (front/back/left/right) |
 | Stagger | Have | — |
-| Knockback | New | S36: slide-back pose while `push_velocity` is high |
-| Knockdown | Extend | S36: fall + lie + get-up (today stagger and KO clips) |
+| Knockback | New | S37: slide-back pose while `push_velocity` is high |
+| Knockdown | Extend | S37: fall + lie + get-up (today stagger and KO clips) |
 | Recovery | Have | — |
 | Death | Adapt | KO collapse (D6) |
-| Victory | Have | S36: per-weapon flourish + sheathe |
+| Victory | Have | S37: per-weapon flourish + sheathe |
 
 ### 2.6 Hit detection and damage
 
 | Feature | Status | Today | Plan |
 | --- | --- | --- | --- |
-| Weapon hit detection | Have | Reach + arc around facing, each swing hits each target once | S31: per-move hitbox shapes |
+| Weapon hit detection | Have | Reach + arc around facing, each swing hits each target once | S32: per-move hitbox shapes |
 | Collision detection | Have | Bodies, ring edge, obstacles, projectiles sweep | — |
-| Hitboxes | Extend | One arc per weapon | S31: arc / line / cone / circle per move, with height band |
+| Hitboxes | Extend | One arc per weapon | S32: arc / line / cone / circle per move, with height band |
 | Hurtboxes | Extend | One body circle (0.45 m) + elevation | S27: head / torso / legs height bands, front / side / back |
-| Directional damage | Extend | Dagger flank bonus | S39: back and side multipliers for all; guards only cover the front |
-| Critical hit detection | New | — | S39 (D2) |
+| Directional damage | Extend | Dagger flank bonus | S40: back and side multipliers for all; guards only cover the front |
+| Critical hit detection | New | — | S40 (D2) |
 | Damage calculation | Have | `DamagePhase.raw_damage`, openings, mastery variation | — |
-| Armor mitigation | Have | `mitigation` | S39: slash / pierce / blunt vs armour weight |
-| Penetration | New | — | S39: ignores a share of mitigation |
+| Armor mitigation | Have | `mitigation` | S40: slash / pierce / blunt vs armour weight |
+| Penetration | New | — | S40: ignores a share of mitigation |
 | Knockback calculation | Have | `ForcePhase` | — |
 | Hit registration | Have | `struck` per swing | — |
-| Friendly fire | New | Teammates never struck | S38 flag (D8) |
+| Friendly fire | New | Teammates never struck | S39 flag (D8) |
 
 ### 2.7 Combat AI
 
@@ -200,14 +203,14 @@ range, circling, flanking for agile builds, terrain awareness and `CombatStyle`.
 
 | Feature | Status | Plan |
 | --- | --- | --- |
-| Target detection, selection, tracking | Have (nearest enemy) | S38: threat-scored selection for 2v2/3v3 |
+| Target detection, selection, tracking | Have (nearest enemy) | S39: threat-scored selection for 2v2/3v3 |
 | Combat positioning, distance management | Have | — |
-| Attack / defensive / dodge / counter decisions | Have | S32–S37: choose *which* move, dodge kind and parry vs block |
+| Attack / defensive / dodge / counter decisions | Have | S33–S38: choose *which* move, dodge kind and parry vs block |
 | Retreat, aggressive, defensive behaviour | Have (tendencies, caution) | — |
-| Flanking | Have (agile style) | S38: coordinated flanks in teams |
-| Surrounding | New | S38: team slots around a target |
-| Threat assessment | Extend | S38: score enemies by damage, reach, health, who is attacking an ally |
-| Combat awareness | Extend | S38: field of view; threats from behind are noticed later. In-fight **adaptation**: a mind remembers what the foe keeps doing (always dodges left, always blocks the first hit) and counters it, more with battle experience |
+| Flanking | Have (agile style) | S39: coordinated flanks in teams |
+| Surrounding | New | S39: team slots around a target |
+| Threat assessment | Extend | S39: score enemies by damage, reach, health, who is attacking an ally |
+| Combat awareness | Extend | S39: field of view; threats from behind are noticed later. In-fight **adaptation**: a mind remembers what the foe keeps doing (always dodges left, always blocks the first hit) and counters it, more with battle experience |
 
 ### 2.8 Character attributes and stats
 
@@ -223,9 +226,9 @@ Endurance (+ Magic potential). Derived numbers live in `CombatStats`.
 | Weapon skill | Have (Skill Matrix) | — |
 | Combat experience | Have (`battle_experience`) | — |
 | Reaction speed | Have (derived `reaction_time`) | Show as a derived band |
-| Dexterity | New | S44 (D3): precision stat |
-| Accuracy | New (derived) | S44: from Dexterity + weapon mastery; aim error on shots, leading moving targets |
-| Critical chance / damage | New (derived) | S44: from Dexterity + Strength; widens crit windows / crit multiplier |
+| Dexterity | New | S45 (D3): precision stat |
+| Accuracy | New (derived) | S45: from Dexterity + weapon mastery; aim error on shots, leading moving targets |
+| Critical chance / damage | New (derived) | S45: from Dexterity + Strength; widens crit windows / crit multiplier |
 
 ### 2.9 Combat status effects
 
@@ -237,14 +240,14 @@ lasting effects burn, slow and ward in `EffectRules`.
 | Stagger, knockdown, knockback | Have | — |
 | Interrupt | Have (flinch, cast interruption) | — |
 | Exhaustion, recovery | Have | — |
-| Stun | New | S40: no actions, longer than a stagger; Lightning (Spark Lance) |
-| Bleeding | New | S40: "Wounded" DoT (D4) from slash crits and dagger; stops sooner when the target rests |
-| Poison | New | S40: slow DoT that also cuts stamina regeneration; Nature |
+| Stun | New | S41: no actions, longer than a stagger; Lightning (Spark Lance) |
+| Bleeding | New | S41: "Wounded" DoT (D4) from slash crits and dagger; stops sooner when the target rests |
+| Poison | New | S41: slow DoT that also cuts stamina regeneration; Nature |
 | Burning | Have | Migrates to the new effect framework in S27 |
 | Slow | Have | Same |
-| Immobilization | New | S40: root (can act, can't move); Thornbind becomes a short root + slow |
-| Fear | New | S40: an AI state: aggression down, keeps distance; from intimidating finishers or a technique |
-| Disarm | New | S42: perfect parry by an Expert knocks the weapon away; fight unarmed until it is picked up |
+| Immobilization | New | S41: root (can act, can't move); Thornbind becomes a short root + slow |
+| Fear | New | S41: an AI state: aggression down, keeps distance; from intimidating finishers or a technique |
+| Disarm | New | S43: perfect parry by an Expert knocks the weapon away; fight unarmed until it is picked up |
 
 ### 2.10 Combat feedback and effects
 
@@ -255,18 +258,18 @@ ticker, synthesized sound hooks (`swing`, `hit`, `heavy_hit`, `block`, `perfect_
 
 | Feature | Status | Plan |
 | --- | --- | --- |
-| Hit effects, impact effects | Extend | S43: particle impacts by damage type and weight; dust ring on knockdown; ground crack for hammer heavies |
-| Weapon sparks | New | S43: on block, parry and clash |
-| Blood effects | New | S43: stylised, off by default (D4) |
-| Camera shake | Have | S43: scaled per event, Settings slider |
-| Hit pause | New | S43: replay clock slows ~60–100 ms on heavies, crits, parries; the simulation is untouched |
-| Screen feedback | New | S43: crit flash, low-health vignette on the champion's side; respects reduced-flashing setting |
-| Combat / weapon sound effects | Extend | S43: hooks per weapon weight and material (`swing_light`, `clash_metal`, `block_wood`…) |
-| Footstep sounds | Extend | S43: `step` hook fired from the locomotion cycle; splash in water |
-| Damage indicators | Extend | S43: colour and icon per kind: crit, chip through guard, DoT, pierce |
-| Floating damage numbers | Have | S43: Settings toggle |
+| Hit effects, impact effects | Extend | S44: particle impacts by damage type and weight; dust ring on knockdown; ground crack for hammer heavies |
+| Weapon sparks | New | S44: on block, parry and clash |
+| Blood effects | New | S44: stylised, off by default (D4) |
+| Camera shake | Have | S44: scaled per event, Settings slider |
+| Hit pause | New | S44: replay clock slows ~60–100 ms on heavies, crits, parries; the simulation is untouched |
+| Screen feedback | New | S44: crit flash, low-health vignette on the champion's side; respects reduced-flashing setting |
+| Combat / weapon sound effects | Extend | S44: hooks per weapon weight and material (`swing_light`, `clash_metal`, `block_wood`…) |
+| Footstep sounds | Extend | S44: `step` hook fired from the locomotion cycle; splash in water |
+| Damage indicators | Extend | S44: colour and icon per kind: crit, chip through guard, DoT, pierce |
+| Floating damage numbers | Have | S44: Settings toggle |
 
-## 3. Foundations (Stages 26–27)
+## 3. Foundations (Stages 26–28)
 
 These change no outcomes. They make the later stages cheap and safe.
 
@@ -311,7 +314,147 @@ replays, and the rewatch could even show a different winner than the recorded re
 **Gate:** `balance_sim` and a golden-log test (fixed seeds × every opponent) produce
 **identical** logs before and after. This is the safety net for everything that follows.
 
-## 4. Build stages (28–44)
+### Stage 28 — Learning moves from mentors
+
+Movement, attack and defensive moves are **taught by mentors** and **polished in
+battle**, the same way weapons work today (use builds familiarity up to Apprentice, and
+mastery beyond that needs a trainer). A champion only uses the moves it has learned, so
+two dogs with the same stats fight differently because of who trained them.
+
+**Three kinds of moves**
+
+| Kind | How it is gained | Examples |
+| --- | --- | --- |
+| **Innate** | Every champion has it from the start | walk, run, forward/back, strafe, circling, positioning, facing the target, light and heavy attacks, the basic combo, sidestep dodge, block, perfect block |
+| **Weapon moves** | Training the weapon's Skill Matrix rank with a weapon mentor (Stage 33 unlocks) | sword horizontal → vertical → thrust, hammer overhead slam, spear charging thrust… |
+| **Lessons** | Taught by a mentor who knows the move, then improved by drills and by using it in battle | roll, sprint, parry, charged attack, dodge counter, break fall… |
+
+Today's behaviour is entirely innate, so this stage changes no outcome (Stage 27's
+identical-log gate still holds).
+
+**Data**
+
+- **`CombatMoveData`** (`scripts/data/combat_move_data.gd`, `data/moves/*.tres`): `id`,
+  `display_name`, `description`, `category` (movement / attack / defense), `tier`
+  (1 basic, 2 advanced, 3 master), `prerequisites` (`{"skill:dodge": APPRENTICE,
+  "move:sprint": NOVICE}`, the same shape as `TechniqueData`), `conversion_track`
+  (banked experience a lesson builds on), `coin_cost`, `drill` (champion/mentor clip
+  pairs for the Training Yard), `sim_ref` (the `AttackMove` id, dodge kind or flag the
+  simulation reads) and `sort_order`.
+- **New target kind `move:<id>`**, stored in the champion's `SkillMatrix` like
+  `weapon:` and `magic:`. Missing keys already read as *not learned*, so old saves load
+  with no migration. `SkillCatalog.all_skill_targets()` includes moves, so
+  `CombatantSpec`, saved replays and `OpponentData.rank_of` carry them automatically.
+- **Proficiency** reuses ranks, shown with move names: Novice = **Learned**,
+  Apprentice = **Practiced**, Skilled = **Mastered** (the cap for moves).
+- **`TrainerData.teachable_moves`** lists the moves a mentor teaches.
+  `GameConfig.rarity_move_tier = [1, 1, 2, 3, 3]` sets the highest tier each rarity can
+  introduce (unlike techniques, a Common mentor can teach basic moves). Proficiency uses
+  the existing `rarity_rank_cap`: a Common mentor drills to Practiced; Uncommon and
+  above drill to Mastered.
+- **`OpponentData`** lists its moves and proficiency under `skills`, like any target, so
+  rivals are "raised" too: Pip knows almost nothing, Marla knows a lot.
+
+**How a champion gains and improves a move**
+
+1. **Learn**: in the Training panel, an active mentor who teaches the move gives a lesson
+   (coins + energy, like any session). It needs the prerequisites and a mentor of high
+   enough rarity for the tier. The Training Yard plays the move's drill. Result:
+   *"Learned: Roll"*.
+2. **Drill**: more sessions with any mentor who teaches it add progress through the
+   existing `TrainingSystem` formula (rarity efficiency, happiness, converted banked
+   experience from the move's track), up to that mentor's `rarity_move_cap`.
+3. **Use in battle**: each *successful* use (a roll that evades, a parry that lands, a
+   charged blow that connects) logs a `move_success` experience event. It is weighted by
+   difficulty and anti-farming like other events, and raises proficiency up to
+   **Practiced** only. **Mastered** always needs a mentor, as weapon mastery beyond
+   familiarity needs a weapon trainer.
+
+| Proficiency | In the simulation |
+| --- | --- |
+| Not learned | never used; the mind falls back to an innate answer |
+| Learned | used only in its clearest situation; timing error ×1.4, stamina ×1.15 |
+| Practiced | used normally |
+| Mastered | used in more situations; timing error ×0.8, stamina ×0.9, plus the move's own bonus (a longer protected roll, faster charge, wider parry window…) |
+
+The governing Skill Matrix skill and stats still apply on top (a Mastered roll is still
+short in heavy armour with low Evasion).
+
+**Lesson catalogue (first pass)**
+
+Mentors are the existing 20. Tier rules: Common (Tamsin) and Uncommon teach tier 1; Rare
+teaches tier 2; Epic (Kestrel, Zephyr) and Legendary (Aldous) teach tier 3.
+
+*Movement*
+
+| Lesson | Tier | Needs | Taught by | Builds on | Mechanic in |
+| --- | --- | --- | --- | --- | --- |
+| Sprint | 1 | Movement Novice | Wren, Old Tamsin, Vell, Aldous | agility | S29 |
+| Backstep | 1 | Dodge Novice | Mira, Wren, Yenbi | evasion | S30 |
+| Roll | 1 | Dodge Apprentice | Mira, Wren, Aldous | evasion | S30 |
+| Dash | 2 | Movement + Dodge Apprentice | Lysa, Kestrel, Aldous | agility | S30 |
+| Flank Step (any build circles to the flank) | 1 | Positioning Novice | Lysa, Lio, Ash, Wren | agility | S30 |
+| Duck (crouch) | 1 | Timing Novice | Yenbi, Mira, Kestrel | tempo | S31 |
+| Jump | 2 | Movement Apprentice | Kestrel, Aldous | agility | S31 |
+
+*Attack*
+
+| Lesson | Tier | Needs | Taught by | Builds on | Mechanic in |
+| --- | --- | --- | --- | --- | --- |
+| Quick Strike (opener) | 1 | Attack Novice | Vell, Yenbi, Kestrel | offensive | S33 |
+| Charged Blow | 1 | Attack Novice | Oda, Bram, Gunnar | strength | S34 |
+| Running Attack | 1 | Sprint Learned, Attack Novice | Vell, Gunnar, Oda | offensive | S35 |
+| Dive Strike (fliers' aerial attack) | 1 | Flight Novice | Lio, Ash | agility | S35 |
+| Jump Attack | 2 | Jump Learned, Attack Apprentice | Kestrel, Aldous | offensive | S35 |
+| Flowing Chain (cancel into the next move) | 2 | Attack Control Apprentice, Timing Novice | Sera, Kestrel, Aldous | tempo | S33 |
+| Dodge Counter | 2 | Dodge + Timing Apprentice | Kestrel, Aldous | tempo | S36 |
+| Finisher | 2 | Attack Apprentice, Timing Novice | Bram, Aldous | offensive | S36 |
+
+*Defense*
+
+| Lesson | Tier | Needs | Taught by | Builds on | Mechanic in |
+| --- | --- | --- | --- | --- | --- |
+| Parry (perfect parry comes with proficiency + Timing) | 1 | Block + Timing Novice | Yenbi, Thorne, Hollis, Kestrel | defense | S38 |
+| Brace (guard resists knockback and block stun) | 1 | Defense Novice | Hollis, Oda, Bram, Thorne | defense | S38 |
+| Shield Bash | 1 | Shield Novice | Thorne | strength | S38 |
+| Break Fall (quick get-up from a knockdown) | 1 | Recovery Novice | Old Tamsin, Fern, Aldous | resilience | S38 |
+| Disarming Parry | 3 | Parry Mastered, Timing Skilled | Kestrel, Aldous | defense | S43 |
+
+Not lessons: **critical hits** come from conditions (D2) and widen with Timing and
+Dexterity training. **Special attacks** stay techniques (Riposte, Guard Break, Flame
+Slash, Wind Dash), which already work through mentors and prerequisites. **Perfect
+block** comes from Timing.
+
+Gaps: Jump and Jump Attack have only two teachers, and fliers have no flight mentor. A
+later content pass can add an **Acrobat** (Rare: Jump, Roll, Dash, Jump Attack) and a
+**Skywarden** (Uncommon: Flight, Dive Strike).
+
+**Where it shows up**
+
+- **Skill Matrix screen**: a *Moves* section with Movement / Attack / Defense groups.
+  Each move shows Innate, its proficiency with a progress bar, or Locked with what it
+  needs and which mentors teach it (revealed with the `discipline` story stage, as
+  techniques are).
+- **Mentors panel**: each mentor card lists the moves they teach.
+- **Training panel**: lessons sit beside skill and stat targets. The preview says
+  *"Learn Roll"* or *"Roll +40% toward Mastered"*. `TrainingSession` plays the move's
+  drill clips (the new clips arrive with Stage 37; until then the nearest existing clip).
+- **Battle review**: mentors suggest a lesson when a weakness maps to one. Heavy blows
+  taken with no answer → *Roll* (Mira); guard broken → *Parry* (Yenbi) or *Brace*
+  (Hollis); knocked down often → *Break Fall* (Tamsin); kited by a ranged foe → *Sprint*
+  or *Dash*. It uses the existing *Train …* button.
+- **Result screen**: *"Roll used 4 times, 3 dodged → Practiced 60%"*.
+- **Scouting and matchup** (words only): *"Rolls out of heavy blows"*, *"Parries careless
+  swings"*, *"Has no answer to a charged blow"*.
+- **Codex**: one guide entry on learning moves.
+
+**Tests**: learning needs the prerequisites, an active mentor and a high-enough tier;
+proficiency never passes the mentor's cap; battle use stops at Practiced; a champion
+never uses an unlearned move (simulation test with a scripted threat); old saves load
+with no moves; opponents' moves validate (prerequisites met); `test_playthrough`
+still completes Chapter 1.
+
+## 4. Build stages (29–45)
 
 Each stage: rules + data + AI use + log events + replay presentation (placeholder clip or
 tint is fine) + experience hooks + tests + `BATTLE_SIMULATION.md` notes. Stages that
@@ -319,14 +462,14 @@ change outcomes bump `simulation_version` and record the balance table.
 
 ### Milestone A — Movement
 
-**Stage 28 — Gaits.** `walk` / `run` / `sprint` speed bands. Sprint uses the existing
+**Stage 29 — Gaits.** `walk` / `run` / `sprint` speed bands. Sprint uses the existing
 `sprint_factor` and `sprint_stamina`, delays stamina regeneration, and is chosen by the
 mind to close distance (heavy and agile styles), escape when cornered, or chase a
 retreating ranged build. Backpedal ×0.75 and strafe ×0.88 of forward speed (`GameConfig`)
 make facing matter. State gets a `gait` field. Experience: sustained sprinting → Agility;
 running out of breath sprinting → Endurance lesson in the mentor review.
 
-**Stage 29 — Evasion repertoire.** `dodge_kind` on the DODGE action (no new enum value):
+**Stage 30 — Evasion repertoire.** `dodge_kind` on the DODGE action (no new enum value):
 
 | Kind | Distance | Protection | Recovery | Best against |
 | --- | --- | --- | --- | --- |
@@ -335,10 +478,10 @@ running out of breath sprinting → Endurance lesson in the mentor review.
 | backstep | short, backwards | none | very short | getting out of reach of a wind-up |
 | dash | forward | short | short | closing on a ranged foe |
 
-The mind picks by threat shape (S31) and its own build. Dodge skill, Evasion and armour
+The mind picks by threat shape (S32) and its own build. Dodge skill, Evasion and armour
 shape all four. Experience: as today, plus `roll` vs heavy → Evasion.
 
-**Stage 30 — Jump and crouch (ground animals).** A short jump arc on `elevation`
+**Stage 31 — Jump and crouch (ground animals).** A short jump arc on `elevation`
 (fliers keep their flight). Jumping clears **low** moves, crouching ducks **high**
 horizontal moves (hurt-zone bands from S27). Both have a commitment cost, so a vertical
 or overhead move punishes a jump and a low move punishes a crouch. Keep it rare in the
@@ -347,7 +490,7 @@ AI (Agility, Timing and experience raise its use) so fights don't turn into hopp
 
 ### Milestone B — Attacks
 
-**Stage 31 — Directional moves and hitbox shapes.** Contact geometry per move: arc
+**Stage 32 — Directional moves and hitbox shapes.** Contact geometry per move: arc
 (horizontal), narrow arc with high band (overhead / vertical), line with width (thrust),
 cone and circle (sweeps). Apply `lunge` during wind-up and active phases ("simulation
 root motion"). Author movesets for all seven weapons:
@@ -360,29 +503,29 @@ root motion"). Author movesets for all seven weapons:
 | Spear | thrust → thrust → horizontal sweep; charging thrust heavy |
 | Axe | diagonal → horizontal; overhead heavy |
 | Shield | bash (blunt, high stagger); shield charge heavy |
-| Bow | shot; charged shot heavy (S33) |
+| Bow | shot; charged shot heavy (S34) |
 
 The mind chooses moves against the foe's habits (a crouching foe gets an overhead, a
 side-stepper gets a horizontal).
 
-**Stage 32 — Combo graph, quick attacks and mastery unlocks.** Moves chain through
+**Stage 33 — Combo graph, quick attacks and mastery unlocks.** Moves chain through
 `chains_to` and `cancel_from` instead of a flat `combo_max`. Each weapon has a quick
 opener and a finisher. Weapon mastery unlocks graph branches: Novice two-hit, Apprentice
 full string, Skilled finisher, Expert charged and cancel branches. This replaces today's
 "Skilled adds a step". Scouting gains openings such as *"Long recovery after the third
 cut"*.
 
-**Stage 33 — Charged attacks.** A heavy (or bow shot) can be held: the mind picks a
+**Stage 34 — Charged attacks.** A heavy (or bow shot) can be held: the mind picks a
 charge time from the foe's state (longer against a staggered or exhausted foe), damage
 and stagger scale up to `max_charge_factor`, and the visible hold is a readable tell
 that experienced foes answer. Optional hyper armour while charging (per move).
 
-**Stage 34 — Context attacks.** Moves with `requires`: running attack (from a sprint,
-lunge plus knockback), jump attack (from S30), aerial attack (a flier's named swoop),
+**Stage 35 — Context attacks.** Moves with `requires`: running attack (from a sprint,
+lunge plus knockback), jump attack (from S31), aerial attack (a flier's named swoop),
 dodge attack (out of a roll or dash). The decision layer offers them only when their
 condition holds.
 
-**Stage 35 — Counters, finishers and special moves.** A perfect dodge opens a short
+**Stage 36 — Counters, finishers and special moves.** A perfect dodge opens a short
 counter window (a dodge-counter move). A finishing move is used on a knocked-down,
 guard-broken or exhausted foe and has a bonus that can end the bout (knockout only). A
 technique may own a move (`TechniqueData.move`), so new specials are data. Moments and
@@ -390,7 +533,7 @@ call-outs: *"Counter!"*, *"Finisher!"*.
 
 ### Milestone C — Defense and presentation
 
-**Stage 36 — Animation pass (presentation only).**
+**Stage 37 — Animation pass (presentation only).**
 - An `AnimationTree` per body: a locomotion `BlendSpace2D` (velocity relative to facing:
   forward, backpedal, strafe L/R; walk, run, sprint) plus one-shots for actions.
 - New procedural clips in `character_animations.gd` for every new move, dodge kind,
@@ -401,7 +544,7 @@ call-outs: *"Counter!"*, *"Finisher!"*.
 - Update the clip table in `ASSET_PIPELINE.md`; `dog_preview.tscn` renders the new clips;
   `missing_clips()` tests cover the fallback chain.
 
-**Stage 37 — Parry, perfect block and block stun.**
+**Stage 38 — Parry, perfect block and block stun.**
 - `PARRY` becomes its own action (appended to the enum): a short active window, then a
   punishable recovery if nothing arrives. The perfect half staggers the attacker longer
   and guarantees a riposte window.
@@ -413,7 +556,7 @@ call-outs: *"Counter!"*, *"Finisher!"*.
 
 ### Milestone D — AI and teams
 
-**Stage 38 — Awareness, threat assessment and team tactics.** A field of view: threats
+**Stage 39 — Awareness, threat assessment and team tactics.** A field of view: threats
 outside the front 200° are noticed later. In-fight memory: the mind tracks the foe's
 habits and adapts, faster with battle experience. Threat-scored target selection.
 For 2v2/3v3 (already supported by `BattleState`): flank and surround slots around a
@@ -423,7 +566,7 @@ design.
 
 ### Milestone E — Damage depth
 
-**Stage 39 — Damage types, penetration, directional damage, crits.**
+**Stage 40 — Damage types, penetration, directional damage, crits.**
 - `damage_type` vs armour: slash is weak against heavy armour, blunt is strong, pierce
   ignores `penetration` × mitigation. Light armour takes more slash; heavy takes more
   blunt stagger but less slash.
@@ -431,12 +574,12 @@ design.
   top); guards cover the front only.
 - **Critical hits (D2, conditional):** a hit crits when it lands on the back, on the
   head zone with an overhead, on a punished opening, or on a perfect counter. A crit
-  multiplies damage and stagger. Dexterity (S44) and weapon mastery widen these windows;
+  multiplies damage and stagger. Dexterity (S45) and weapon mastery widen these windows;
   they never add a hidden roll.
 - Events carry `crit`, `zone`, `side`, `damage_type`. Scouting threats such as *"Pierces
   armour"* and *"Punishes your back"*.
 
-**Stage 40 — Status effects.** Built on `StatusEffectData` (S27):
+**Stage 41 — Status effects.** Built on `StatusEffectData` (S27):
 
 | Effect | Source | Rule |
 | --- | --- | --- |
@@ -450,14 +593,14 @@ Every effect has an icon above the bar, a commentary line, a counter (cleanse by
 roll for burn, a Stone Ward cleanse, rest for bleed) and anti-stacking rules. Mentor
 review lesson: *"Kept getting stunned"* → a Timing/Defense mentor.
 
-**Stage 41 — Grip and loadouts (D7).** `WeaponData.grip` = `one_hand` / `two_hand` /
+**Stage 42 — Grip and loadouts (D7).** `WeaponData.grip` = `one_hand` / `two_hand` /
 `off_hand` (shield). Champion gains `offhand_id`: a shield with a one-hand weapon, or a
 second one-hand weapon (dual wield: alternating-hand combos, faster chains, no guard
 bonus). Two-handed weapons block the off-hand slot and gain damage and stagger. The
 visual uses the rig's `LeftHand` bone. Covers equipment UI, `CombatantSpec`, save
 migration v5 and matchup analysis lines.
 
-**Stage 42 — Draw, sheathe, switch, disarm, clash.**
+**Stage 43 — Draw, sheathe, switch, disarm, clash.**
 - Fighters start sheathed and draw (short action) as the bout opens; the victor
   sheathes.
 - A `secondary_weapon_id`: the mind switches when its range is wrong (a bow at point-blank
@@ -465,11 +608,11 @@ migration v5 and matchup analysis lines.
 - **Disarm:** an Expert's perfect parry knocks the weapon to the floor (a log entry with
   its position). The disarmed fighter fights unarmed until it walks over and picks it up.
 - **Clash:** two active swings whose shapes meet on the same tick both recoil
-  (deterministic); heavier weapon wins ties. Sparks in S43.
+  (deterministic); heavier weapon wins ties. Sparks in S44.
 
 ### Milestone F — Feedback and stats
 
-**Stage 43 — Feedback director (presentation only).** A `CombatFeedback` table (event →
+**Stage 44 — Feedback director (presentation only).** A `CombatFeedback` table (event →
 VFX, SFX hook, shake, hit-pause, call-out) replaces the `match` in
 `battle_replay.gd::_on_event`, so new events are data:
 
@@ -484,7 +627,7 @@ VFX, SFX hook, shake, hit-pause, call-out) replaces the `match` in
 - **Settings → Replay:** screen shake strength, hit pause on/off, reduced flashing,
   damage numbers on/off, blood off/on. Accessibility tests extended.
 
-**Stage 44 — Dexterity and derived stats (D3).**
+**Stage 45 — Dexterity and derived stats (D3).**
 - New stat `dexterity` appended to `GameEnums.STATS`. This touches `AnimalData` base and
   potential, `CombatStats`, experience tracks (`precision`: crits, perfect parries,
   accurate shots), `GrowthSystem`, trainers (a precision mentor), training, the Skill
@@ -496,33 +639,37 @@ VFX, SFX hook, shake, hit-pause, call-out) replaces the `match` in
 ## 5. Order, dependencies and size
 
 ```
-26 versioning ─► 27 data foundations ─┬─► 28 gaits ─► 29 evasion ─► 30 jump/crouch (opt.)
-                                      ├─► 31 moves ─► 32 combos ─► 33 charge ─► 34 context ─► 35 counters
-                                      │                └──────────► 36 animation pass (after 31–35)
-                                      ├─► 37 parry/perfect block
-                                      ├─► 39 damage depth ─► 40 status effects
-                                      └─► 41 grip ─► 42 draw/switch/disarm/clash
-38 AI awareness/teams (after 31, 37)   43 feedback (any time after 27; best after 39)   44 Dexterity (after 39)
+26 versioning ─► 27 data foundations ─► 28 learning from mentors ─┬─► 29 gaits ─► 30 evasion ─► 31 jump/crouch (opt.)
+                                                                   ├─► 32 moves ─► 33 combos ─► 34 charge ─► 35 context ─► 36 counters
+                                                                   │                 └──────────► 37 animation pass (after 32–36)
+                                                                   ├─► 38 parry/perfect block
+                                                                   ├─► 40 damage depth ─► 41 status effects
+                                                                   └─► 42 grip ─► 43 draw/switch/disarm/clash
+39 AI awareness/teams (after 32, 38)   44 feedback (any time after 27; best after 40)   45 Dexterity (after 40)
+
+Each mechanic stage (29–43) also ships its lessons from the Stage 28 catalogue.
 ```
 
 | Milestone | Stages | Size | Visible result |
 | --- | --- | --- | --- |
-| Foundations | 26–27 | M | None (by design): safe replays, data-driven moves |
-| A Movement | 28–30 | M | Sprints, rolls, backsteps, jumps in replays |
-| B Attacks | 31–35 | L | Every weapon fights with its own move list |
-| C Defense + animation | 36–37 | L | Parries, perfect blocks, new clips |
-| D AI | 38 | M | Smarter, adapting opponents; team tactics ready |
-| E Damage depth | 39–42 | L | Armour types, crits, status effects, loadouts, disarm |
-| F Feedback + stats | 43–44 | M | Juice, settings, Dexterity |
+| Foundations | 26–28 | M | Safe replays, data-driven moves; lessons in the Training panel |
+| A Movement | 29–31 | M | Sprints, rolls, backsteps, jumps in replays |
+| B Attacks | 32–36 | L | Every weapon fights with its own move list |
+| C Defense + animation | 37–38 | L | Parries, perfect blocks, new clips |
+| D AI | 39 | M | Smarter, adapting opponents; team tactics ready |
+| E Damage depth | 40–43 | L | Armour types, crits, status effects, loadouts, disarm |
+| F Feedback + stats | 44–45 | M | Juice, settings, Dexterity |
 
-Suggested first slice: **26 → 27 → 28 → 31 → 36 (sword only) → 43 (impacts + hit pause)**.
-That gives a visibly richer sword fight end to end before every weapon is authored.
+Suggested first slice: **26 → 27 → 28 → 29 (Sprint lesson) → 30 (Roll and Backstep
+lessons) → 32 (sword only) → 37 (sword clips) → 44 (impacts + hit pause)**. That gives a
+visibly richer sword fight, with moves learned from Yenbi, Mira and Wren, end to end
+before every weapon is authored.
 
 ## 6. Out of scope here
 
 - A player-controlled mode (§0). If wanted later: a `PlayerDecisionPhase` for intents,
   a touch control layer, and a separate "Spar" route that never applies results.
-- Real Blender clips and recorded audio (the pipeline from Stage 36 is ready for them).
+- Real Blender clips and recorded audio (the pipeline from Stage 37 is ready for them).
 - Weapon durability (D5), permanent death (design §74), 2v2/3v3 in the flow (design
   Phase 2).
 
