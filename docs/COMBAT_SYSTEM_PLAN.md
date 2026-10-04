@@ -431,6 +431,9 @@ later content pass can add an **Acrobat** (Rare: Jump, Roll, Dash, Jump Attack) 
 
 **Where it shows up**
 
+- **Skill Network** (the champion's graph view, `SkillNetwork`): a *Moves* column with
+  Movement / Attack / Defense groups, linked from the skills and moves they need, so
+  `move:` prerequisites show as links like any other.
 - **Skill Matrix screen**: a *Moves* section with Movement / Attack / Defense groups.
   Each move shows Innate, its proficiency with a progress bar, or Locked with what it
   needs and which mentors teach it (revealed with the `discipline` story stage, as

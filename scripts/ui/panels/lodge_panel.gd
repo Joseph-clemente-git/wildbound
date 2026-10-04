@@ -12,7 +12,12 @@ var host: PanelHost
 var panel_id := ""
 var options: Dictionary = {}
 var title := "Panel"
+## Share of the screen the sheet covers. Set before `_ready` (e.g. in `_init`).
+var sheet_width := SHEET_WIDTH
+## False for panels that lay out their own full-height content (no scrolling body).
+var scrolling := true
 var body: VBoxContainer
+var sheet: PanelContainer
 var _title_label: Label
 var _scroll: ScrollContainer
 var _tabs_row: HBoxContainer
@@ -29,12 +34,12 @@ func _ready() -> void:
 		if (event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.pressed):
 			close_requested.emit())
 	add_child(dim)
-	var sheet := UiKit.panel("SheetPanel")
-	sheet.anchor_left = 1.0 - SHEET_WIDTH
+	sheet = UiKit.panel("SheetPanel")
+	sheet.anchor_left = 1.0 - sheet_width
 	sheet.anchor_right = 1.0
 	sheet.anchor_bottom = 1.0
 	var insets := UiKit.safe_insets()
-	sheet.offset_left = 0
+	sheet.offset_left = 12 + insets.x if sheet.anchor_left <= 0.0 else 0.0
 	sheet.offset_top = 12 + insets.y
 	sheet.offset_right = -12 - insets.z
 	sheet.offset_bottom = -12 - insets.w
@@ -51,8 +56,12 @@ func _ready() -> void:
 	_tabs_row.visible = false
 	column.add_child(_tabs_row)
 	body = UiKit.vbox(14)
-	_scroll = UiKit.scroll(body)
-	column.add_child(_scroll)
+	if scrolling:
+		_scroll = UiKit.scroll(body)
+		column.add_child(_scroll)
+	else:
+		body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		column.add_child(body)
 	Game.changed.connect(queue_rebuild)
 	if not Settings.get_value("reduce_motion"):
 		sheet.position.x += 60
@@ -94,10 +103,11 @@ func _run_queued_rebuild() -> void:
 
 
 func rebuild() -> void:
-	var scroll_value := _scroll.scroll_vertical
+	var scroll_value := _scroll.scroll_vertical if _scroll != null else 0
 	UiKit.clear(body)
 	build(body)
-	_scroll.set_deferred("scroll_vertical", scroll_value)
+	if _scroll != null:
+		_scroll.set_deferred("scroll_vertical", scroll_value)
 
 
 ## Override in subclasses.

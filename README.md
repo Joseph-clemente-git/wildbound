@@ -40,6 +40,9 @@ Battles are watched, not piloted:
 | Leave (to the result) | Skip ▶▶, Android back | Esc | Start |
 
 In the lodge, tap the champion or a station; drag to pan; pinch or wheel to zoom.
+The champion's **Skill Network** tab draws the Skill Matrix as a graph of what leads to what:
+drag to pan, pinch or wheel to zoom, tap a skill or technique to see what it needs, what it
+opens and which mentor can train it.
 
 ## The loop
 
@@ -89,7 +92,7 @@ godot --path . --write-movie out.png --fixed-fps 10 --quit-after 60 \
 
 Scenarios: `story`, `lodge`, `lodge_context`, `lodge_mid`, `panel --panel=<id>`, `result`,
 `prep --trial=<id>`, `journey`, `preview --trial=<id>`, `champions`, `replay --trial=<id>
---speed=<n> [--skip]`, `map`; add `--scroll=<px>` to scroll a screen's list.
+--speed=<n> [--skip]`, `map`, `network [--select=<node id>]`; add `--scroll=<px>` to scroll a screen's list.
 `tests/visual/dog_preview.tscn -- --animal=<id>` renders every animation clip for an animal.
 
 ## Art
