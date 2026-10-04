@@ -80,10 +80,21 @@ func load_from_dict(data: Dictionary) -> bool:
 	selected_uid = str(data.get("selected_uid", champions[0].uid))
 	if champion() == null:
 		selected_uid = champions[0].uid
+	_restore_story_mentors()
 	_connect_models()
 	tick_condition()
 	changed.emit()
 	return true
+
+
+## Mentors the story already introduced are never lost, even if a save lost
+## their id along the way (e.g. one written while a mentor was being renamed).
+func _restore_story_mentors() -> void:
+	if not profile.is_flag_set("met_first_trainer"):
+		return
+	for trainer: TrainerData in Content.list("trainers"):
+		if trainer.story_recruit and not profile.owned_trainers.has(trainer.id):
+			TrainerManager.recruit(profile, trainer.id, true)
 
 
 func to_dict() -> Dictionary:

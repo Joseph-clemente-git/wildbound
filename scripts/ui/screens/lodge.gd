@@ -10,6 +10,8 @@ extends Node3D
 const CAMERA_OFFSET := Vector3(0.0, 8.0, 10.0)
 const PAN_LIMITS := Rect2(-10.0, -9.0, 20.0, 16.0)
 const TAP_SLOP := 14.0
+const MENTOR_SPOTS: Array[Vector3] = [Vector3(-5.4, 0, 1.8), Vector3(-3.0, 0, -3.6), Vector3(6.0, 0, 2.6),
+		Vector3(3.4, 0, -3.0), Vector3(-8.6, 0, 1.6)]
 
 ## Station id -> [label, panel to open, actions]
 const STATIONS := {
@@ -41,6 +43,9 @@ var _station_rings: Dictionary = {}  # station -> MeshInstance3D
 var _dog_target := Vector3.ZERO
 var _dog_wait := 2.0
 var _rng := RandomNumberGenerator.new()
+var _mentor_ids := PackedStringArray()
+var _mentor_visuals: Dictionary = {}  # trainer id -> ProceduralHumanVisual
+var _training: TrainingSession
 
 
 func _ready() -> void:
@@ -52,7 +57,7 @@ func _ready() -> void:
 	_camera.fov = 50.0
 	add_child(_camera)
 	_spawn_champion()
-	_spawn_mentors()
+	_spawn_owner()
 	_build_station_areas()
 	_build_ui()
 	Sfx.play_ambient()
@@ -89,6 +94,9 @@ var _pinch_distance := 0.0
 func _on_back() -> void:
 	if _dialogue.visible:
 		return
+	if _training != null:
+		_training.skip()
+		return
 	if panels.has_open_panel():
 		panels.close()
 	elif _context != null:
@@ -101,7 +109,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
 		_on_back()
 		return
-	if _dialogue.visible or panels.has_open_panel():
+	if _dialogue.visible or panels.has_open_panel() or _training != null:
 		return
 	if event is InputEventScreenTouch:
 		if event.pressed:
@@ -178,6 +186,8 @@ func focus_on(station: String) -> void:
 # --- Stations ------------------------------------------------------------------------
 
 func select_station(station: String) -> void:
+	if _training != null:
+		return  # the session in the Training Yard finishes (or is skipped) first
 	Sfx.play("ui_click")
 	focus_on(station)
 	if station == "trainers" and not Game.is_flag_set("met_first_trainer"):
@@ -229,6 +239,8 @@ func _close_context() -> void:
 
 
 func open_panel(panel_id: String, panel_options: Dictionary = {}) -> void:
+	if _training != null:
+		return  # the session in the Training Yard finishes (or is skipped) first
 	_close_context()
 	if panel_id == "trainers" and not Game.is_flag_set("met_first_trainer"):
 		select_station("trainers")
@@ -241,6 +253,40 @@ func open_panel(panel_id: String, panel_options: Dictionary = {}) -> void:
 		Router.go("journey")  # choosing a fight leaves the lodge
 		return
 	panels.open(panel_id, panel_options)
+
+
+## Plays a finished training session in the Training Yard: the champion and
+## the mentor drill the lesson for the session's length, then the Training
+## Yard panel reopens showing what was learned. `result` is the outcome of
+## TrainingSystem.train, already applied.
+func play_training(trainer_id: String, target: String, result: Dictionary) -> void:
+	panels.close()
+	_close_context()
+	var trainer := Content.trainer(trainer_id)
+	_training = TrainingSession.new()
+	_training.champion = champion_visual
+	_training.mentor = mentor_visual(trainer_id)
+	_training.yard = WorldBuilder.STATIONS["training"]
+	_training.seconds = float(result.get("seconds", TrainingSystem.session_seconds(Game.champion(), target)))
+	_training.title = "Training %s with %s" % [SkillCatalog.target_name(target), trainer.display_name]
+	add_child(_training)
+	_training.finished.connect(func() -> void:
+		_training.queue_free()
+		_training = null
+		_dog_target = champion_visual.position
+		_dog_wait = 2.0
+		_apply_champion_look()
+		var learned := not (result.get("ranks", []) as Array).is_empty()
+		Sfx.play("growth" if learned else "ui_confirm")
+		UiKit.toast(hud, str(result.get("text", "")).get_slice("\n", 0), UiTheme.GOOD if learned else UiTheme.TEXT)
+		open_panel("training", {"trainer": trainer_id, "target": target, "last_result": result.get("text", "")}),
+			CONNECT_ONE_SHOT)
+	focus_on("training")
+	_training.begin(target, hud.get_parent())
+
+
+func is_training() -> bool:
+	return _training != null
 
 
 func play_dialogue(event_id: String, on_done: Callable = Callable()) -> void:
@@ -274,33 +320,53 @@ func _apply_champion_look() -> void:
 	champion_visual.set_aura(ability.school if ability != null else "")
 
 
-## Old magnus keeps watch from the porch; active mentors (people, not
-## champions) stand at the stations they teach from.
-func _spawn_mentors() -> void:
-	var spots := [Vector3(-5.4, 0, 1.8), Vector3(-3.0, 0, -3.6), Vector3(6.0, 0, 2.6),
-			Vector3(3.4, 0, -3.0), Vector3(-8.6, 0, 1.6)]
+## Old Magnus keeps watch from the porch.
+func _spawn_owner() -> void:
 	var magnus := ProceduralHumanVisual.new(StoryEvents.OWNER_APPEARANCE)
 	magnus.position = Vector3(-1.2, 0.55, -6.9)
 	magnus.rotation.y = PI  # facing the yard
 	add_child(magnus)
 	magnus.set_weapon("staff")
-	var index := 0
-	for trainer in TrainerManager.active(Game.profile):
-		if index >= spots.size():
-			break
+
+
+## Active mentors (people, not champions) stand at the stations they teach
+## from. Re-run on every refresh: a mentor who just joined, or was activated
+## or replaced on the Trainer Board, appears (or leaves) right away.
+func _sync_mentors() -> void:
+	var active := TrainerManager.active(Game.profile)
+	var ids := PackedStringArray()
+	for trainer in active:
+		ids.append(trainer.id)
+	if ids == _mentor_ids:
+		return
+	_mentor_ids = ids
+	for visual: Node in _mentor_visuals.values():
+		visual.queue_free()
+	_mentor_visuals.clear()
+	for index in mini(active.size(), MENTOR_SPOTS.size()):
+		var trainer := active[index]
 		var mentor := ProceduralHumanVisual.new(trainer.appearance)
-		mentor.position = spots[index]
+		mentor.position = MENTOR_SPOTS[index]
 		mentor.rotation.y = atan2(mentor.position.x - 0.6, mentor.position.z + 0.5)
-		match trainer.category:
-			GameEnums.TrainerCategory.WEAPON:
-				var weapon_type: String = GameEnums.target_id(trainer.primary_discipline[0])
-				mentor.set_weapon(weapon_type)
-			GameEnums.TrainerCategory.MAGIC:
-				mentor.set_aura(GameEnums.target_id(trainer.primary_discipline[0]))
-				mentor.set_weapon("staff")
+		mentor.set_weapon(mentor_weapon(trainer))
+		if trainer.category == GameEnums.TrainerCategory.MAGIC:
+			mentor.set_aura(GameEnums.target_id(trainer.primary_discipline[0]))
 		mentor.add_to_group("mentor_visual")
 		add_child(mentor)
-		index += 1
+		_mentor_visuals[trainer.id] = mentor
+
+
+static func mentor_weapon(trainer: TrainerData) -> String:
+	match trainer.category:
+		GameEnums.TrainerCategory.WEAPON:
+			return GameEnums.target_id(trainer.primary_discipline[0])
+		GameEnums.TrainerCategory.MAGIC:
+			return "staff"
+	return ""
+
+
+func mentor_visual(trainer_id: String) -> ProceduralHumanVisual:
+	return _mentor_visuals.get(trainer_id) as ProceduralHumanVisual
 
 
 func _build_station_areas() -> void:
@@ -353,7 +419,7 @@ func _make_area(radius: float, station: String) -> Area3D:
 
 ## Idle life: the champion wanders around the yard between stations.
 func _update_dog(delta: float) -> void:
-	if champion_visual == null:
+	if champion_visual == null or _training != null:
 		return
 	var to_target := _dog_target - champion_visual.position
 	to_target.y = 0.0
@@ -396,6 +462,7 @@ func _refresh() -> void:
 	if not is_inside_tree() or not Game.is_active():
 		return
 	hud.refresh()
+	_sync_mentors()
 	_apply_champion_look()
 	_update_markers()
 	_update_stations()

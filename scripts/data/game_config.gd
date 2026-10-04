@@ -65,6 +65,11 @@ extends Resource
 @export var training_base_progress: float = 45.0
 @export var training_stat_points: float = 3.0
 @export var secondary_discipline_factor: float = 0.6
+## Length of a training session in the Training Yard (seconds): a base
+## plus a little more for every rank already reached, up to a ceiling.
+@export var training_base_seconds: float = 6.0
+@export var training_seconds_per_rank: float = 1.5
+@export var training_max_seconds: float = 15.0
 ## Fraction of matching banked experience that a trainer converts per session.
 @export var experience_conversion_rate: float = 0.5
 ## Bonus progress per converted experience point.

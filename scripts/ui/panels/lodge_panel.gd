@@ -83,17 +83,21 @@ func queue_rebuild() -> void:
 	if _rebuild_queued:
 		return
 	_rebuild_queued = true
-	(func() -> void:
-		_rebuild_queued = false
-		if is_inside_tree():
-			rebuild()).call_deferred()
+	# Deferred method calls (unlike lambdas) are dropped if the panel is freed first.
+	_run_queued_rebuild.call_deferred()
+
+
+func _run_queued_rebuild() -> void:
+	_rebuild_queued = false
+	if is_inside_tree():
+		rebuild()
 
 
 func rebuild() -> void:
 	var scroll_value := _scroll.scroll_vertical
 	UiKit.clear(body)
 	build(body)
-	(func() -> void: _scroll.scroll_vertical = scroll_value).call_deferred()
+	_scroll.set_deferred("scroll_vertical", scroll_value)
 
 
 ## Override in subclasses.

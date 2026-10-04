@@ -12,7 +12,7 @@ extends RefCounted
 ## Everything the training screen needs to show before confirming.
 ## Keys: ok, reason, target, kind, primary, coin_cost, energy_cost, current_rank,
 ## current_value, rank_cap, progress, converted, expected, expected_text,
-## overtraining, efficiency.
+## overtraining, efficiency, seconds (session length).
 static func preview(trainer: TrainerData, champion: Champion, target: String, profile: OwnerProfile) -> Dictionary:
 	var config := Content.config
 	var result := {
@@ -20,7 +20,7 @@ static func preview(trainer: TrainerData, champion: Champion, target: String, pr
 		"primary": trainer.is_primary(target), "coin_cost": 0, "energy_cost": 0,
 		"current_rank": champion.rank_of(target), "current_value": 0.0, "rank_cap": 0,
 		"progress": 0.0, "converted": 0.0, "expected": 0.0, "expected_text": "",
-		"overtraining": false, "efficiency": 1.0,
+		"overtraining": false, "efficiency": 1.0, "seconds": session_seconds(champion, target),
 	}
 	if not TrainerManager.coverage(trainer).has(target):
 		result["reason"] = "%s does not teach %s at this level of expertise." % [
@@ -100,6 +100,13 @@ static func preview(trainer: TrainerData, champion: Champion, target: String, pr
 		return result
 	result["ok"] = true
 	return result
+
+
+## How long a session runs in the Training Yard: harder lessons take longer.
+static func session_seconds(champion: Champion, target: String) -> float:
+	var config := Content.config
+	return minf(config.training_base_seconds + config.training_seconds_per_rank * champion.rank_of(target),
+			config.training_max_seconds)
 
 
 static func missing_prerequisites(champion: Champion, target: String) -> PackedStringArray:

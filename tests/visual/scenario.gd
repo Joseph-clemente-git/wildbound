@@ -76,6 +76,21 @@ func _prepare_mid() -> void:
 	Game.champion().weapon_id = "sword_training"
 
 
+
+## A training session in the Training Yard (--target=weapon:sword by default).
+func _scenario_training() -> void:
+	_prepare_mid()
+	Game.champion().energy = 100.0
+	Game.profile.coins = 999
+	var target := "weapon:sword"
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--target="):
+			target = arg.trim_prefix("--target=")
+	Router.go("lodge")
+	_at(1.0, func() -> void:
+		_lodge().open_panel("training", {"trainer": "swordmaster_yenbi", "target": target})
+		_lodge().panels._current.call("_train"))
+
 func _scenario_panel() -> void:
 	_scenario_lodge_mid()
 	var panel := "champion"

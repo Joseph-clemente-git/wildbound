@@ -133,8 +133,33 @@ func test_version_one_saves_migrate() -> void:
 	var old: Dictionary = Game.champions[0].history[0]
 	check_eq(old["reason"], "")
 	check(not BattleRecord.has_replay(old), "old records simply cannot be watched")
-	check_eq(Saves.VERSION, 2)
+	check_eq(Saves.VERSION, 3)
 
+
+
+func test_renamed_first_mentor_stays_in_old_saves() -> void:
+	var game := Game.to_dict()
+	var profile: Dictionary = game["profile"]
+	profile["owned_trainers"] = ["swordmaster_corin"]
+	profile["active_trainers"] = ["swordmaster_corin"]
+	profile["trainer_sessions"] = {"swordmaster_corin": 3}
+	var migrated := Saves.migrate({"version": 2, "game": game})
+	check(Game.load_from_dict(migrated))
+	check(TrainerManager.is_active(Game.profile, "swordmaster_yenbi"), "Yenbi is still the lodge's mentor")
+	check_eq(int(Game.profile.trainer_sessions.get("swordmaster_yenbi", 0)), 3, "and remembers her lessons")
+	check(not Game.profile.trainer_sessions.has("swordmaster_corin"))
+
+
+func test_story_mentor_is_restored_if_a_save_lost_her() -> void:
+	Game.set_flag("met_first_trainer")
+	var game := Game.to_dict()
+	(game["profile"] as Dictionary)["owned_trainers"] = []
+	(game["profile"] as Dictionary)["active_trainers"] = []
+	check(Game.load_from_dict(game))
+	check(TrainerManager.is_active(Game.profile, "swordmaster_yenbi"))
+	Game.new_journey("Bruno")
+	check(Game.load_from_dict(Game.to_dict()))
+	check(Game.profile.owned_trainers.is_empty(), "a Keeper who has not met her yet does not get her early")
 
 func test_journey_lists_recent_battles() -> void:
 	_fight("stonewall_bout", 12)

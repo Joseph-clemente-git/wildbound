@@ -59,6 +59,53 @@ func test_training_panel_flow() -> void:
 	host.free()
 
 
+
+func test_lodge_shows_a_mentor_as_soon_as_she_joins() -> void:
+	var lodge: Node = load(Router.ROUTES["lodge"]).instantiate()
+	root.add_child(lodge)
+	check(lodge.mentor_visual("swordmaster_yenbi") == null)
+	TrainerManager.recruit(Game.profile, "swordmaster_yenbi", true)
+	check(lodge.mentor_visual("swordmaster_yenbi") != null, "Yenbi stands in the lodge right after joining")
+	TrainerManager.deactivate(Game.profile, "swordmaster_yenbi")
+	check(lodge.mentor_visual("swordmaster_yenbi") == null, "and leaves when no longer active")
+	lodge.free()
+
+
+func test_training_plays_out_in_the_yard() -> void:
+	TrainerManager.recruit(Game.profile, "swordmaster_yenbi", true)
+	var lodge: Node = load(Router.ROUTES["lodge"]).instantiate()
+	root.add_child(lodge)
+	lodge.open_panel("training", {"trainer": "swordmaster_yenbi", "target": "weapon:sword"})
+	var panel: LodgePanel = lodge.panels._current
+	panel.call("_train")
+	check_eq(Game.champion().skills.get_rank("weapon:sword"), GameEnums.Rank.NOVICE, "the lesson is applied (and saved) up front")
+	check(lodge.is_training(), "then the session plays in the Training Yard")
+	var session: TrainingSession = lodge._training
+	check_eq(session.seconds, Content.config.training_base_seconds, "as long as the plan said (a first lesson)")
+	session._process(TrainingSession.GATHER_SECONDS + 0.01)
+	check(session.champion.position.distance_to(WorldBuilder.STATIONS["training"]) < 1.5, "the champion is at the yard")
+	session._process(session.seconds + 0.01)
+	session._process(TrainingSession.CLOSING_SECONDS + 0.01)
+	session._process(TrainingSession.RETURN_SECONDS + 0.01)
+	check(not lodge.is_training())
+	check(lodge.panels.has_open_panel(), "the Training Yard reopens with the result")
+	check(not str(lodge.panels._current.get("_last_result")).is_empty())
+	lodge.free()
+
+
+func test_every_lesson_has_a_drill_the_people_can_perform() -> void:
+	var person := ProceduralHumanVisual.new()
+	for trainer: TrainerData in Content.list("trainers"):
+		for target in Array(trainer.primary_discipline) + Array(trainer.secondary_discipline):
+			for pair: Array in TrainingSession.drill_for(target):
+				check(person.has_clip(pair[0]) and person.has_clip(pair[1]), "%s drill clips" % target)
+	person.free()
+	var config := Content.config
+	check_eq(TrainingSystem.session_seconds(Game.champion(), "weapon:sword"), config.training_base_seconds,
+			"a first lesson takes the base time")
+	Game.champion().skills.set_rank("weapon:sword", GameEnums.Rank.MASTER)
+	check(TrainingSystem.session_seconds(Game.champion(), "weapon:sword") <= config.training_max_seconds)
+
 func test_scenes_instantiate_in_mid_game() -> void:
 	for objective: Dictionary in QuestLog.CHAPTER_ONE.slice(0, 7):
 		Game.set_flag(objective["flag"])

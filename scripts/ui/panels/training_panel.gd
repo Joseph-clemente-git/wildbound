@@ -11,6 +11,7 @@ var _last_result := ""
 func _ready() -> void:
 	_trainer_id = options.get("trainer", "")
 	_target = options.get("target", "")
+	_last_result = options.get("last_result", "")
 	super._ready()
 
 
@@ -63,6 +64,7 @@ func build(container: VBoxContainer) -> void:
 		plan.add_child(UiKit.stat_row("Expected development", preview["expected_text"]))
 	plan.add_child(UiKit.stat_row("Cost", "◉ %d coins" % preview["coin_cost"]))
 	plan.add_child(UiKit.stat_row("Energy", "%d of %d" % [preview["energy_cost"], roundi(champion.energy)]))
+	plan.add_child(UiKit.stat_row("Session length", "%d s in the Training Yard" % roundi(preview["seconds"])))
 	if preview["converted"] > 0.5:
 		plan.add_child(UiKit.stat_row("Builds on battle experience",
 				"%d %s exp" % [roundi(preview["converted"]), ExperienceTracks.track_name(SkillCatalog.conversion_track(_target))]))
@@ -114,8 +116,13 @@ func _train() -> void:
 	if not result["ok"]:
 		toast(result["reason"], UiTheme.BAD)
 		return
-	Sfx.play("growth" if not result["ranks"].is_empty() else "ui_confirm")
 	_last_result = result["text"]
 	Game.set_flag("trained_once")
 	Game.save()
+	# In the lodge the session plays out in the Training Yard first; the
+	# result shows when the panel reopens.
+	if host != null and host.lodge != null and host.lodge.has_method("play_training"):
+		host.lodge.play_training(_trainer_id, _target, result)
+		return
+	Sfx.play("growth" if not result["ranks"].is_empty() else "ui_confirm")
 	rebuild()

@@ -10,12 +10,16 @@ signal load_failed(reason: String)
 
 const SAVE_PATH := "user://wildbound_save.json"
 const BACKUP_PATH := "user://wildbound_save.bak.json"
-const VERSION := 2
+const VERSION := 3
+
+## Mentor ids that were renamed: old id -> current id.
+const TRAINER_RENAMES := {"swordmaster_corin": "swordmaster_yenbi"}
 
 ## from_version -> Callable(Dictionary) -> Dictionary returning version + 1 data.
 var MIGRATIONS := {
 	0: _migrate_0_to_1,
 	1: _migrate_1_to_2,
+	2: _migrate_2_to_3,
 }
 
 var path_override := ""  # tests write elsewhere
@@ -127,3 +131,27 @@ func _migrate_1_to_2(game: Dictionary) -> Dictionary:
 				entry["replay"] = entry.get("replay", {})
 	return result
 
+
+## Version 3: the first mentor's id changed (swordmaster_corin is now
+## swordmaster_yenbi). Unknown ids are dropped on load, so without this the
+## mentor would silently leave older lodges.
+func _migrate_2_to_3(game: Dictionary) -> Dictionary:
+	var result := game.duplicate(true)
+	var profile: Variant = result.get("profile")
+	if not profile is Dictionary:
+		return result
+	for key: String in ["owned_trainers", "active_trainers"]:
+		var renamed: Array = []
+		for trainer_id: Variant in profile.get(key, []):
+			var current: String = TRAINER_RENAMES.get(str(trainer_id), str(trainer_id))
+			if not renamed.has(current):
+				renamed.append(current)
+		profile[key] = renamed
+	var sessions: Dictionary = profile.get("trainer_sessions", {})
+	for old_id: String in TRAINER_RENAMES:
+		if sessions.has(old_id):
+			var new_id: String = TRAINER_RENAMES[old_id]
+			sessions[new_id] = int(sessions.get(new_id, 0)) + int(sessions[old_id])
+			sessions.erase(old_id)
+	profile["trainer_sessions"] = sessions
+	return result
