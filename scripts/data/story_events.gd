@@ -10,7 +10,7 @@ const SPEAKERS := {
 	"narrator": {"name": "", "color": Color("d8cdb8")},
 	"magnus": {"name": "Old Magnus", "color": Color("e3a857")},
 	"champion": {"name": "{champion}", "color": Color("f0dcb8")},
-	"yenbi": {"name": "Yenbi", "color": Color("9fb8d8")},
+	"yenbi": {"name": "Yenbi", "color": Color("e0605a")},
 	"keeper": {"name": "{keeper}", "color": Color("8cc46f")},
 }
 
@@ -37,7 +37,7 @@ const EVENTS := {
 	],
 	"meet_swordmaster": [
 		{"speaker": "yenbi",
-				"text": "So you're the new Keeper. Magnus wrote that you'd need a sword teacher. Yenbi — I retired from the Grand Trials, but not from teaching."},
+				"text": "So you're the new Keeper. Magnus wrote that you'd need a sword teacher. I'm Yenbi — and don't let my age fool you. I reached the Grand Trials finals before I was fifteen."},
 		{"speaker": "yenbi",
 				"text": "Look at {champion}'s footwork. That dog already has natural strengths — quick feet, a good dodge, lungs for a long fight."},
 		{"speaker": "yenbi",

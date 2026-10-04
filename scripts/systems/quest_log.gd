@@ -11,7 +11,7 @@ const CHAPTER_ONE := [
 	{"flag": "met_first_trainer", "station": "trainers",
 			"text": "Meet the Swordmaster at the Trainer Board", "hint": "A mentor is waiting at the Trainer Board."},
 	{"flag": "trained_once", "station": "training",
-			"text": "Train with yenbi", "hint": "Visit the Training Yard and choose a skill for yenbi to develop."},
+			"text": "Train with Yenbi", "hint": "Visit the Training Yard and choose a skill for Yenbi to develop."},
 	{"flag": "equipped_weapon", "station": "equipment",
 			"text": "Equip the Lodge Sword", "hint": "Open the Equipment Hall at the bench and equip the sword."},
 	{"flag": "first_trial_done", "station": "journey",

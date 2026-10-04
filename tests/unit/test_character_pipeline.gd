@@ -93,7 +93,8 @@ func test_factory_uses_model_scene_when_present() -> void:
 
 func test_people_share_the_humanoid_rig() -> void:
 	for look: Dictionary in [{}, ProceduralHumanVisual.ELDER, {"hair_style": "long", "robe": true},
-			{"hair_style": "bun"}, {"hair_style": "hood"}, {"hair_style": "bald", "beard": true}]:
+			{"hair_style": "bun"}, {"hair_style": "hood"}, {"hair_style": "bald", "beard": true},
+			{"hair_style": "twin_buns", "dress": true}]:
 		var person := ProceduralHumanVisual.new(look)
 		check_eq(person.missing_clips().size(), 0, "person plays every shared clip")
 		for key: String in CharacterAnimations.BONES:
@@ -106,6 +107,12 @@ func test_people_share_the_humanoid_rig() -> void:
 	check(elder.find_child("Beard", true, false) != null, "the old owner has a beard")
 	check(elder.find_child("Robe", true, false) != null)
 	elder.free()
+	var yenbi := ProceduralHumanVisual.new(Content.trainer("swordmaster_yenbi").appearance)
+	check(yenbi.find_child("Dress", true, false) != null, "the first mentor wears a qipao")
+	check(yenbi.find_child("LeftBun", true, false) != null and yenbi.find_child("RightBun", true, false) != null)
+	check(yenbi.find_child("Belt", true, false) == null, "a qipao has no belt")
+	check(yenbi.find_child("Beard", true, false) == null)
+	yenbi.free()
 
 
 func test_every_mentor_is_a_person() -> void:
