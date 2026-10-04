@@ -88,17 +88,39 @@ func test_magic_mastered_at_the_animals_potential() -> void:
 	check_eq(entry["state"], S.MASTERED if cap > 0 else S.OPEN)
 
 
-func test_layout_keeps_nodes_apart_and_links_forward() -> void:
+func test_layout_keeps_stones_and_names_apart() -> void:
 	var network := _full()
-	var rects: Array[Rect2] = []
+	var font_width := 10.5  # generous average glyph width at the stone-name size
+	var shapes: Array[Dictionary] = []
 	for id: String in network.order:
-		var rect := Rect2(SkillNetworkView.node_position(network.nodes[id]), SkillNetworkView.NODE_SIZE)
-		for other in rects:
-			check(not rect.intersects(other), "%s overlaps another node" % id)
-		rects.append(rect)
+		var entry: Dictionary = network.nodes[id]
+		var center := SkillNetworkView.node_center(entry)
+		var width := str(entry["name"]).length() * font_width
+		var label := Rect2(center + Vector2(-width * 0.5, SkillNetworkView.ORB_RADIUS + 18.0), Vector2(width, 22))
+		var orb := Rect2(center - Vector2.ONE * (SkillNetworkView.ORB_RADIUS + 8.0), Vector2.ONE * (SkillNetworkView.ORB_RADIUS + 8.0) * 2.0)
+		for other: Dictionary in shapes:
+			check(center.distance_to(other["center"]) >= SkillNetworkView.ORB_RADIUS * 2.0 + 24.0, "%s crowds %s" % [id, other["id"]])
+			check(not label.intersects(other["label"]), "%s's name overlaps %s's" % [id, other["id"]])
+			check(not label.intersects(other["orb"]) and not orb.intersects(other["label"]),
+					"%s and %s overlap name and stone" % [id, other["id"]])
+		shapes.append({"id": id, "center": center, "label": label, "orb": orb})
+
+
+func test_veins_grow_outward_and_sectors_cover_the_foundation() -> void:
+	var network := _full()
 	for edge: Dictionary in network.edges:
-		check(int(network.nodes[edge["from"]]["column"]) < int(network.nodes[edge["to"]]["column"]),
-				"%s → %s reads left to right" % [edge["from"], edge["to"]])
+		check(int(network.nodes[edge["from"]]["ring"]) < int(network.nodes[edge["to"]]["ring"]),
+				"%s → %s grows outward" % [edge["from"], edge["to"]])
+	var names := network.sectors.map(func(sector: Dictionary) -> String: return sector["name"])
+	check_eq(names, ["Offense", "Guard", "Endurance", "Mobility"])
+	check_eq(network.nodes["skill:attack"]["ring"], SkillNetwork.RING_FOUNDATION)
+	check_eq(network.nodes["skill:timing"]["ring"], SkillNetwork.RING_DISCIPLINE)
+	check_eq(network.nodes["weapon:sword"]["ring"], SkillNetwork.RING_ARMS)
+	check_eq(network.nodes["technique:riposte"]["ring"], SkillNetwork.RING_TECHNIQUES)
+	# A discipline sits close to the fundamental it refines.
+	var gap := absf(angle_difference(float(network.nodes["skill:block"]["angle"]),
+			float(network.nodes["skill:block_control"]["angle"])))
+	check(gap < 0.01, "Block Control sits beside Block")
 
 
 func test_suggests_something_to_do() -> void:
@@ -144,14 +166,14 @@ func test_selecting_a_node_updates_the_card() -> void:
 	var view: SkillNetworkView = panel.get("view")
 	view.select("technique:guard_break")
 	panel.call("_show_details")  # normally deferred to the next idle frame
-	var details := panel.find_child("Details", true, false)
 	var texts := PackedStringArray()
-	for label in details.find_children("*", "Label", true, false):
+	for label in panel.find_children("*", "Label", true, false):
 		texts.append((label as Label).text)
-	for button in details.find_children("*", "Button", true, false):
+	for button in panel.find_child("Details", true, false).find_children("*", "Button", true, false):
 		texts.append((button as Button).text)
 	var all := "\n".join(texts)
-	check(all.contains("Guard Break"), "the card names the technique")
+	check((panel.find_child("Inscription", true, false).find_children("*", "Label", true, false)[0] as Label).text == "Guard Break",
+			"the inscription names the technique")
 	check(all.contains("Strength"), "and lists what it needs")
 	check(all.contains("Bram") or all.contains("Aldous"), "and who teaches it")
 	host.free()
@@ -159,7 +181,8 @@ func test_selecting_a_node_updates_the_card() -> void:
 
 func test_champion_tabs_lead_to_and_from_the_network() -> void:
 	var host := _open()
-	host._current.call("_select_tab", "skills")
+	check(host._current.find_child("Portrait", true, false) != null, "the champion's portrait is shown")
+	(host._current.find_child("MatrixButton", true, false) as Button).pressed.emit()
 	check_eq(host._current.panel_id, "champion")
 	check_eq(host._current.get("_tab"), "skills")
 	host._current.call("_select_tab", "network")
@@ -171,6 +194,7 @@ func test_camera_survives_a_rebuild() -> void:
 	var host := _open()
 	var panel: LodgePanel = host._current
 	var view: SkillNetworkView = panel.get("view")
+	view.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	view.size = Vector2(800, 500)
 	view.set_zoom(0.6)
 	var zoom := view.zoom
@@ -202,6 +226,7 @@ func _drag(view: SkillNetworkView, index: int, at: Vector2, relative: Vector2) -
 func test_touch_pans_pinches_and_taps() -> void:
 	var host := _open({"select": "skill:attack"})
 	var view: SkillNetworkView = host._current.get("view")
+	view.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	view.size = Vector2(800, 500)
 	view.set_zoom(0.8)
 	var start: Vector2 = view.camera()["position"]

@@ -6,9 +6,13 @@ extends RefCounted
 ## TechniqueData.prerequisites), so new skills, weapons, schools and
 ## techniques join the network without UI changes.
 ##
-## Columns read left to right as the matrix's layers: fundamentals (with the
-## natural foundation and the attributes techniques ask for), discipline,
-## weapons with the Aether Arts below them, techniques. Parts of the matrix the story has not
+## The layout is radial — the Aether Weave. The champion sits at the hub and
+## the matrix's layers are rings growing outward: Foundation (fundamentals,
+## natural foundation and the attributes techniques ask for), Discipline
+## (each beside the fundamental it refines), Arms & Aether, and Techniques
+## (drawn toward what they combine). The foundation ring is split into
+## sectors — Offense, Guard, Endurance, Mobility — so a champion's growth
+## visibly leans one way or another. Parts of the matrix the story has not
 ## revealed yet stay out, as on the Skill Matrix screen.
 
 ## What a node means for the champion right now.
@@ -40,20 +44,39 @@ const GROUP_NAMES := {
 	GROUP_TECHNIQUES: "Advanced Techniques",
 }
 
-## Column headings, left to right.
-const COLUMNS := ["Foundation", "Discipline", "Weapons & Aether", "Techniques"]
+## Rings, from the hub outward.
+const RINGS := ["Foundation", "Discipline", "Arms & Aether", "Techniques"]
+const RING_FOUNDATION := 0
+const RING_DISCIPLINE := 1
+const RING_ARMS := 2
+const RING_TECHNIQUES := 3
+
+## Sectors of the foundation ring, clockwise from the top. A foundation node
+## not listed joins the last sector.
+const SECTORS := [
+	["Offense", ["skill:attack", "stat:strength", "stat:attack", "stat:attack_speed"]],
+	["Guard", ["skill:defense", "skill:block", "stat:defense"]],
+	["Endurance", ["skill:stamina", "skill:recovery", "stat:endurance", "stat:health"]],
+	["Mobility", ["skill:movement", "skill:dodge", "stat:agility", "stat:evasion", "skill:swimming", "skill:flight"]],
+]
+## Angular spread between disciplines that refine the same fundamental.
+const SIBLING_SPREAD := 0.36
+## Closest two techniques may sit on their ring, in radians.
+const TECHNIQUE_GAP := 0.21
 
 ## Node id -> node. A node is a Dictionary:
 ## id ("skill:dodge", "weapon:sword", "stat:strength", "technique:riposte"),
 ## kind (stat/skill/weapon/magic/technique), group, name, description,
-## column, row, rank, cap, progress (0-1 within the rank), state,
-## needs [{id, need, have, met}], opens [ids], teachers [TrainerData],
-## active_teachers [TrainerData].
+## ring, angle (radians, 0 = right, clockwise on screen), rank, cap,
+## progress (0-1 within the rank), state, needs [{id, need, have, met}],
+## opens [ids], teachers [TrainerData], active_teachers [TrainerData].
 var nodes: Dictionary = {}
 ## [{from, to, need, met}] — `from` is required by `to`.
 var edges: Array[Dictionary] = []
 ## Order nodes were added (stable for tests and keyboard order).
 var order: Array[String] = []
+## [{name, start, end}] — angular extent of each sector on the foundation ring.
+var sectors: Array[Dictionary] = []
 ## Whether some part of the matrix is still hidden by the story.
 var has_hidden := false
 
@@ -87,6 +110,10 @@ func edges_from(id: String) -> Array[Dictionary]:
 	return edges.filter(func(edge: Dictionary) -> bool: return edge["from"] == id)
 
 
+func count_in(state: State) -> int:
+	return order.filter(func(id: String) -> bool: return nodes[id]["state"] == state).size()
+
+
 ## The node to show first: something ready to train or learn, else the most
 ## advanced thing learned, else the first node.
 func suggested() -> String:
@@ -95,7 +122,6 @@ func suggested() -> String:
 		for id in order:
 			if nodes[id]["state"] != state:
 				continue
-			# Prefer what opens the most; techniques first among the ready.
 			if best.is_empty() or _weight(id) > _weight(best):
 				best = id
 		if not best.is_empty():
@@ -112,74 +138,90 @@ func _weight(id: String) -> float:
 
 func _build(is_revealed: Callable) -> void:
 	var champion := _champion
-	# Column 0: natural foundation actually learned, then the fundamentals.
-	var row := 0.0
-	for skill: String in SkillCatalog.NATURAL_ORDER:
-		if champion.skills.get_rank("skill:" + skill) > 0:
-			_add_target("skill:" + skill, GROUP_NATURAL, 0, row)
-			row += 1.0
-	if row > 0.0:
-		row += 0.5
+	var techniques_shown: bool = is_revealed.call("techniques")
+	var techniques: Array = Content.list("techniques") if techniques_shown else []
 
-	# Discipline rows sit beside the fundamental they build on, so the tree
-	# reads straight across.
-	var parents := {}
-	for target: String in SkillCatalog.PREREQUISITES:
-		for need: String in SkillCatalog.PREREQUISITES[target]:
-			if GameEnums.target_kind(need) == "skill":
-				parents[target] = need
-	var discipline_shown: bool = is_revealed.call("discipline")
-	var fundamental_rows := {}
-	for skill: String in SkillCatalog.FUNDAMENTAL_ORDER:
-		var target := "skill:" + skill
-		if not is_revealed.call(SkillCatalog.reveal_stage(target)):
-			has_hidden = true
+	# Foundation ring: natural skills actually learned, revealed fundamentals
+	# and the attributes techniques ask for, grouped by sector.
+	var foundation: Array[Array] = []
+	for target: String in _foundation_targets(is_revealed, techniques):
+		var kind := GameEnums.target_kind(target)
+		var group := GROUP_ATTRIBUTES if kind == "stat" else \
+				(GROUP_NATURAL if SkillCatalog.NATURAL_ORDER.has(GameEnums.target_id(target)) else GROUP_FUNDAMENTALS)
+		foundation.append([target, group])
+	var by_sector: Array[Array] = []
+	for sector: Array in SECTORS:
+		by_sector.append([])
+	for entry: Array in foundation:
+		by_sector[_sector_of(entry[0])].append(entry)
+	var flat: Array[Array] = []
+	for list: Array in by_sector:
+		flat.append_array(list)
+	var step := TAU / maxf(flat.size(), 1.0)
+	var start := -PI * 0.5 - step * (by_sector[0].size() - 1) * 0.5
+	var index := 0
+	for s in by_sector.size():
+		var list: Array = by_sector[s]
+		if list.is_empty():
 			continue
-		var children: Array[String] = []
-		if discipline_shown:
-			for discipline: String in SkillCatalog.DISCIPLINE_ORDER:
-				if parents.get("skill:" + discipline, "") == target:
-					children.append("skill:" + discipline)
-		var span := maxf(children.size(), 1.0)
-		var center := row + (span - 1.0) * 0.5
-		_add_target(target, GROUP_FUNDAMENTALS, 0, center)
-		fundamental_rows[target] = center
-		for i in children.size():
-			_add_target(children[i], GROUP_DISCIPLINE, 1, row + i)
-		row += span
-	if discipline_shown:
-		# Any discipline whose fundamental is hidden or missing goes at the end.
+		var first := start + index * step
+		for entry: Array in list:
+			_add_target(entry[0], entry[1], RING_FOUNDATION, start + index * step)
+			index += 1
+		sectors.append({"name": SECTORS[s][0], "start": first - step * 0.5, "end": start + (index - 1) * step + step * 0.5})
+
+	# Discipline ring: beside the fundamental each one refines.
+	if is_revealed.call("discipline"):
+		var children := {}
+		for target: String in SkillCatalog.PREREQUISITES:
+			for need: String in SkillCatalog.PREREQUISITES[target]:
+				if GameEnums.target_kind(need) == "skill" and nodes.has(need):
+					if not children.has(need):
+						children[need] = []
+					children[need].append(target)
+		var orphan := 0
 		for discipline: String in SkillCatalog.DISCIPLINE_ORDER:
-			if not nodes.has("skill:" + discipline):
-				_add_target("skill:" + discipline, GROUP_DISCIPLINE, 1, row)
-				row += 1.0
+			var target := "skill:" + discipline
+			var parent := ""
+			for need: String in children:
+				if (children[need] as Array).has(target):
+					parent = need
+			if parent.is_empty():
+				_add_target(target, GROUP_DISCIPLINE, RING_DISCIPLINE, PI * 0.5 + orphan * 0.3)
+				orphan += 1
+				continue
+			var siblings: Array = children[parent]
+			var offset := (siblings.find(target) - (siblings.size() - 1) * 0.5) * SIBLING_SPREAD
+			_add_target(target, GROUP_DISCIPLINE, RING_DISCIPLINE, float(nodes[parent]["angle"]) + offset)
 	else:
 		has_hidden = true
 
-	var arms_row := 0.0
+	# Arms & Aether: weapons arc around Offense and Guard, schools fill the rest.
+	var arms: Array[Array] = []
 	if is_revealed.call("weapons"):
 		for weapon_type: String in GameEnums.WEAPON_TYPES:
-			_add_target("weapon:" + weapon_type, GROUP_WEAPONS, 2, arms_row)
-			arms_row += 1.0
-		arms_row += 0.5
+			arms.append(["weapon:" + weapon_type, GROUP_WEAPONS])
 	else:
 		has_hidden = true
+	var weapon_count := arms.size()
 	if is_revealed.call("magic"):
 		for school: String in GameEnums.MAGIC_SCHOOLS:
-			_add_target("magic:" + school, GROUP_MAGIC, 2, arms_row)
-			arms_row += 1.0
+			arms.append(["magic:" + school, GROUP_MAGIC])
 	else:
 		has_hidden = true
+	if not arms.is_empty():
+		var arms_step := TAU / arms.size()
+		var center := _mean_angle(nodes.keys().filter(func(id: String) -> bool:
+			return nodes[id]["ring"] == RING_FOUNDATION and _sector_of(id) <= 1), -PI * 0.5)
+		var arms_start := center - (maxf(weapon_count, 1.0) - 1.0) * 0.5 * arms_step
+		for i in arms.size():
+			_add_target(arms[i][0], arms[i][1], RING_ARMS, arms_start + i * arms_step)
 
-	if is_revealed.call("techniques"):
-		var attribute_row := row + 0.5
-		for technique: TechniqueData in Content.list("techniques"):
-			for need: String in technique.prerequisites:
-				if GameEnums.target_kind(need) == "stat" and not nodes.has(need):
-					_add_target(need, GROUP_ATTRIBUTES, 0, attribute_row)
-					attribute_row += 1.0
-			_add_technique(technique, 3, 0.0)
-		_place_techniques()
+	# Techniques: drawn toward the average of what they combine.
+	if techniques_shown:
+		for technique: TechniqueData in techniques:
+			_add_technique(technique)
+		_spread_techniques()
 	else:
 		has_hidden = true
 
@@ -187,55 +229,85 @@ func _build(is_revealed: Callable) -> void:
 		var needs: Dictionary = SkillCatalog.PREREQUISITES[target]
 		for need: String in needs:
 			_link(need, target, int(needs[need]))
+	for technique: TechniqueData in techniques:
+		for need: String in technique.prerequisites:
+			_link(need, technique_id(technique), int(technique.prerequisites[need]))
 	for id in order:
 		_finish(id)
+
+
+func _foundation_targets(is_revealed: Callable, techniques: Array) -> Array[String]:
+	var targets: Array[String] = []
+	for skill: String in SkillCatalog.NATURAL_ORDER:
+		if _champion.skills.get_rank("skill:" + skill) > 0:
+			targets.append("skill:" + skill)
+	for skill: String in SkillCatalog.FUNDAMENTAL_ORDER:
+		var target := "skill:" + skill
+		if is_revealed.call(SkillCatalog.reveal_stage(target)):
+			targets.append(target)
+		else:
+			has_hidden = true
+	for technique: TechniqueData in techniques:
+		for need: String in technique.prerequisites:
+			if GameEnums.target_kind(need) == "stat" and not targets.has(need):
+				targets.append(need)
+	return targets
+
+
+static func _sector_of(target: String) -> int:
+	for i in SECTORS.size():
+		if (SECTORS[i][1] as Array).has(target):
+			return i
+	return SECTORS.size() - 1
+
+
+## Circular mean of the given nodes' angles.
+func _mean_angle(ids: Array, fallback: float) -> float:
+	var sum := Vector2.ZERO
+	for id: String in ids:
+		sum += Vector2.from_angle(float(nodes[id]["angle"]))
+	return sum.angle() if sum.length() > 0.001 else fallback
 
 
 func _add(entry: Dictionary) -> void:
 	entry.merge({"rank": 0, "cap": GameEnums.Rank.MASTER, "progress": 0.0, "state": State.LOCKED,
 			"needs": [], "opens": [], "teachers": [], "active_teachers": []})
+	entry["angle"] = wrapf(float(entry["angle"]), -PI, PI)
 	nodes[entry["id"]] = entry
 	order.append(entry["id"])
 
 
-func _add_target(target: String, group: String, column: int, row: float) -> void:
-	var kind := GameEnums.target_kind(target)
-	var description := SkillCatalog.description(target)
-	_add({"id": target, "kind": kind, "group": group, "name": SkillCatalog.target_name(target),
-			"description": description, "column": column, "row": row})
+func _add_target(target: String, group: String, ring: int, angle: float) -> void:
+	_add({"id": target, "kind": GameEnums.target_kind(target), "group": group, "name": SkillCatalog.target_name(target),
+			"description": SkillCatalog.description(target), "ring": ring, "angle": angle})
 
 
-func _add_technique(technique: TechniqueData, column: int, row: float) -> void:
+func _add_technique(technique: TechniqueData) -> void:
+	var needs := technique.prerequisites.keys().filter(func(need: String) -> bool: return nodes.has(need))
 	_add({"id": technique_id(technique), "kind": "technique", "group": GROUP_TECHNIQUES,
 			"name": technique.display_name, "description": technique.description,
-			"column": column, "row": row, "technique": technique})
-	for need: String in technique.prerequisites:
-		_link(need, technique_id(technique), int(technique.prerequisites[need]))
+			"ring": RING_TECHNIQUES, "angle": _mean_angle(needs, 0.0), "technique": technique})
 
 
-## Techniques sit level with the average of what they need, in order and
-## at least a row apart.
-func _place_techniques() -> void:
-	var placed: Array[Dictionary] = []
-	for id in order:
-		var entry: Dictionary = nodes[id]
-		if entry["kind"] != "technique":
-			continue
-		var rows: Array[float] = []
-		var technique: TechniqueData = entry["technique"]
-		for need: String in technique.prerequisites:
-			if nodes.has(need):
-				rows.append(float(nodes[need]["row"]))
-		var total := 0.0
-		for value in rows:
-			total += value
-		entry["row"] = total / rows.size() if not rows.is_empty() else 0.0
-		placed.append(entry)
-	placed.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["row"] < b["row"])
-	var next := -INF
-	for entry in placed:
-		entry["row"] = maxf(float(entry["row"]), next)
-		next = float(entry["row"]) + 1.25
+## Pushes techniques apart until no two sit closer than TECHNIQUE_GAP.
+func _spread_techniques() -> void:
+	var placed: Array = order.filter(func(id: String) -> bool: return nodes[id]["ring"] == RING_TECHNIQUES)
+	for _pass in 24:
+		placed.sort_custom(func(a: String, b: String) -> bool: return nodes[a]["angle"] < nodes[b]["angle"])
+		var moved := false
+		for i in placed.size():
+			if placed.size() < 2:
+				break
+			var a: Dictionary = nodes[placed[i]]
+			var b: Dictionary = nodes[placed[(i + 1) % placed.size()]]
+			var gap := wrapf(float(b["angle"]) - float(a["angle"]), 0.0, TAU)
+			if gap < TECHNIQUE_GAP:
+				var push := (TECHNIQUE_GAP - gap) * 0.5 + 0.001
+				a["angle"] = wrapf(float(a["angle"]) - push, -PI, PI)
+				b["angle"] = wrapf(float(b["angle"]) + push, -PI, PI)
+				moved = true
+		if not moved:
+			return
 
 
 func _link(need: String, target: String, rank: int) -> void:

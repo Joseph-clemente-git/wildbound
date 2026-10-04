@@ -16,6 +16,9 @@ var title := "Panel"
 var sheet_width := SHEET_WIDTH
 ## False for panels that lay out their own full-height content (no scrolling body).
 var scrolling := true
+## True for full-screen panels that draw their own frame: no sheet, title or
+## tabs; `body` covers the screen.
+var immersive := false
 var body: VBoxContainer
 var sheet: PanelContainer
 var _title_label: Label
@@ -27,6 +30,9 @@ var _rebuild_queued := false
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	if immersive:
+		_ready_immersive()
+		return
 	var dim := ColorRect.new()
 	dim.color = Color(0, 0, 0, 0.25)
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -72,6 +78,17 @@ func _ready() -> void:
 	rebuild()
 
 
+func _ready_immersive() -> void:
+	body = UiKit.vbox(0)
+	body.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(body)
+	Game.changed.connect(queue_rebuild)
+	if not Settings.get_value("reduce_motion"):
+		body.modulate.a = 0.0
+		create_tween().tween_property(body, "modulate:a", 1.0, 0.2)
+	rebuild()
+
+
 func set_title(text: String) -> void:
 	title = text
 	if _title_label != null:
@@ -80,6 +97,8 @@ func set_title(text: String) -> void:
 
 ## Tabs shown under the title: [[label, key], ...]
 func set_tabs(tabs: Array, current: String, on_select: Callable) -> void:
+	if _tabs_row == null:
+		return
 	UiKit.clear(_tabs_row)
 	_tabs_row.visible = not tabs.is_empty()
 	for tab: Array in tabs:

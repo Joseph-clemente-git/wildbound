@@ -101,7 +101,8 @@ func _scenario_panel() -> void:
 
 
 ## The Skill Network mid-journey: a few ranks, two mentors, a technique within
-## reach. --select=<node id> picks the node shown in the side card.
+## reach. --select=<node id> picks the node shown in the side card; --fit
+## shows the whole weave.
 func _scenario_network() -> void:
 	_prepare_mid()
 	var champion := Game.champion()
@@ -119,6 +120,8 @@ func _scenario_network() -> void:
 			select = arg.trim_prefix("--select=")
 	Router.go("lodge")
 	_at(1.0, func() -> void: _lodge().open_panel("skill_network", {"select": select} if not select.is_empty() else {}))
+	if OS.get_cmdline_user_args().has("--fit"):
+		_at(1.6, func() -> void: (_lodge().panels._current.get("view") as SkillNetworkView).fit())
 
 
 func _scenario_result() -> void:
